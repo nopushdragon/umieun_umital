@@ -1,4 +1,4 @@
-#include "static_model.h"
+ï»¿#include "static_model.h"
 
 // ===================================================================
 // StaticMesh
@@ -16,13 +16,13 @@ void StaticMesh::setupMesh() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
-    // À§Ä¡ ¼Ó¼º (layout=0)
+    // ìœ„ì¹˜ ì†ì„± (layout=0)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(StaticVertex), (void*)0);
-    // ¹ı¼± ¼Ó¼º (layout=1)
+    // ë²•ì„  ì†ì„± (layout=1)
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(StaticVertex), (void*)offsetof(StaticVertex, Normal));
-    // ÅØ½ºÃ³ ÁÂÇ¥ ¼Ó¼º (layout=2)
+    // í…ìŠ¤ì²˜ ì¢Œí‘œ ì†ì„± (layout=2)
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(StaticVertex), (void*)offsetof(StaticVertex, TexCoords));
 
@@ -30,20 +30,40 @@ void StaticMesh::setupMesh() {
 }
 
 void StaticMesh::Draw(GLuint shaderID) const {
-    // ÅØ½ºÃ³ ¹ÙÀÎµù ·ÎÁ÷
-    if (!textures.empty() && textures[0].id != 0) {
-        // ÅØ½ºÃ³°¡ ·ÎµåµÇ¾úÀ¸¸é ÅØ½ºÃ³ À¯´Ö 0À» È°¼ºÈ­ÇÏ°í ¹ÙÀÎµù
+    const Texture& meshTexture = textures[0];
+
+    // 1. í…ìŠ¤ì²˜/Diffuse ìƒ‰ìƒ ì„¤ì •
+    if (!textures.empty() && meshTexture.id != 0) {
+        // ... (ê¸°ì¡´ í…ìŠ¤ì²˜ ë¡œì§ ìœ ì§€)
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[0].id);
-        // ¼ÎÀÌ´õ¿¡°Ô ÅØ½ºÃ³ À¯´Ö 0À» »ç¿ëÇÑ´Ù°í ¾Ë¸²
+        glBindTexture(GL_TEXTURE_2D, meshTexture.id);
         glUniform1i(glGetUniformLocation(shaderID, "texture_diffuse1"), 0);
-        glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), true); // ÅØ½ºÃ³ »ç¿ë ÇÃ·¡±×
+        glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), true);
     }
     else {
-        // ÅØ½ºÃ³°¡ ¾øÀ¸¸é ÅØ½ºÃ³ »ç¿ë ÇÃ·¡±×¸¦ ²ô°í ±âº» »ö»óÀ» »ç¿ë
+        // í…ìŠ¤ì²˜ ë¡œë“œ ì‹¤íŒ¨ ë˜ëŠ” í…ìŠ¤ì²˜ê°€ ì—†ëŠ” ê²½ìš°:
         glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), false);
-        glUniform3fv(glGetUniformLocation(shaderID, "materialColorDefault"), 1, glm::value_ptr(textures[0].diffuseColor));
+
+        // MTLì˜ Kdë¥¼ ì‚¬ìš©í•˜ë˜, ë„ˆë¬´ ì–´ë‘ìš°ë©´ ì¤‘ê°„ íšŒìƒ‰ì„ ê¸°ë³¸ê°’ìœ¼ë¡œ ì‚¬ìš© (ì„ íƒì )
+        glm::vec3 diffuseColorToUse = meshTexture.diffuseColor;
+
+        // Kdê°€ ë„ˆë¬´ ì–´ë‘ì›Œì„œ í‘ë°±ìœ¼ë¡œ ë³´ì¸ë‹¤ë©´, ê¸°ë³¸ íšŒìƒ‰ìœ¼ë¡œ ëŒ€ì²´ (ë””ë²„ê·¸ìš© ì•ˆì „ ì¥ì¹˜)
+        if (glm::length(diffuseColorToUse) < 0.1f) { // í‘ìƒ‰ Kd (0,0,0)ì— ê°€ê¹Œìš´ ê²½ìš°
+            diffuseColorToUse = glm::vec3(0.5f, 0.5f, 0.5f); // ì¤‘ê°„ íšŒìƒ‰ìœ¼ë¡œ ê°•ì œ ë³€ê²½
+        }
+
+        glUniform3fv(glGetUniformLocation(shaderID, "materialColorDefault"), 1, glm::value_ptr(diffuseColorToUse));
     }
+
+    if (!textures.empty()) {
+        glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(meshTexture.specularColor));
+        glUniform1i(glGetUniformLocation(shaderID, "shininess"), meshTexture.shininess);
+    }
+
+    //glm::vec3 exampleSpecular = glm::vec3(0.35f, 0.35f, 0.35f); // Ks 
+    //int exampleShininess = 32;                                   // Ns 
+    //glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(exampleSpecular));
+    //glUniform1i(glGetUniformLocation(shaderID, "shininess"), exampleShininess);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -62,7 +82,7 @@ StaticModel::StaticModel(const std::string& objPath) {
         return;
     }
 
-    // ÅØ½ºÃ³/ÀçÁú ·ÎµùÀº OBJ ÆÄÀÏÀÇ °æ·Î¿¡ µû¶ó ´Ù¸§ (±¸Çö ÇÊ¿ä)
+    // í…ìŠ¤ì²˜/ì¬ì§ˆ ë¡œë”©ì€ OBJ íŒŒì¼ì˜ ê²½ë¡œì— ë”°ë¼ ë‹¤ë¦„ (êµ¬í˜„ í•„ìš”)
 
     processNode(scene->mRootNode, scene);
 }
@@ -73,14 +93,14 @@ void StaticModel::Draw(GLuint shaderID) {
 
 void StaticModel::processNode(aiNode* node, const aiScene* scene)
 {
-    // ÇöÀç ³ëµå°¡ °¡Áø ¸ğµç ¸Ş½Ã¸¦ Ã³¸®ÇÕ´Ï´Ù.
+    // í˜„ì¬ ë…¸ë“œê°€ ê°€ì§„ ëª¨ë“  ë©”ì‹œë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤.
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         meshes.push_back(processMesh(mesh, scene));
     }
 
-    // ÀÚ½Ä ³ëµå¸¦ Àç±ÍÀûÀ¸·Î ¼øÈ¸ÇÏ¸ç Ã³¸®ÇÕ´Ï´Ù.
+    // ìì‹ ë…¸ë“œë¥¼ ì¬ê·€ì ìœ¼ë¡œ ìˆœíšŒí•˜ë©° ì²˜ë¦¬í•©ë‹ˆë‹¤.
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
         processNode(node->mChildren[i], scene);
@@ -91,18 +111,18 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<StaticVertex> vertices;
     std::vector<unsigned int> indices;
-    std::vector<Texture> textures; // ÅØ½ºÃ³ ·Îµù ±¸Çö ÇÊ¿ä
+    std::vector<Texture> textures; // í…ìŠ¤ì²˜ ë¡œë”© êµ¬í˜„ í•„ìš”
 
-    // 1. Á¤Á¡ µ¥ÀÌÅÍ ÃßÃâ
+    // 1. ì •ì  ë°ì´í„° ì¶”ì¶œ
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
         StaticVertex vertex;
-        // À§Ä¡ (Position)
+        // ìœ„ì¹˜ (Position)
         vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-        // ¹ı¼± (Normal)
+        // ë²•ì„  (Normal)
         if (mesh->mNormals)
             vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-        // ÅØ½ºÃ³ ÁÂÇ¥ (TexCoords)
+        // í…ìŠ¤ì²˜ ì¢Œí‘œ (TexCoords)
         if (mesh->mTextureCoords[0])
             vertex.TexCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
         else
@@ -111,7 +131,7 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
         vertices.push_back(vertex);
     }
 
-    // 2. ÀÎµ¦½º µ¥ÀÌÅÍ (Faces) ÃßÃâ
+    // 2. ì¸ë±ìŠ¤ ë°ì´í„° (Faces) ì¶”ì¶œ
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];
@@ -119,48 +139,61 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
             indices.push_back(face.mIndices[j]);
     }
 
-    // 3. ÀçÁú/ÅØ½ºÃ³ Ã³¸® (±¸Çö)
+    // 3. ì¬ì§ˆ/í…ìŠ¤ì²˜ ì²˜ë¦¬ (êµ¬í˜„)
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
         Texture matInfo;
 
-        // 3-1. È®»ê »ö»ó (Kd) ÃßÃâ ¹× ÀúÀå
-        aiColor4D color(0.f, 0.f, 0.f, 1.f);
-        if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &color))
-        {
-            matInfo.diffuseColor = glm::vec3(color.r, color.g, color.b);
+        // ğŸ‘‡ Diffuse Color (Kd) ì¶”ì¶œ ì½”ë“œ ì¶”ê°€/ë³µêµ¬!
+        aiColor4D color_d(1.f, 1.f, 1.f, 1.f); // ê¸°ë³¸ê°’ ì„¤ì • (í°ìƒ‰)
+        if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &color_d)) {
+            matInfo.diffuseColor = glm::vec3(color_d.r, color_d.g, color_d.b);
         }
 
-        // 3-2. ÅØ½ºÃ³ ÆÄÀÏ °æ·Î ÃßÃâ ¹× ·Îµù
+        // 3-1. Specular Color (Ks) ì¶”ì¶œ ë° ì €ì¥
+        aiColor4D color_s(0.f, 0.f, 0.f, 1.f);
+        if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &color_s)) {
+            matInfo.specularColor = glm::vec3(color_s.r, color_s.g, color_s.b);
+        }
+        float shininess_val = 1.0f;
+        if (AI_SUCCESS == aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shininess_val)) {
+            matInfo.shininess = (int)shininess_val;
+        }
+        // ğŸ‘‡ Ks ê°’ ê°•ì œ ì¡°ì • (í•˜ì´ë¼ì´íŠ¸ ê°•ë„ ì¤„ì´ê¸°)
+        if (glm::length(matInfo.specularColor) > 1.0f) { // Ksê°€ ë„ˆë¬´ ê°•í•˜ë©´ (ì˜ˆ: 1.0, 1.0, 1.0)
+            matInfo.specularColor *= 0.05f; // Specular ê°•ë„ë¥¼ 35%ë¡œ ì¡°ì • (ì´ì „ ì‚¬ìš©ì ì„¤ì • ê¸°ë°˜)
+        }
+
+        // 3-2. í…ìŠ¤ì²˜ íŒŒì¼ ê²½ë¡œ ì¶”ì¶œ ë° ë¡œë”©
         aiString str;
-        // AI_MATKEY_TEXTURE_DIFFUSE: MTL ÆÄÀÏÀÇ map_Kd (È®»ê ÅØ½ºÃ³) °æ·Î¸¦ Ã£½À´Ï´Ù.
+        // AI_MATKEY_TEXTURE_DIFFUSE: MTL íŒŒì¼ì˜ map_Kd (í™•ì‚° í…ìŠ¤ì²˜) ê²½ë¡œë¥¼ ì°¾ìŠµë‹ˆë‹¤.
         if (AI_SUCCESS == material->GetTexture(aiTextureType_DIFFUSE, 0, &str))
         {
-            // °æ·Î°¡ ÀÖ´Ù¸é ÅØ½ºÃ³ ·Îµù ½Ãµµ
+            // ê²½ë¡œê°€ ìˆë‹¤ë©´ í…ìŠ¤ì²˜ ë¡œë”© ì‹œë„
             matInfo.path = str.C_Str();
-            // ÅØ½ºÃ³ ·Îµå ÇÔ¼ö È£Ãâ (ÇöÀç ÆÄÀÏ °æ·Î¸¦ ±âÁØÀ¸·Î ·Îµå)
-            // OBJ ÆÄÀÏÀÌ ÀÖ´Â "ÇöÀç µğ·ºÅä¸®"¸¦ °¡Á¤ÇÏ°í °æ·Î Àü´Ş
+            // í…ìŠ¤ì²˜ ë¡œë“œ í•¨ìˆ˜ í˜¸ì¶œ (í˜„ì¬ íŒŒì¼ ê²½ë¡œë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë¡œë“œ)
+            // OBJ íŒŒì¼ì´ ìˆëŠ” "í˜„ì¬ ë””ë ‰í† ë¦¬"ë¥¼ ê°€ì •í•˜ê³  ê²½ë¡œ ì „ë‹¬
             matInfo.id = loadTextureFromFile(matInfo.path.c_str(), ".");
             matInfo.type = "texture_diffuse";
         }
         else {
-            // ÅØ½ºÃ³ °æ·Î°¡ ¾ø´Â °æ¿ì, ID¸¦ 0À¸·Î ¼³Á¤ÇÏ¿© ÅØ½ºÃ³¸¦ »ç¿ëÇÏÁö ¾Êµµ·Ï Ç¥½Ã
+            // í…ìŠ¤ì²˜ ê²½ë¡œê°€ ì—†ëŠ” ê²½ìš°, IDë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•˜ì—¬ í…ìŠ¤ì²˜ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ í‘œì‹œ
             matInfo.id = 0;
             matInfo.type = "color_diffuse";
         }
 
-        // ÀçÁú Á¤º¸¸¦ ¸Ş½ÃÀÇ Ã¹ ¹øÂ° ÅØ½ºÃ³ Ç×¸ñ¿¡ ÀúÀå
+        // ì¬ì§ˆ ì •ë³´ë¥¼ ë©”ì‹œì˜ ì²« ë²ˆì§¸ í…ìŠ¤ì²˜ í•­ëª©ì— ì €ì¥
         textures.push_back(matInfo);
     }
 
-    // ¸Ş½Ã °´Ã¼ »ı¼º ¹× ¼³Á¤
+    // ë©”ì‹œ ê°ì²´ ìƒì„± ë° ì„¤ì •
     StaticMesh staticMesh;
     staticMesh.vertices = vertices;
     staticMesh.indices = indices;
     staticMesh.textures = textures;
-    staticMesh.setupMesh(); // VAO/VBO/EBO ¼³Á¤ È£Ãâ
+    staticMesh.setupMesh(); // VAO/VBO/EBO ì„¤ì • í˜¸ì¶œ
 
     return staticMesh;
 }
