@@ -138,7 +138,7 @@ void init() {
     loadShader(ANIMATED_VERT, FRAGMENT_LIGHT, shaderProgramAnimated);
     // 모델 로드
     loadModels();
-    road = new StaticModel("road0.obj");
+    road = new StaticModel("road0.obj"); 
 
     setMaze();
 	//initmaze(roads);
@@ -227,6 +227,11 @@ void timer(int value) {
     glutTimerFunc(1000 / 60, timer, 1);
 }
 
+void reshape(int width, int height) {
+    // glViewport를 호출하여 화면 전체를 렌더링 영역으로 설정합니다.
+    glViewport(0, 0, width, height);
+}
+
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
@@ -236,6 +241,7 @@ int main(int argc, char** argv) {
     init();
 
     glutDisplayFunc(drawScene);
+    glutReshapeFunc(reshape);
     glutTimerFunc(1000 / 60, timer, 1);
     glutMainLoop();
     return 0;
