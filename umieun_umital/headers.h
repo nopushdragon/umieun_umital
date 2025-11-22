@@ -47,10 +47,10 @@ using namespace std;
 unsigned int loadTextureFromFile(const char* path, const std::string& directory);
 
 // --- 뼈대 정보 구조체 (FBX 애니메이션용) ---
-struct BoneInfo {
-    int id;
-    glm::mat4 offset; // Assimp의 오프셋 행렬을 GLM 행렬로 변환해야 함
-};
+//struct BoneInfo {
+//    int id;
+//    glm::mat4 offset; // Assimp의 오프셋 행렬을 GLM 행렬로 변환해야 함
+//};
 void aiMatrix4x4ToGlm(const aiMatrix4x4* from, glm::mat4& to); // Assimp 행렬을 GLM으로 변환하는 함수 (구현 필요)
 
 // --- 텍스처 정보 구조체 (MTL/FBX 재질용) ---

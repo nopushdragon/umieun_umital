@@ -1,8 +1,8 @@
 ﻿#define STB_IMAGE_IMPLEMENTATION
 #include "headers.h"
-#include "animated_model.h"
 #include "static_model.h"
 #include "maze.h"
+#include "silver_wolf.h"
 
 GLuint shaderProgramStatic; // 정적 모델 셰이더 프로그램 ID
 GLuint shaderProgramAnimated; // 애니메이션 모델 셰이더 프로그램 ID
@@ -15,12 +15,12 @@ const char* FRAGMENT_LIGHT = "fragment.glsl";
 // ===================================================================
 
 // 전역 씬 객체
-AnimatedModel* playerModel = nullptr;
+silver_wolf silverWolf;
 StaticModel* wallModel = nullptr;
 std::vector<StaticModel*> roads;
 
 // 카메라 위치 (예시)
-glm::vec3 camPos(0.0f, 100.0f, 50.0f);
+glm::vec3 camPos(0.0f, 15.0f, 10.0f);
 glm::vec3 camTarget(0.0f, 0.0f, 0.0f);
 glm::vec3 camUp(0.0f, 1.0f, 0.0f);
 
@@ -115,6 +115,22 @@ void loadModels() {
 	roads.push_back(new StaticModel("road/road13.obj"));  // 13ㅗ
 	roads.push_back(new StaticModel("road/road14.obj"));  // 14+
     roads.push_back(new StaticModel("road/road15.obj"));  // 15x
+
+    silverWolf.silverWolfModel[0] = new NewModel("silver_wolf/Idle.fbx");
+    silverWolf.silverWolfModel[0]->state = "idle";
+    silverWolf.silverWolfModel[1] = new NewModel("silver_wolf/Walk.fbx");
+    silverWolf.silverWolfModel[1]->state = "walk";
+    silverWolf.silverWolfModel[2] = new NewModel("silver_wolf/Stop Walking.fbx");
+    silverWolf.silverWolfModel[2]->state = "stop_walking";
+    silverWolf.silverWolfModel[3] = new NewModel("silver_wolf/Running.fbx");
+    silverWolf.silverWolfModel[3]->state = "running";
+    silverWolf.silverWolfModel[4] = new NewModel("silver_wolf/Run To Stop.fbx");
+    silverWolf.silverWolfModel[4]->state = "run_to_stop";
+    silverWolf.silverWolfModel[5] = new NewModel("silver_wolf/Throw.fbx");
+    silverWolf.silverWolfModel[5]->state = "throw";
+    silverWolf.silverWolfModel[6] = new NewModel("silver_wolf/Stand To Roll.fbx");
+    silverWolf.silverWolfModel[6]->state = "stand_to_roll";
+
 }
 
 void init() {
@@ -161,28 +177,26 @@ void drawScene() {
     setCommonUniforms(shaderProgramStatic, view, proj);
 
 
-    for (auto& block : mazeBlocks) {
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(block.modelMatrix));
+    //for (auto& block : mazeBlocks) {
+    //    glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(block.modelMatrix));
 
-        if (block.modelPtr)
-        {
-            // 메시별 재질/색상 정보 설정 및 드로우
-            for (auto& mesh : block.modelPtr->meshes)
-            {
-                // 메시 그리기. 이제 Draw 함수가 재질 유니폼을 설정합니다.
-                mesh.Draw(shaderProgramStatic);
-            }
-        }
-    }
+    //    if (block.modelPtr)
+    //    {
+    //        // 메시별 재질/색상 정보 설정 및 드로우
+    //        for (auto& mesh : block.modelPtr->meshes)
+    //        {
+    //            // 메시 그리기. 이제 Draw 함수가 재질 유니폼을 설정합니다.
+    //            mesh.Draw(shaderProgramStatic);
+    //        }
+    //    }
+    //}
 
     // --- 2. 애니메이션 캐릭터 렌더링 ---
     glUseProgram(shaderProgramAnimated);
     setCommonUniforms(shaderProgramAnimated, view, proj);
 
-    if (playerModel) {
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgramAnimated, "uModel"), 1, GL_FALSE, glm::value_ptr(playerModel->modelMatrix));
-        playerModel->Draw(shaderProgramAnimated);
-    }
+    
+    silverWolf.Draw(shaderProgramAnimated, glutGet(GLUT_ELAPSED_TIME) / 1000.0f);
 
     glutSwapBuffers();
 }
@@ -190,11 +204,7 @@ void drawScene() {
 void timer(int value) {
     // 플레이어 입력 및 충돌 감지 로직 (구현 필요)
 
-    if (playerModel) {
-        // 애니메이션 업데이트 (시간 기반)
-        // playerModel->updateAnimation(glutGet(GLUT_ELAPSED_TIME) / 1000.0f);
-    }
-
+   
     glutPostRedisplay();
     glutTimerFunc(1000 / 60, timer, 1);
 }
