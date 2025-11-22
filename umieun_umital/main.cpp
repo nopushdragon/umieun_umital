@@ -20,11 +20,14 @@ struct MazeBlockInstance {
     glm::mat4 modelMatrix;
     glm::vec3 reset;    // 미로 초기 위치 저장용
 };
+std::vector<MazeBlockInstance> mazeBlocks;
 
 // 전역 씬 객체
 AnimatedModel* playerModel = nullptr;
 StaticModel* wallModel = nullptr;
-std::vector<MazeBlockInstance> mazeBlocks;
+std::vector<StaticModel*> roads;
+StaticModel* road = nullptr;
+
 
 // 카메라 위치 (예시)
 glm::vec3 camPos(0.0f, 30.0f, 30.0f);
@@ -38,9 +41,6 @@ glm::vec3 materialSpecular(1.0f, 1.0f, 1.0f);
 float ambientStrength = 0.1f;
 int shininess = 32;
 
-//
-std::vector<StaticModel*> roads;
-//
 
 // --- 셰이더 유틸리티 함수 ---
 char* filetobuf(const char* file); // 파일 내용을 문자열로 읽어오는 함수
@@ -109,22 +109,22 @@ void loadShader(const char* vertPath, const char* fragPath, GLuint& shaderID) {
 }
 
 void loadModels() {
-    roads.push_back(new StaticModel("road0.obj"));  // 0동
-    roads.push_back(new StaticModel("road0.obj"));  // 1서 
-	roads.push_back(new StaticModel("road0.obj"));  // 2남 
-	roads.push_back(new StaticModel("road0.obj"));  // 3북
-	roads.push_back(new StaticModel("road0.obj"));  // 4ㅡ
-	roads.push_back(new StaticModel("road0.obj"));  // 5ㅣ
-	roads.push_back(new StaticModel("road0.obj"));  // 6┌
-	roads.push_back(new StaticModel("road0.obj"));  // 7┐
-	roads.push_back(new StaticModel("road0.obj"));  // 8└
-	roads.push_back(new StaticModel("road0.obj"));  // 9┘
-	roads.push_back(new StaticModel("road0.obj"));  // 10ㅏ
-	roads.push_back(new StaticModel("road0.obj"));  // 11ㅓ
-	roads.push_back(new StaticModel("road0.obj"));  // 12ㅜ
-	roads.push_back(new StaticModel("road0.obj"));  // 13ㅗ
-	roads.push_back(new StaticModel("road0.obj"));  // 14+
-    roads.push_back(new StaticModel("road0.obj"));  // 15x
+    //roads.push_back(new StaticModel("road0.obj"));  // 0동
+    //roads.push_back(new StaticModel("road0.obj"));  // 1서 
+	//roads.push_back(new StaticModel("road0.obj"));  // 2남 
+	//roads.push_back(new StaticModel("road0.obj"));  // 3북
+	//roads.push_back(new StaticModel("road0.obj"));  // 4ㅡ
+	//roads.push_back(new StaticModel("road0.obj"));  // 5ㅣ
+	//roads.push_back(new StaticModel("road0.obj"));  // 6┌
+	//roads.push_back(new StaticModel("road0.obj"));  // 7┐
+	//roads.push_back(new StaticModel("road0.obj"));  // 8└
+	//roads.push_back(new StaticModel("road0.obj"));  // 9┘
+	//roads.push_back(new StaticModel("road0.obj"));  // 10ㅏ
+	//roads.push_back(new StaticModel("road0.obj"));  // 11ㅓ
+	//roads.push_back(new StaticModel("road0.obj"));  // 12ㅜ
+	//roads.push_back(new StaticModel("road0.obj"));  // 13ㅗ
+	//roads.push_back(new StaticModel("road0.obj"));  // 14+
+    //roads.push_back(new StaticModel("road0.obj"));  // 15x
 }
 
 void init() {
@@ -136,19 +136,17 @@ void init() {
     // 셰이더 로드
     loadShader(STATIC_VERT, FRAGMENT_LIGHT, shaderProgramStatic);
     loadShader(ANIMATED_VERT, FRAGMENT_LIGHT, shaderProgramAnimated);
-
+    // 모델 로드
     loadModels();
+    road = new StaticModel("road0.obj");
 
-    // road 인스턴스를 씬 중앙에 배치
+    setMaze();
+	//initmaze(roads);
     MazeBlockInstance roadInstance;
     roadInstance.modelPtr = road;
     roadInstance.modelMatrix = glm::mat4(1.0f); // Model 행렬 초기화 (월드 원점)
     roadInstance.reset = glm::vec3(1.0f);
     mazeBlocks.push_back(roadInstance);
-    //
-
-    // 미로 생성 및 StaticModel 인스턴스 배치 로직 (구현 필요)
-    // 예시: mazeBlocks.push_back({wallModel, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))});
 }
 
 void setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj) {
@@ -235,8 +233,6 @@ int main(int argc, char** argv) {
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutCreateWindow("3D Maze Framework");
 
-    setMaze();
-    
     init();
 
     glutDisplayFunc(drawScene);

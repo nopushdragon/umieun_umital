@@ -1,5 +1,7 @@
 #include "maze.h"
 
+#define ROAD_SIZE 20.0f
+
 std::random_device rd;
 std::mt19937 mt(rd());
 
@@ -94,7 +96,20 @@ void generatetype() {
     }
 }
 
-
+//void initmaze(std::vector<StaticModel*> roads) {
+//    // road 인스턴스를 씬 중앙에 배치
+//    for (int i = 0; i < maze_y; i++) {
+//        for (int j = 0; j < maze_x; j++) {
+//            MazeBlockInstance roadInstance;
+//            roadInstance.modelPtr = roads[maze[i][j].type];
+//            float x_pos = ROAD_SIZE / 2 + (ROAD_SIZE * j) - ((ROAD_SIZE * (float)maze_x) / 2);
+//            float z_pos = ROAD_SIZE / 2 + (ROAD_SIZE * i) - ((ROAD_SIZE * (float)maze_y) / 2);
+//            roadInstance.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x_pos, 0.0f, z_pos));
+//            roadInstance.reset = glm::vec3(x_pos, 0.0f, z_pos);
+//            mazeBlocks.push_back(roadInstance);
+//        }
+//	}
+//}
 
 void setMaze() {
     std::vector<std::vector<MAZE>> a(maze_y, std::vector<MAZE>(maze_x));
@@ -103,28 +118,4 @@ void setMaze() {
     generateMaze(1, 1);
     generatetype();
     printMaze();
-}
-
-
-void init_maze() {
-    int cube_idx = 0;
-
-    //for (int i = 0; i < maze_y; i++) {
-    //    for (int j = 0; j < maze_x; j++) {
-    //
-    //        float x_pos = BOX_SIZE / 2 + (BOX_SIZE * j) - ((BOX_SIZE * (float)maze_x) / 2);
-    //        float z_pos = BOX_SIZE / 2 + (BOX_SIZE * i) - ((BOX_SIZE * (float)maze_y) / 2);
-    //        shapes[cube_idx].reset = glm::vec3(x_pos, 0.0f, z_pos);
-    //        if (cube_idx == 1) {
-    //            p_x = x_pos;
-    //            p_y = 0.02f;
-    //            p_z = z_pos;
-    //        }
-    //
-    //        if (maze[i][j] == WALL) shapes[cube_idx].draw = true;
-    //        else if (maze[i][j] == PATH) shapes[cube_idx].draw = false;
-    //        cube_idx++;
-    //    }
-    //}
-
 }

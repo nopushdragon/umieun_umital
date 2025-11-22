@@ -46,10 +46,6 @@ using namespace std;
 // --- 텍스처 로딩 유틸리티 함수 ---
 unsigned int loadTextureFromFile(const char* path, const std::string& directory);
 
-// --- 셰이더 유틸리티 함수 ---
-char* filetobuf(const char* file); // 파일 내용을 문자열로 읽어오는 함수
-void loadShader(const char* vertPath, const char* fragPath, GLuint& shaderID);
-
 // --- 뼈대 정보 구조체 (FBX 애니메이션용) ---
 struct BoneInfo {
     int id;
