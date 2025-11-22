@@ -25,6 +25,12 @@
     <Filter Include="소스 파일\static_model">
       <UniqueIdentifier>{2db1ca46-62ce-4c0e-8d8d-9057b1eb07bf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="우미은우미탈 주인공">
+      <UniqueIdentifier>{ab730e21-d70d-4946-ac4c-d05bca36646c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="시간의방">
+      <UniqueIdentifier>{caaae31c-9028-41af-862d-a04767e0ace3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -38,6 +44,12 @@
     </ClInclude>
     <ClInclude Include="static_model.h">
       <Filter>소스 파일\static_model</Filter>
+    </ClInclude>
+    <ClInclude Include="silver_wolf.h">
+      <Filter>우미은우미탈 주인공</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTimer.h">
+      <Filter>시간의방</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +67,12 @@
     </ClCompile>
     <ClCompile Include="headers.cpp">
       <Filter>headers</Filter>
+    </ClCompile>
+    <ClCompile Include="silver_wolf.cpp">
+      <Filter>우미은우미탈 주인공</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTimer.cpp">
+      <Filter>시간의방</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

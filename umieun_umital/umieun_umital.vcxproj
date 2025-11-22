@@ -133,8 +133,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="animated_model.h" />
+    <ClInclude Include="GameTimer.h" />
     <ClInclude Include="headers.h" />
     <ClInclude Include="maze.h" />
+    <ClInclude Include="silver_wolf.h" />
     <ClInclude Include="static_model.h" />
   </ItemGroup>
   <ItemGroup>
@@ -142,12 +144,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="headers.cpp" />
     <ClCompile Include="maze.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="silver_wolf.cpp" />
     <ClCompile Include="static_model.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
