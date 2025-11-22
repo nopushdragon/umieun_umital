@@ -16,15 +16,45 @@
     <Filter Include="headers">
       <UniqueIdentifier>{81ddb4dd-7de6-4254-975f-115e5ad44946}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\maze">
+      <UniqueIdentifier>{d96d8731-86a3-41da-83e7-ed0fcfb9336a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\animated_model">
+      <UniqueIdentifier>{ae744740-333e-4897-97d0-9125f0042fe3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\static_model">
+      <UniqueIdentifier>{2db1ca46-62ce-4c0e-8d8d-9057b1eb07bf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="maze.h">
+      <Filter>소스 파일\maze</Filter>
+    </ClInclude>
+    <ClInclude Include="animated_model.h">
+      <Filter>소스 파일\animated_model</Filter>
+    </ClInclude>
+    <ClInclude Include="static_model.h">
+      <Filter>소스 파일\static_model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="소스.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="maze.cpp">
+      <Filter>소스 파일\maze</Filter>
+    </ClCompile>
+    <ClCompile Include="animated_model.cpp">
+      <Filter>소스 파일\animated_model</Filter>
+    </ClCompile>
+    <ClCompile Include="static_model.cpp">
+      <Filter>소스 파일\static_model</Filter>
+    </ClCompile>
+    <ClCompile Include="headers.cpp">
+      <Filter>headers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

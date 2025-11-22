@@ -5,7 +5,9 @@ in vec3 Normal;
 in vec2 TexCoords; 
 out vec4 FragColor;
 
-uniform sampler2D texture_diffuse1; 
+uniform sampler2D texture_diffuse1; // <-- fbx용 텍스처
+uniform vec3 materialColorDefault; // <-- 얜 mtl
+uniform bool bUseTexture;          // <-- 텍스쳐 할건지 mtl할건지
 
 uniform vec3 lightPos;      
 uniform vec3 lightColor;   
@@ -18,7 +20,14 @@ uniform int shininess;
 void main()
 {
     // 텍스처에서 Diffuse 색상 샘플링 
-    vec3 materialDiffuse = texture(texture_diffuse1, TexCoords).rgb;
+    vec3 materialDiffuse;
+    if (bUseTexture) {
+        // 텍스처를 사용하도록 플래그가 설정된 경우
+        materialDiffuse = texture(texture_diffuse1, TexCoords).rgb;
+    } else {
+        // 텍스처가 없는 경우, C++에서 전달한 기본 색상(Kd)을 사용
+        materialDiffuse = materialColorDefault;
+    }
 
     // 1. 주변 조명 (Ambient)
     vec3 ambient = ambientStrength * lightColor * materialDiffuse; 
