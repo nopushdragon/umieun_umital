@@ -14,6 +14,6 @@ void printMaze();
 
 void generateMaze(int cx, int cy);
 void generatetype();
-void initmaze(std::vector<StaticModel*>);
+void initmaze(std::vector<StaticModel*>*);
 
 void setMaze();

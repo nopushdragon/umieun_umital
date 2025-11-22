@@ -130,7 +130,7 @@ void init() {
     loadModels();
 
     setMaze();
-	initmaze(roads);
+	initmaze(&roads);
 }
 
 void setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj) {
