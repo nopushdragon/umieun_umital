@@ -1,12 +1,13 @@
 #include "maze.h"
 
 #define ROAD_SIZE 20.0f
-
 std::random_device rd;
 std::mt19937 mt(rd());
 
+std::vector<MazeBlockInstance> mazeBlocks;
+
 int maze_y = 5;
-int maze_x = 7;
+int maze_x = 5;
 
 enum PATH_WALL {
     PATH = 0,
@@ -69,6 +70,9 @@ void generateMaze(int cx, int cy) {
 void generatetype() {
     for (int y = 1; y < maze_y-1; ++y) {
         for (int x = 1; x < maze_x-1; ++x) {
+
+			if (maze[y][x].path_wall == WALL) continue;
+
 			bool right, left, up, down; // true: path, false: wall
 
 			maze[y - 1][x].path_wall == PATH ? up = true : up = false;
@@ -96,20 +100,20 @@ void generatetype() {
     }
 }
 
-//void initmaze(std::vector<StaticModel*> roads) {
-//    // road 인스턴스를 씬 중앙에 배치
-//    for (int i = 0; i < maze_y; i++) {
-//        for (int j = 0; j < maze_x; j++) {
-//            MazeBlockInstance roadInstance;
-//            roadInstance.modelPtr = roads[maze[i][j].type];
-//            float x_pos = ROAD_SIZE / 2 + (ROAD_SIZE * j) - ((ROAD_SIZE * (float)maze_x) / 2);
-//            float z_pos = ROAD_SIZE / 2 + (ROAD_SIZE * i) - ((ROAD_SIZE * (float)maze_y) / 2);
-//            roadInstance.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x_pos, 0.0f, z_pos));
-//            roadInstance.reset = glm::vec3(x_pos, 0.0f, z_pos);
-//            mazeBlocks.push_back(roadInstance);
-//        }
-//	}
-//}
+void initmaze(std::vector<StaticModel*> roads) {
+    // road 인스턴스를 씬 중앙에 배치
+    for (int i = 0; i < maze_y; i++) {
+        for (int j = 0; j < maze_x; j++) {
+            MazeBlockInstance roadInstance;
+            roadInstance.modelPtr = roads[maze[i][j].type];
+            float x_pos = ROAD_SIZE / 2 + (ROAD_SIZE * j) - ((ROAD_SIZE * (float)maze_x) / 2);
+            float z_pos = ROAD_SIZE / 2 + (ROAD_SIZE * i) - ((ROAD_SIZE * (float)maze_y) / 2);
+            roadInstance.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x_pos, 0.0f, z_pos));
+            roadInstance.reset = glm::vec3(x_pos, 0.0f, z_pos);
+            mazeBlocks.push_back(roadInstance);
+        }
+	}
+}
 
 void setMaze() {
     std::vector<std::vector<MAZE>> a(maze_y, std::vector<MAZE>(maze_x));

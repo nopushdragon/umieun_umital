@@ -14,30 +14,20 @@ const char* FRAGMENT_LIGHT = "fragment.glsl";
 // 3. 씬 관리 및 메인 함수
 // ===================================================================
 
-// --- 미로 배치 인스턴스 ---
-struct MazeBlockInstance {
-    StaticModel* modelPtr;
-    glm::mat4 modelMatrix;
-    glm::vec3 reset;    // 미로 초기 위치 저장용
-};
-std::vector<MazeBlockInstance> mazeBlocks;
-
 // 전역 씬 객체
 AnimatedModel* playerModel = nullptr;
 StaticModel* wallModel = nullptr;
 std::vector<StaticModel*> roads;
-StaticModel* road = nullptr;
-
 
 // 카메라 위치 (예시)
-glm::vec3 camPos(0.0f, 30.0f, 30.0f);
+glm::vec3 camPos(0.0f, 100.0f, 50.0f);
 glm::vec3 camTarget(0.0f, 0.0f, 0.0f);
 glm::vec3 camUp(0.0f, 1.0f, 0.0f);
 
 // 광원/재질 정보 (셰이더 유니폼으로 전송)
-glm::vec3 lightPos(10.0f, 20.0f, 10.0f);
+glm::vec3 lightPos(0.0f, 2000.0f, 0.0f);
 glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-glm::vec3 materialSpecular(1.0f, 1.0f, 1.0f);
+glm::vec3 materialSpecular(0.0f, 0.0f, 0.0f);
 float ambientStrength = 0.1f;
 int shininess = 32;
 
@@ -109,22 +99,22 @@ void loadShader(const char* vertPath, const char* fragPath, GLuint& shaderID) {
 }
 
 void loadModels() {
-    //roads.push_back(new StaticModel("road0.obj"));  // 0동
-    //roads.push_back(new StaticModel("road0.obj"));  // 1서 
-	//roads.push_back(new StaticModel("road0.obj"));  // 2남 
-	//roads.push_back(new StaticModel("road0.obj"));  // 3북
-	//roads.push_back(new StaticModel("road0.obj"));  // 4ㅡ
-	//roads.push_back(new StaticModel("road0.obj"));  // 5ㅣ
-	//roads.push_back(new StaticModel("road0.obj"));  // 6┌
-	//roads.push_back(new StaticModel("road0.obj"));  // 7┐
-	//roads.push_back(new StaticModel("road0.obj"));  // 8└
-	//roads.push_back(new StaticModel("road0.obj"));  // 9┘
-	//roads.push_back(new StaticModel("road0.obj"));  // 10ㅏ
-	//roads.push_back(new StaticModel("road0.obj"));  // 11ㅓ
-	//roads.push_back(new StaticModel("road0.obj"));  // 12ㅜ
-	//roads.push_back(new StaticModel("road0.obj"));  // 13ㅗ
-	//roads.push_back(new StaticModel("road0.obj"));  // 14+
-    //roads.push_back(new StaticModel("road0.obj"));  // 15x
+    roads.push_back(new StaticModel("road/road0.obj"));  // 0동
+    roads.push_back(new StaticModel("road/road1.obj"));  // 1서 
+	roads.push_back(new StaticModel("road/road2.obj"));  // 2남 
+	roads.push_back(new StaticModel("road/road3.obj"));  // 3북
+	roads.push_back(new StaticModel("road/road4.obj"));  // 4ㅡ
+	roads.push_back(new StaticModel("road/road5.obj"));  // 5ㅣ
+	roads.push_back(new StaticModel("road/road6.obj"));  // 6┌
+	roads.push_back(new StaticModel("road/road7.obj"));  // 7┐
+	roads.push_back(new StaticModel("road/road8.obj"));  // 8└
+	roads.push_back(new StaticModel("road/road9.obj"));  // 9┘
+	roads.push_back(new StaticModel("road/road10.obj"));  // 10ㅏ
+	roads.push_back(new StaticModel("road/road11.obj"));  // 11ㅓ
+	roads.push_back(new StaticModel("road/road12.obj"));  // 12ㅜ
+	roads.push_back(new StaticModel("road/road13.obj"));  // 13ㅗ
+	roads.push_back(new StaticModel("road/road14.obj"));  // 14+
+    roads.push_back(new StaticModel("road/road15.obj"));  // 15x
 }
 
 void init() {
@@ -138,15 +128,9 @@ void init() {
     loadShader(ANIMATED_VERT, FRAGMENT_LIGHT, shaderProgramAnimated);
     // 모델 로드
     loadModels();
-    road = new StaticModel("road0.obj"); 
 
     setMaze();
-	//initmaze(roads);
-    MazeBlockInstance roadInstance;
-    roadInstance.modelPtr = road;
-    roadInstance.modelMatrix = glm::mat4(1.0f); // Model 행렬 초기화 (월드 원점)
-    roadInstance.reset = glm::vec3(1.0f);
-    mazeBlocks.push_back(roadInstance);
+	initmaze(roads);
 }
 
 void setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj) {
@@ -170,19 +154,12 @@ void drawScene() {
     glEnable(GL_DEPTH_TEST);
 
     glm::mat4 view = glm::lookAt(camPos, camTarget, camUp);
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
 
     // --- 1. 정적 오브젝트 렌더링 (미로 벽, 바닥) ---
     glUseProgram(shaderProgramStatic);
     setCommonUniforms(shaderProgramStatic, view, proj);
 
-    //
-    glm::vec3 exampleSpecular = glm::vec3(0.35f, 0.35f, 0.35f); // Ks 
-    int exampleShininess = 32;                                   // Ns 
-    // 재질 유니폼 설정
-    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "materialSpecular"), 1, glm::value_ptr(exampleSpecular));
-    glUniform1i(glGetUniformLocation(shaderProgramStatic, "shininess"), exampleShininess);
-    //
 
     for (auto& block : mazeBlocks) {
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(block.modelMatrix));
@@ -216,11 +193,6 @@ void timer(int value) {
     if (playerModel) {
         // 애니메이션 업데이트 (시간 기반)
         // playerModel->updateAnimation(glutGet(GLUT_ELAPSED_TIME) / 1000.0f);
-    }
-
-    //model 업데이트
-    for (auto& block : mazeBlocks) {
-        block.modelMatrix = glm::mat4(1.0f);
     }
 
     glutPostRedisplay();

@@ -7,6 +7,9 @@ unsigned int loadTextureFromFile(const char* path, const std::string& directory)
     // Assimp가 제공하는 텍스처 경로는 보통 상대 경로이므로, OBJ/MTL 파일이 있는 디렉토리와 결합해야 합니다.
     // 현재는 OBJ 파일이 'road0.obj'이므로, 텍스처 'color_128x128.jpg'가 같은 디렉토리에 있다고 가정하고 경로 결합은 생략합니다.
     // filename = directory + '/' + filename; // 만약 텍스처가 서브폴더에 있다면 주석 해제
+    if (!directory.empty() && directory != ".") { // "."은 현재 디렉토리를 의미하지만, 명시적 경로 결합이 필요할 수 있습니다.
+        filename = directory + '/' + filename;
+    }
 
     unsigned int textureID;
     glGenTextures(1, &textureID);

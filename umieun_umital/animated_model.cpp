@@ -5,6 +5,7 @@
 // ===================================================================
 void AnimatedMesh::setupMesh() {
     glGenVertexArrays(1, &VAO);
+
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
