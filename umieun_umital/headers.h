@@ -8,7 +8,7 @@
 #include <string>
 #include <deque>
 #include <utility>
-#include<vector>
+#include <vector>
 #include <fstream>
 #include <random>
 #include <sstream>
@@ -30,5 +30,39 @@
 #include <gl/freeglut_ext.h> 
 #include <glm/ext.hpp>
 #include <ft2build.h>
+#include "stb_image.h"
 #include FT_FREETYPE_H
 using namespace std;
+
+
+// ===================================================================
+// 상수 및 전역 변수 정의
+// ===================================================================
+#define MAX_BONE_PER_VERTEX 4
+#define MAX_BONES           100
+#define WINDOW_WIDTH        1200
+#define WINDOW_HEIGHT       800
+
+// --- 텍스처 로딩 유틸리티 함수 ---
+unsigned int loadTextureFromFile(const char* path, const std::string& directory);
+
+// --- 셰이더 유틸리티 함수 ---
+char* filetobuf(const char* file); // 파일 내용을 문자열로 읽어오는 함수
+void loadShader(const char* vertPath, const char* fragPath, GLuint& shaderID);
+
+// --- 뼈대 정보 구조체 (FBX 애니메이션용) ---
+struct BoneInfo {
+    int id;
+    glm::mat4 offset; // Assimp의 오프셋 행렬을 GLM 행렬로 변환해야 함
+};
+void aiMatrix4x4ToGlm(const aiMatrix4x4* from, glm::mat4& to); // Assimp 행렬을 GLM으로 변환하는 함수 (구현 필요)
+
+// --- 텍스처 정보 구조체 (MTL/FBX 재질용) ---
+struct Texture {
+    unsigned int id;
+    std::string type;
+    std::string path;
+    glm::vec3 diffuseColor = glm::vec3(1.0f);   // 재질 색상 추가: 텍스처가 없을 경우 사용할 확산색
+
+    // 텍스처 파일 로딩 함수 (구현 필요)
+};
