@@ -71,8 +71,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(Platform)\..\include;$(Platform)\..\h;$(Platform)\..\include\FMOD Studio API Windows\api\core\inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(Platform)\..\include;$(Platform)\..\h;$(Platform)\..\include\FMOD Studio API Windows\api\core\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\..\umieun_umital\include;$(ProjectDir)\..\umieun_umital\include\freetype;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\inc;$(ProjectDir)\..\umieun_umital\include\assimp;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\..\umieun_umital\include;$(ProjectDir)\..\umieun_umital;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\lib\x64;$(ProjectDir)\..\umieun_umital\include\assimp;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(ProjectDir)\..\umieun_umital\include;$(ProjectDir)\..\umieun_umital\include\freetype;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\inc;$(ProjectDir)\..\umieun_umital\include\assimp;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\..\umieun_umital\include;$(ProjectDir)\..\umieun_umital;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\lib\x64;$(ProjectDir)\..\umieun_umital\include\assimp;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(ProjectDir)\..\umieun_umital\include;$(ProjectDir)\..\umieun_umital\include\freetype;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\inc;$(ProjectDir)\..\umieun_umital\include\assimp;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\..\umieun_umital\include;$(ProjectDir)\..\umieun_umital;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\lib\x64;$(ProjectDir)\..\umieun_umital\include\assimp;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(ProjectDir)\..\umieun_umital\include;$(ProjectDir)\..\umieun_umital\include\freetype;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\inc;$(ProjectDir)\..\umieun_umital\include\assimp;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\..\umieun_umital\include;$(ProjectDir)\..\umieun_umital;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\lib\x64;$(ProjectDir)\..\umieun_umital\include\assimp;$(ProjectDir)\..\umieun_umital\include\FMOD Studio API Windows\api\core\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -80,10 +92,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>freetype.lib;fmod_vc.lib;glew32.lib
+;freeglut.lib</AdditionalDependencies>
+      <AdditionalOptions>
+      </AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -94,10 +111,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>freetype.lib;fmod_vc.lib;glew32.lib
+;freeglut.lib</AdditionalDependencies>
+      <AdditionalOptions>
+      </AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -106,13 +128,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalOptions> glew32.lib freeglut.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>freetype.lib;fmod_vc.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <AdditionalDependencies>freetype.lib;fmod_vc.lib;glew32.lib
+;freeglut.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,12 +147,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalOptions> glew32.lib freeglut.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>freetype.lib;fmod_vc.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <AdditionalDependencies>freetype.lib;fmod_vc.lib;glew32.lib
+;freeglut.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
