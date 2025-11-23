@@ -135,11 +135,16 @@
     <ClInclude Include="animated_model.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="game_framwork.h" />
+    <ClInclude Include="game_mode.h" />
     <ClInclude Include="headers.h" />
+    <ClInclude Include="logo_mode.h" />
     <ClInclude Include="maze.h" />
+    <ClInclude Include="option_mode.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="scene_manager.h" />
     <ClInclude Include="silver_wolf.h" />
     <ClInclude Include="static_model.h" />
+    <ClInclude Include="title_mode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animated_model.cpp">
@@ -147,17 +152,22 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="game_mode.cpp" />
     <ClCompile Include="headers.cpp" />
+    <ClCompile Include="logo_mode.cpp" />
     <ClCompile Include="maze.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="option_mode.cpp" />
+    <ClCompile Include="scene_manager.cpp" />
     <ClCompile Include="silver_wolf.cpp" />
     <ClCompile Include="static_model.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="title_mode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="animated_vertex.glsl" />

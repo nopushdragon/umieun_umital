@@ -63,6 +63,21 @@
     <ClInclude Include="resource.h">
       <Filter>리소스 파일</Filter>
     </ClInclude>
+    <ClInclude Include="scene_manager.h">
+      <Filter>네 씬입니다 제가</Filter>
+    </ClInclude>
+    <ClInclude Include="logo_mode.h">
+      <Filter>네 씬입니다 제가</Filter>
+    </ClInclude>
+    <ClInclude Include="title_mode.h">
+      <Filter>네 씬입니다 제가</Filter>
+    </ClInclude>
+    <ClInclude Include="option_mode.h">
+      <Filter>네 씬입니다 제가</Filter>
+    </ClInclude>
+    <ClInclude Include="game_mode.h">
+      <Filter>네 씬입니다 제가</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -85,6 +100,21 @@
     </ClCompile>
     <ClCompile Include="GameTimer.cpp">
       <Filter>시간의방</Filter>
+    </ClCompile>
+    <ClCompile Include="scene_manager.cpp">
+      <Filter>네 씬입니다 제가</Filter>
+    </ClCompile>
+    <ClCompile Include="logo_mode.cpp">
+      <Filter>네 씬입니다 제가</Filter>
+    </ClCompile>
+    <ClCompile Include="title_mode.cpp">
+      <Filter>네 씬입니다 제가</Filter>
+    </ClCompile>
+    <ClCompile Include="option_mode.cpp">
+      <Filter>네 씬입니다 제가</Filter>
+    </ClCompile>
+    <ClCompile Include="game_mode.cpp">
+      <Filter>네 씬입니다 제가</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
