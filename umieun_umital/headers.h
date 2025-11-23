@@ -6,7 +6,6 @@
 #include <cmath>
 #include <Windows.h>
 #include <string>
-#include <deque>
 #include <utility>
 #include <vector>
 #include <fstream>
@@ -34,15 +33,12 @@
 #include FT_FREETYPE_H
 using namespace std;
 
+extern int winWidth;
+extern int winHeight;
 
 // ===================================================================
 // 상수 및 전역 변수 정의
 // ===================================================================
-#define MAX_BONE_PER_VERTEX 4
-#define MAX_BONES           100
-#define WINDOW_WIDTH        1200
-#define WINDOW_HEIGHT       800
-
 // --- 텍스처 로딩 유틸리티 함수 ---
 unsigned int loadTextureFromFile(const char* path, const std::string& directory);
 
