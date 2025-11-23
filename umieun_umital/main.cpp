@@ -1,6 +1,6 @@
 ﻿#include "game_framwork.h"
 #include "game_mode.h"
-
+#include "resource.h"
 auto* mode = new game_mode();
 
 int main(int argc, char** argv) {
@@ -9,6 +9,9 @@ int main(int argc, char** argv) {
 
     // 2. GLUT 및 OpenGL 초기화
     game.Init(argc, argv);
+
+    //2.5 리소스 로드
+	Resource_Init();
 
     // 3. 시작 씬 생성 (미로 씬)
    // game_mode* startScene = new game_mode();

@@ -49,9 +49,7 @@ void game_mode::Init() {
 
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
-    // 플레이어 입력 처리나 충돌 감지 로직을 여기에 작성
-    // 예: cameraMove();
-    // 예: silverWolf.Update(deltaTime); 
+    
 }
 
 // 3. 그리기 (기존 drawScene 함수 내용)

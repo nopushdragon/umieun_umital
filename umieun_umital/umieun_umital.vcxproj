@@ -161,6 +161,7 @@
     </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="option_mode.cpp" />
+    <ClCompile Include="resource.cpp" />
     <ClCompile Include="scene_manager.cpp" />
     <ClCompile Include="silver_wolf.cpp" />
     <ClCompile Include="static_model.cpp">

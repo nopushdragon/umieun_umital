@@ -1,6 +1,10 @@
 #pragma once
-#include "headers.h"
+#include "animated_model.h"
+#include "static_model.h"
 
-void init() {
+extern NewModel* s[7];
 
-}
+
+
+
+void Resource_Init();

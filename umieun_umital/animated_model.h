@@ -89,6 +89,7 @@ public:
     // 외부 호출용 뼈 변형 함수
     void BoneTransform(float timeInSeconds, vector<glm::mat4>& Transforms);
 
+    NewModel(const NewModel& other);
     ~NewModel();
 
 private:

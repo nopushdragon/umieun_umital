@@ -445,7 +445,32 @@ void NewModel::BoneTransform(float timeInSeconds, vector<glm::mat4>& Transforms)
         }
     }
 }
-
+//NewModel::NewModel(const NewModel& other)
+//{
+//    this->directory = other.directory;
+//    this->gammaCorrection = other.gammaCorrection;
+//    this->pos = other.pos;
+//    this->scale = other.scale;
+//    this->angle = other.angle;
+//    this->state = other.state;
+//
+//
+//    this->m_BoneInfoMap = other.m_BoneInfoMap;
+//    this->m_BoneCounter = other.m_BoneCounter;
+//    this->m_GlobalInverseTransform = other.m_GlobalInverseTransform;
+//
+//
+//    this->textures_loaded = other.textures_loaded;
+//    this->currentTextureNum = other.currentTextureNum;
+//
+//
+//    this->meshes = other.meshes;
+//
+//
+//    /*if (!directory.empty()) {
+//        loadModel(directory);
+//    }*/
+//}
 NewModel::~NewModel() {
 	// Assimp Importer will automatically clean up
 }
