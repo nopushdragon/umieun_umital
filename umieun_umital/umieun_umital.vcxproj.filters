@@ -31,6 +31,12 @@
     <Filter Include="시간의방">
       <UniqueIdentifier>{caaae31c-9028-41af-862d-a04767e0ace3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game_framwork">
+      <UniqueIdentifier>{a2601354-d533-41b8-8573-98245e4c5985}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="네 씬입니다 제가">
+      <UniqueIdentifier>{f30fcd23-ef94-4d2f-98f5-2afb895e064c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -50,6 +56,12 @@
     </ClInclude>
     <ClInclude Include="GameTimer.h">
       <Filter>시간의방</Filter>
+    </ClInclude>
+    <ClInclude Include="game_framwork.h">
+      <Filter>game_framwork</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>리소스 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

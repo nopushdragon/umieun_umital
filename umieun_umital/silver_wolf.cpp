@@ -2,7 +2,7 @@
 
 silver_wolf::silver_wolf()
 {
-   /* silverWolfModel[0] = new NewModel("silver_wolf/Idle.fbx");
+    silverWolfModel[0] = new NewModel("silver_wolf/Idle.fbx");
     silverWolfModel[0]->state = "idle";
     silverWolfModel[1] = new NewModel("silver_wolf/Walk.fbx");
     silverWolfModel[1]->state = "walk";
@@ -15,7 +15,7 @@ silver_wolf::silver_wolf()
     silverWolfModel[5] = new NewModel("silver_wolf/Throw.fbx");
     silverWolfModel[5]->state = "throw";
     silverWolfModel[6] = new NewModel("silver_wolf/Stand To Roll.fbx");
-    silverWolfModel[6]->state = "stand_to_roll";*/
+    silverWolfModel[6]->state = "stand_to_roll";
 
 }
 

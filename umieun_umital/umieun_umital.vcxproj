@@ -134,8 +134,10 @@
   <ItemGroup>
     <ClInclude Include="animated_model.h" />
     <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="game_framwork.h" />
     <ClInclude Include="headers.h" />
     <ClInclude Include="maze.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="silver_wolf.h" />
     <ClInclude Include="static_model.h" />
   </ItemGroup>
