@@ -81,7 +81,7 @@ void Mesh::setupMesh() {
 // -----------------------------------------------------------
 NewModel::NewModel(string const& path, bool gamma) : gammaCorrection(gamma) {
     // √ ±‚»≠
-    pos = glm::vec3(0.0f);
+    pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
     scale = glm::vec3(0.05f);
     angle = 0.0f;
     m_BoneCounter = 0;

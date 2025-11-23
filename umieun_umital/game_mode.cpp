@@ -10,7 +10,7 @@ using namespace std;
 
 // 생성자: 변수 초기값 설정
 game_mode::game_mode() {
-    camPos = glm::vec3(0.0f, 15.0f, 10.0f);
+    camPos = glm::vec3(0.0f, 60.0f, 10.0f);
     camTarget = glm::vec3(0.0f, 0.0f, 0.0f);
     camUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -41,8 +41,12 @@ void game_mode::Init() {
     loadModels();
 
     // 미로 설정
-    setMaze();
-    initmaze(&roads);
+    //setMaze();
+    //initmaze(&roads);
+
+    // 카메라 위치
+    camPos = glm::vec3(start_x_pos, 25.0f, start_z_pos - 5.0f);
+    camTarget = glm::vec3(start_x_pos, 20.0f, start_z_pos);
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -70,11 +74,18 @@ void game_mode::Draw() {
     // 기존 main.cpp에는 주석처리 되어있었으나, 
     // 실제로는 roads에 있는 모델들이 어딘가에서 그려져야 합니다.
     // (만약 roads 벡터를 순회하며 그려야 한다면 아래 코드 사용)
-    /*
-    for (auto* road : roads) {
-        // road->Draw(shaderProgramStatic); // StaticModel에 Draw가 있다면
+    for (auto& block : mazeBlocks) {
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(block.modelMatrix));
+        if (block.modelPtr)
+        {
+            // 메시별 재질/색상 정보 설정 및 드로우
+            for (auto& mesh : block.modelPtr->meshes)
+            {
+                // 메시 그리기. 이제 Draw 함수가 재질 유니폼을 설정합니다.
+                mesh.Draw(shaderProgramStatic);
+            }
+        }
     }
-    */
 
     // --- 2. 애니메이션 캐릭터 ---
     glUseProgram(shaderProgramAnimated);
@@ -140,6 +151,10 @@ void game_mode::loadModels() {
     roads.push_back(new StaticModel("road/road13.obj"));
     roads.push_back(new StaticModel("road/road14.obj"));
     roads.push_back(new StaticModel("road/road15.obj"));
+
+    // 미로 설정
+    setMaze();
+    initmaze(&roads);
 
     silverWolf.silverWolfModel[0] = new NewModel("silver_wolf/Idle.fbx");
     silverWolf.silverWolfModel[0]->state = "idle";

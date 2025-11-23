@@ -1,13 +1,9 @@
 #include "maze.h"
 
-#define ROAD_SIZE 20.0f
 std::random_device rd;
 std::mt19937 mt(rd());
 
 std::vector<MazeBlockInstance> mazeBlocks;
-
-int maze_y = 25;
-int maze_x = 25;
 
 enum PATH_WALL {
     PATH = 0,
@@ -113,6 +109,8 @@ void initmaze(std::vector<StaticModel*>* roads) {
             mazeBlocks.push_back(roadInstance);
         }
 	}
+    start_x_pos = ROAD_SIZE / 2 + (ROAD_SIZE)-((ROAD_SIZE * (float)maze_x) / 2);
+    start_z_pos = ROAD_SIZE / 2 + (ROAD_SIZE)-((ROAD_SIZE * (float)maze_y) / 2);
 }
 
 void setMaze() {

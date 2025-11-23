@@ -36,6 +36,11 @@ using namespace std;
 extern int winWidth;
 extern int winHeight;
 
+#define ROAD_SIZE 20.0f
+extern int maze_y;
+extern int maze_x;
+extern float start_x_pos;
+extern float start_z_pos;
 // ===================================================================
 // 상수 및 전역 변수 정의
 // ===================================================================
