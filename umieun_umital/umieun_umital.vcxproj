@@ -135,8 +135,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalOptions>
       </AdditionalOptions>
-      <AdditionalDependencies>freetype.lib;fmod_vc.lib;glew32.lib
-;freeglut.lib</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;fmod_vc.lib;glew32.lib;assimp-vc143-mtd.lib;freeglut.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)umieun_umital\h;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -154,8 +154,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalOptions>
       </AdditionalOptions>
-      <AdditionalDependencies>freetype.lib;fmod_vc.lib;glew32.lib
-;freeglut.lib</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;fmod_vc.lib;glew32.lib;assimp-vc143-mtd.lib;freeglut.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)umieun_umital\h;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
