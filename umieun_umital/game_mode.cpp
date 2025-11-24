@@ -56,6 +56,7 @@ void game_mode::Init() {
 
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
+	silverWolf.Update(deltaTime);
     
 }
 
@@ -176,6 +177,8 @@ void game_mode::loadModels() {
     setMaze();
     initmaze(&roads);
 
+    silverWolf.Init();
+
     silverWolf.silverWolfModel[0] = new NewModel("silver_wolf/Idle.fbx");
     silverWolf.silverWolfModel[0]->state = "idle";
     silverWolf.silverWolfModel[1] = new NewModel("silver_wolf/Walk.fbx");
@@ -190,6 +193,11 @@ void game_mode::loadModels() {
     silverWolf.silverWolfModel[5]->state = "throw";
     silverWolf.silverWolfModel[6] = new NewModel("silver_wolf/Stand To Roll.fbx");
     silverWolf.silverWolfModel[6]->state = "stand_to_roll";
+    silverWolf.silverWolfModel[7] = new NewModel("silver_wolf/Jump.fbx");
+    silverWolf.silverWolfModel[7]->state = "jump";
+    silverWolf.silverWolfModel[8] = new NewModel("silver_wolf/Running Jump.fbx");
+    silverWolf.silverWolfModel[8]->state = "run_jump";
+
 }
 
 void game_mode::setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj) {
@@ -374,4 +382,14 @@ void game_mode::drawDebugOBB(GLuint shaderID, const OBB & obb, const glm::mat4 &
     glUniform1f(glGetUniformLocation(shaderID, "ambientStrength"), originalAmbientStrength);
     glUniform1i(glGetUniformLocation(shaderID, "shininess"), originalShininess);
     glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(originalMaterialSpecular));
+}
+
+void game_mode::Keyboard(unsigned char key, int x, int y) {
+
+    silverWolf.Keyboard(key, x, y);
+
+}
+void game_mode::Keyupboard(unsigned char key, int x, int y) {
+
+    silverWolf.Keyupboard(key, x, y);
 }

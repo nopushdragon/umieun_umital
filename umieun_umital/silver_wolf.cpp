@@ -19,10 +19,125 @@ silver_wolf::silver_wolf()
 
 }
 
+void silver_wolf::Init() {
+	pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
+	scale = glm::vec3(0.01f);
+	angle = 0.0f;
+}
+
+void silver_wolf::Update(float deltatime) {
+
+
+	
+	State(state,deltatime);
+	StateChange();
+}
+void silver_wolf::StateChange() {
+	bool isMoving = w_press || a_press || s_press || d_press;
+	if (isMoving) {
+		if (state != "walk") {
+			state = "walk";
+		}
+	}
+	else {
+		if (state != "idle") {
+			state = "idle";
+		}
+	}
+	
+}
+
+void silver_wolf::State(string state,float deltatime) {
+	if (state == "idle") {
+		// idle 상태일 때의 동작
+	}
+	else if (state == "walk") {
+		//예외
+		int move_count = w_press+ s_press+ a_press+ d_press;
+		if (move_count > 2)return;
+
+
+		//여긴 이동만
+		if (w_press) pos.z += walkSpeed * deltatime;
+		if (s_press) pos.z -= walkSpeed * deltatime;
+		if (a_press) pos.x += walkSpeed * deltatime;
+		if (d_press) pos.x -= walkSpeed * deltatime;
+
+		//여기는 회전까지
+		if (w_press) angle = 0.0f;
+		if (s_press) angle = 180.0f;
+		if (a_press) angle = 90.0f;
+		if (d_press) angle = -90.0f;
+		if (w_press && a_press) angle = 45.0f;
+		if (w_press && d_press) angle = -45.0f;
+		if (s_press && a_press) angle = 135.0f;
+		if (s_press && d_press) angle = -135.0f;
+
+
+		
+		
+	}
+}
+
+
+
+void silver_wolf::Keyboard(unsigned char key, int x, int y) {
+
+	switch (key)
+	{
+	case 'w':
+	case 'W':
+		w_press = true;
+		break;
+	case 'a':
+	case 'A':
+		a_press = true;
+		break;
+	case 's':
+	case 'S':
+		s_press = true;
+		break;
+	case 'd':
+	case 'D':
+		d_press = true;
+		break;
+	}
+
+}
+
+void silver_wolf::Keyupboard(unsigned char key, int x, int y) {
+
+	switch (key)
+	{
+	case 'w':
+	case 'W':
+		w_press = false;
+		break;
+	case 'a':
+	case 'A':
+		a_press = false;
+		break;
+	case 's':
+	case 'S':
+		s_press = false;
+		break;
+	case 'd':
+	case 'D':
+		d_press = false;
+		break;
+	}
+
+}
+
+
+
 void silver_wolf::Draw(GLuint shaderID, float currentTime=0.0f) {
 
 	for (int i = 0; i < silver_wolf_fbx_size; i++) {
 		if (silverWolfModel[i]->state == state) {
+            silverWolfModel[i]->pos = pos;
+			silverWolfModel[i]->scale = scale;
+			silverWolfModel[i]->angle = angle;
 			silverWolfModel[i]->Draw(shaderID, currentTime);
 		}
 	}

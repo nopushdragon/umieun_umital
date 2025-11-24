@@ -289,8 +289,27 @@ void NewModel::loadModel(string const& path) {
     m_GlobalInverseTransform = AssimpGLMHelpers::ConvertMatrixToGLMFormat(m_Scene->mRootNode->mTransformation);
     m_GlobalInverseTransform = glm::inverse(m_GlobalInverseTransform);
 
+    if (m_Scene->mNumAnimations > 0) {
+        aiAnimation* anim = m_Scene->mAnimations[0]; // 첫 번째 애니메이션 가져오기
+
+        float totalTicks = (float)anim->mDuration; // 총 프레임 수 (Ticks)
+        float ticksPerSecond = (float)(anim->mTicksPerSecond != 0 ? anim->mTicksPerSecond : 25.0f); // 1초당 프레임 수
+        float durationInSeconds = totalTicks / ticksPerSecond; // 총 재생 시간(초)
+
+        /*cout << "===== Animation Info : " << path << " =====" << endl;
+        cout << "  - 총 프레임 수 (Duration): " << totalTicks << " 프레임" << endl;
+        cout << "  - 초당 프레임 (FPS): " << ticksPerSecond << endl;
+        cout << "  - 총 재생 시간: " << durationInSeconds << " 초" << endl;
+        cout << "===========================================" << endl;*/
+    }
+    else {
+        cout << "Warning: 이 파일에는 애니메이션이 없습니다!" << endl;
+    }
+
     // 노드 처리
     processNode(m_Scene->mRootNode, m_Scene);
+
+
 
     // ==========================================================
     // 4. 저장 (캐릭터가 아닐 때만 저장)
