@@ -12,6 +12,11 @@ public:
 	int silver_wolf_fbx_size = 9;
 	string state = "idle";
 
+	// OBB 민용
+	OBB silverwolf_local_obb;
+	OBB silverwolf_world_obb;
+	void set_obb(); // OBB 설정 함수
+
 	//여기서부터는 속도 관련된거
 	float walkSpeed = 2.0f; // 걷기 속도
 

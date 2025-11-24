@@ -1,6 +1,6 @@
 ﻿#include "collision.h"
 
-void update_world_obb(MazeBlockInstance& block) {
+void maze_update_world_obb(MazeBlockInstance& block) {
     glm::mat3 rotation_scale_mat = glm::mat3(block.modelMatrix);
 
     // Local OBB 데이터 (StaticModel 내 공유되는 데이터)
@@ -65,6 +65,41 @@ void update_world_obb(MazeBlockInstance& block) {
     }
 }
 
+void silver_wolf_update_world_obb(silver_wolf& silverwolf) {
+	glm::mat4 modelMat = glm::mat4(1.0f);
+    modelMat = glm::translate(modelMat, silverwolf.pos);
+    modelMat = glm::rotate(modelMat, glm::radians(silverwolf.angle), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMat = glm::scale(modelMat, silverwolf.scale);
+
+	glm::mat3 rotation_scale_mat = modelMat;
+
+	const OBB& silverwolf_local_obb = silverwolf.silverwolf_local_obb;
+
+    glm::vec4 silverwolf_local_center_h = glm::vec4(silverwolf_local_obb.center, 1.0f);
+    glm::vec3 world_center = glm::vec3(modelMat * silverwolf_local_center_h);
+
+    silverwolf.silverwolf_world_obb.center = world_center;
+
+    for (int i = 0; i < 3; i++) {
+        glm::vec3 world_axis = rotation_scale_mat * silverwolf_local_obb.u[i];
+
+        if (glm::length(world_axis) > 1e-6) {
+            silverwolf.silverwolf_world_obb.u[i] = glm::normalize(world_axis);
+        }
+        else {
+            silverwolf.silverwolf_world_obb.u[i] = silverwolf_local_obb.u[i];
+        }
+    }
+
+    glm::vec3 road_scale_factors = glm::vec3(
+        glm::length(rotation_scale_mat[0]),
+        glm::length(rotation_scale_mat[1]),
+        glm::length(rotation_scale_mat[2])
+    );
+
+    silverwolf.silverwolf_world_obb.half_length = silverwolf_local_obb.half_length * road_scale_factors;
+}
+
 bool is_separated(const OBB& a, const OBB& b, const glm::vec3& axis) {
     if (glm::length(axis) < 1e-6) return false;
 
@@ -85,24 +120,24 @@ bool is_separated(const OBB& a, const OBB& b, const glm::vec3& axis) {
     return distance_proj > (radius_a + radius_b);
 }
 
-//bool road_check_collision(const MazeBlockInstance& blockA, const MazeBlockInstance& blockB) {
-//    const OBB& a = blockA.road_world_obb;
-//    const OBB& b = blockB.road_world_obb;
-//
-//    for (int i = 0; i < 3; i++) {
-//        if (is_separated(a, b, a.u[i])) return false;
-//    }
-//
-//    for (int i = 0; i < 3; i++) {
-//        if (is_separated(a, b, b.u[i])) return false;
-//    }
-//
-//    for (int i = 0; i < 3; i++) {
-//        for (int j = 0; j < 3; j++) {
-//            glm::vec3 cross_axis = glm::cross(a.u[i], b.u[j]);
-//            if (is_separated(a, b, cross_axis)) return false;
-//        }
-//    }
-//
-//    return true;
-//}
+bool check_collision(const OBB& obbA, const OBB& obbB) {
+    const OBB& a = obbA;
+    const OBB& b = obbB;
+
+    for (int i = 0; i < 3; i++) {
+        if (is_separated(a, b, a.u[i])) return false;
+    }
+
+    for (int i = 0; i < 3; i++) {
+        if (is_separated(a, b, b.u[i])) return false;
+    }
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            glm::vec3 cross_axis = glm::cross(a.u[i], b.u[j]);
+            if (is_separated(a, b, cross_axis)) return false;
+        }
+    }
+
+    return true;
+}

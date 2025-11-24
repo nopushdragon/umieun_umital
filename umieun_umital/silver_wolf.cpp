@@ -23,6 +23,7 @@ void silver_wolf::Init() {
 	pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
 	scale = glm::vec3(0.01f);
 	angle = 0.0f;
+	set_obb();
 }
 
 void silver_wolf::Update(float deltatime) {
@@ -150,4 +151,13 @@ silver_wolf::~silver_wolf()
 	{
 		delete& silverWolfModel[i];
 	}
+}
+
+
+void silver_wolf::set_obb() {  //¹Î¿ë
+	silverwolf_local_obb.center = glm::vec3(0.0f, 70.0f, 0.0f);;
+	silverwolf_local_obb.half_length = glm::vec3(10.0f, 70.0f, 10.0f);
+	silverwolf_local_obb.u[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+	silverwolf_local_obb.u[1] = glm::vec3(0.0f, 1.0f, 0.0f);
+	silverwolf_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
 }

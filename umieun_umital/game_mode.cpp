@@ -40,7 +40,7 @@ void game_mode::Init() {
     // 모델 로드
     loadModels();
     for (auto& block : mazeBlocks) {
-        update_world_obb(block);
+        maze_update_world_obb(block);
     }
 
     // 미로 설정
@@ -57,7 +57,18 @@ void game_mode::Init() {
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
 	silverWolf.Update(deltaTime);
-    
+    silver_wolf_update_world_obb(silverWolf);
+
+    for(auto& block : mazeBlocks) {
+        if (check_collision(silverWolf.silverwolf_world_obb, block.road_world_obb)) {
+            cout << "바닥충돌" << endl;
+        }
+        for(int j = 0; j < block.obstacle_world_obb.size(); j++) {
+            if (check_collision(silverWolf.silverwolf_world_obb, block.obstacle_world_obb[j])) {
+                cout << "장애물충돌" << endl;
+            }
+		}
+	}
 }
 
 // 3. 그리기 (기존 drawScene 함수 내용)
@@ -96,7 +107,7 @@ void game_mode::Draw() {
 
     for (auto& block : mazeBlocks) {
         if (block.modelPtr) {
-            drawDebugOBB(shaderProgramStatic, block.road_world_obb, view, proj, glm::vec3(0.0f, 1.0f, 0.0f));
+            drawDebugOBB(shaderProgramStatic, block.road_world_obb, view, proj, glm::vec3(0.0f, 1.0f, 0.0f)); // 초록색
 
             for (int i = 0; i < block.obstacle_world_obb.size(); i++)
                 drawDebugOBB(shaderProgramStatic, block.obstacle_world_obb[i], view, proj, glm::vec3(1.0f, 1.0f, 0.0f)); // 노란색
@@ -111,6 +122,7 @@ void game_mode::Draw() {
 
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
     silverWolf.Draw(shaderProgramAnimated, glutGet(GLUT_ELAPSED_TIME) / 1000.0f);
+    drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
 }
 
 // 4. 정리 (종료 시 메모리 해제)
