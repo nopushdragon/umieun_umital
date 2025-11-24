@@ -14,3 +14,9 @@ struct Texture {
 
 // --- 텍스처 로딩 유틸리티 함수 ---
 unsigned int loadTextureFromFile(const char* path, const std::string& directory);
+
+struct OBB {
+    glm::vec3 center = glm::vec3(0.0f);
+    glm::vec3 u[3];                         // 세 정규직교 u[0]x, u[1]y, u[2]z
+    glm::vec3 half_length = glm::vec3(0.0f);
+};

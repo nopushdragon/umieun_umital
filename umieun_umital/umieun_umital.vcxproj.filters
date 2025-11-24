@@ -16,15 +16,6 @@
     <Filter Include="headers">
       <UniqueIdentifier>{81ddb4dd-7de6-4254-975f-115e5ad44946}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\maze">
-      <UniqueIdentifier>{d96d8731-86a3-41da-83e7-ed0fcfb9336a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\animated_model">
-      <UniqueIdentifier>{ae744740-333e-4897-97d0-9125f0042fe3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\static_model">
-      <UniqueIdentifier>{2db1ca46-62ce-4c0e-8d8d-9057b1eb07bf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="우미은우미탈 주인공">
       <UniqueIdentifier>{ab730e21-d70d-4946-ac4c-d05bca36646c}</UniqueIdentifier>
     </Filter>
@@ -37,19 +28,31 @@
     <Filter Include="네 씬입니다 제가">
       <UniqueIdentifier>{f30fcd23-ef94-4d2f-98f5-2afb895e064c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="텍스쳐들">
+      <UniqueIdentifier>{ad8562a4-e366-42f2-afbf-1409b1dfe116}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="텍스쳐들\static_model">
+      <UniqueIdentifier>{2db1ca46-62ce-4c0e-8d8d-9057b1eb07bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="텍스쳐들\animated_model">
+      <UniqueIdentifier>{ae744740-333e-4897-97d0-9125f0042fe3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="미로">
+      <UniqueIdentifier>{049770b2-225d-42f8-947e-035f951bacb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="충돌처리">
+      <UniqueIdentifier>{bc3b7f76-ea31-45a1-a6d3-6896dedb414c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="maze.h">
-      <Filter>소스 파일\maze</Filter>
-    </ClInclude>
     <ClInclude Include="animated_model.h">
-      <Filter>소스 파일\animated_model</Filter>
+      <Filter>텍스쳐들\animated_model</Filter>
     </ClInclude>
     <ClInclude Include="static_model.h">
-      <Filter>소스 파일\static_model</Filter>
+      <Filter>텍스쳐들\static_model</Filter>
     </ClInclude>
     <ClInclude Include="silver_wolf.h">
       <Filter>우미은우미탈 주인공</Filter>
@@ -79,21 +82,24 @@
       <Filter>네 씬입니다 제가</Filter>
     </ClInclude>
     <ClInclude Include="texture.h">
-      <Filter>headers</Filter>
+      <Filter>텍스쳐들</Filter>
+    </ClInclude>
+    <ClInclude Include="maze.h">
+      <Filter>미로</Filter>
+    </ClInclude>
+    <ClInclude Include="collision.h">
+      <Filter>충돌처리</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="maze.cpp">
-      <Filter>소스 파일\maze</Filter>
-    </ClCompile>
     <ClCompile Include="animated_model.cpp">
-      <Filter>소스 파일\animated_model</Filter>
+      <Filter>텍스쳐들\animated_model</Filter>
     </ClCompile>
     <ClCompile Include="static_model.cpp">
-      <Filter>소스 파일\static_model</Filter>
+      <Filter>텍스쳐들\static_model</Filter>
     </ClCompile>
     <ClCompile Include="headers.cpp">
       <Filter>headers</Filter>
@@ -123,7 +129,13 @@
       <Filter>리소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="texture.cpp">
-      <Filter>headers</Filter>
+      <Filter>텍스쳐들</Filter>
+    </ClCompile>
+    <ClCompile Include="maze.cpp">
+      <Filter>미로</Filter>
+    </ClCompile>
+    <ClCompile Include="collision.cpp">
+      <Filter>충돌처리</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

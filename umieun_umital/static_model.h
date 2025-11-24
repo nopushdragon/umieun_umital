@@ -28,6 +28,14 @@ public:
     std::vector<StaticMesh> meshes;
     glm::mat4 modelMatrix = glm::mat4(1.0f);
 
+    // OBB 및 충돌처리 전용 변수들임
+    OBB road_local_obb;  // 로컬 OBB(땅)
+    OBB road_world_obb;  // 월드 OBB(땅)
+    bool is_colliding = false;
+	std::vector<OBB> obstacle_local_obb; // 장애물 로컬 OBB 리스트 [0] ~ [3]까지는 모서리
+	std::vector<OBB> obstacle_world_obb; // 장애물 월드 OBB 리스트 [0] ~ [3]까지는 모서리
+	void set_obb(int idx); // OBB 설정 함수 idx에 따라 장애물 다름
+	void maze_obb_setup(bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h, bool i); // 미로 OBB 세팅 함수
 
     StaticModel(const std::string& objPath);
 

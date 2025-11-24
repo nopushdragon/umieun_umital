@@ -135,22 +135,22 @@ void game_mode::OnResume() {
 // ==========================================================
 
 void game_mode::loadModels() {
-    roads.push_back(new StaticModel("road/road0.obj"));
-    roads.push_back(new StaticModel("road/road1.obj"));
-    roads.push_back(new StaticModel("road/road2.obj"));
-    roads.push_back(new StaticModel("road/road3.obj"));
-    roads.push_back(new StaticModel("road/road4.obj"));
-    roads.push_back(new StaticModel("road/road5.obj"));
-    roads.push_back(new StaticModel("road/road6.obj"));
-    roads.push_back(new StaticModel("road/road7.obj"));
-    roads.push_back(new StaticModel("road/road8.obj"));
-    roads.push_back(new StaticModel("road/road9.obj"));
-    roads.push_back(new StaticModel("road/road10.obj"));
-    roads.push_back(new StaticModel("road/road11.obj"));
-    roads.push_back(new StaticModel("road/road12.obj"));
-    roads.push_back(new StaticModel("road/road13.obj"));
-    roads.push_back(new StaticModel("road/road14.obj"));
-    roads.push_back(new StaticModel("road/road15.obj"));
+    roads.push_back(new StaticModel("road/road0.obj"));   // 0동
+    roads.push_back(new StaticModel("road/road1.obj"));   // 1서 
+    roads.push_back(new StaticModel("road/road2.obj"));   // 2남 
+    roads.push_back(new StaticModel("road/road3.obj"));   // 3북
+    roads.push_back(new StaticModel("road/road4.obj"));   // 4ㅡ
+    roads.push_back(new StaticModel("road/road5.obj"));   // 5ㅣ
+    roads.push_back(new StaticModel("road/road6.obj"));   // 6┌
+    roads.push_back(new StaticModel("road/road7.obj"));   // 7┐
+    roads.push_back(new StaticModel("road/road8.obj"));   // 8└
+    roads.push_back(new StaticModel("road/road9.obj"));   // 9┘
+    roads.push_back(new StaticModel("road/road10.obj"));  // 10ㅏ
+    roads.push_back(new StaticModel("road/road11.obj"));  // 11ㅓ
+    roads.push_back(new StaticModel("road/road12.obj"));  // 12ㅜ
+    roads.push_back(new StaticModel("road/road13.obj"));  // 13ㅗ
+    roads.push_back(new StaticModel("road/road14.obj"));  // 14+
+    roads.push_back(new StaticModel("road/road15.obj"));  // 15x
 
     // 미로 설정
     setMaze();
