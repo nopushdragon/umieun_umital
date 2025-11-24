@@ -1,41 +1,67 @@
 ﻿#include "collision.h"
 
 void update_world_obb(MazeBlockInstance& block) {
-	// 모델 매트릭스에서 회전 및 스케일 부분만 추출
     glm::mat3 rotation_scale_mat = glm::mat3(block.modelMatrix);
 
+    // Local OBB 데이터 (StaticModel 내 공유되는 데이터)
+    const OBB& road_local_obb = block.modelPtr->road_local_obb;
+
     //=========================================
-	// road_local_obb를 road_world_obb로 변환
-    glm::vec4 road_local_center_h = glm::vec4(block.modelPtr->road_local_obb.center, 1.0f);
-    block.modelPtr->road_world_obb.center = glm::vec3(block.modelMatrix * road_local_center_h);
+    // road_local_obb를 road_world_obb로 변환 (이제 block 인스턴스의 멤버에 씁니다)
+    glm::vec4 road_local_center_h = glm::vec4(road_local_obb.center, 1.0f);
+    glm::vec3 world_center = glm::vec3(block.modelMatrix * road_local_center_h);
+
+    block.road_world_obb.center = world_center;
 
     for (int i = 0; i < 3; i++) {
-        block.modelPtr->road_world_obb.u[i] = glm::normalize(rotation_scale_mat * block.modelPtr->road_local_obb.u[i]);
+        glm::vec3 world_axis = rotation_scale_mat * road_local_obb.u[i];
+
+        if (glm::length(world_axis) > 1e-6) {
+            block.road_world_obb.u[i] = glm::normalize(world_axis);
+        }
+        else {
+            block.road_world_obb.u[i] = road_local_obb.u[i];
+        }
     }
 
     glm::vec3 road_scale_factors = glm::vec3(
-        glm::length(rotation_scale_mat[0]), // X축 스케일
-        glm::length(rotation_scale_mat[1]), // Y축 스케일
-        glm::length(rotation_scale_mat[2])  // Z축 스케일
+        glm::length(rotation_scale_mat[0]),
+        glm::length(rotation_scale_mat[1]),
+        glm::length(rotation_scale_mat[2])
     );
 
-    block.modelPtr->road_world_obb.half_length = block.modelPtr->road_local_obb.half_length * road_scale_factors;
-	//=========================================
-    for (int i = 0; i < block.modelPtr->obstacle_local_obb.size();i++) {
-        glm::vec4 obstacle_local_center_h = glm::vec4(block.modelPtr->obstacle_local_obb[i].center, 1.0f);
-        block.modelPtr->obstacle_world_obb[i].center = glm::vec3(block.modelMatrix * obstacle_local_center_h);
+    block.road_world_obb.half_length = road_local_obb.half_length * road_scale_factors;
+    //=========================================
+
+    // obstacle_world_obb 업데이트
+    block.obstacle_world_obb.resize(block.modelPtr->obstacle_local_obb.size()); // World OBB 벡터 크기 조정
+
+    for (size_t i = 0; i < block.modelPtr->obstacle_local_obb.size(); i++) {
+        const OBB& obstacle_local_obb = block.modelPtr->obstacle_local_obb[i];
+
+        glm::vec4 obstacle_local_center_h = glm::vec4(obstacle_local_obb.center, 1.0f);
+        glm::vec3 obs_world_center = glm::vec3(block.modelMatrix * obstacle_local_center_h);
+
+        block.obstacle_world_obb[i].center = obs_world_center;
 
         for (int j = 0; j < 3; j++) {
-            block.modelPtr->obstacle_world_obb[i].u[j] = glm::normalize(rotation_scale_mat * block.modelPtr->obstacle_local_obb[i].u[j]);
+            glm::vec3 world_axis = rotation_scale_mat * obstacle_local_obb.u[j];
+
+            if (glm::length(world_axis) > 1e-6) {
+                block.obstacle_world_obb[i].u[j] = glm::normalize(world_axis);
+            }
+            else {
+                block.obstacle_world_obb[i].u[j] = obstacle_local_obb.u[j];
+            }
         }
 
         glm::vec3 obstacle_scale_factors = glm::vec3(
-            glm::length(rotation_scale_mat[0]), // X축 스케일
-            glm::length(rotation_scale_mat[1]), // Y축 스케일
-            glm::length(rotation_scale_mat[2])  // Z축 스케일
+            glm::length(rotation_scale_mat[0]),
+            glm::length(rotation_scale_mat[1]),
+            glm::length(rotation_scale_mat[2])
         );
 
-        block.modelPtr->obstacle_world_obb[i].half_length = block.modelPtr->obstacle_local_obb[i].half_length * obstacle_scale_factors;
+        block.obstacle_world_obb[i].half_length = obstacle_local_obb.half_length * obstacle_scale_factors;
     }
 }
 
@@ -59,24 +85,24 @@ bool is_separated(const OBB& a, const OBB& b, const glm::vec3& axis) {
     return distance_proj > (radius_a + radius_b);
 }
 
-bool road_check_collision(const MazeBlockInstance& blockA, const MazeBlockInstance& blockB) {
-    const OBB& a = blockA.modelPtr->road_world_obb;
-    const OBB& b = blockB.modelPtr->road_world_obb;
-
-    for (int i = 0; i < 3; i++) {
-        if (is_separated(a, b, a.u[i])) return false;
-    }
-
-    for (int i = 0; i < 3; i++) {
-        if (is_separated(a, b, b.u[i])) return false;
-    }
-
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            glm::vec3 cross_axis = glm::cross(a.u[i], b.u[j]);
-            if (is_separated(a, b, cross_axis)) return false;
-        }
-    }
-
-    return true;
-}
+//bool road_check_collision(const MazeBlockInstance& blockA, const MazeBlockInstance& blockB) {
+//    const OBB& a = blockA.road_world_obb;
+//    const OBB& b = blockB.road_world_obb;
+//
+//    for (int i = 0; i < 3; i++) {
+//        if (is_separated(a, b, a.u[i])) return false;
+//    }
+//
+//    for (int i = 0; i < 3; i++) {
+//        if (is_separated(a, b, b.u[i])) return false;
+//    }
+//
+//    for (int i = 0; i < 3; i++) {
+//        for (int j = 0; j < 3; j++) {
+//            glm::vec3 cross_axis = glm::cross(a.u[i], b.u[j]);
+//            if (is_separated(a, b, cross_axis)) return false;
+//        }
+//    }
+//
+//    return true;
+//}

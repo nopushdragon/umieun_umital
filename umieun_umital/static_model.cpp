@@ -215,7 +215,7 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
 
 void StaticModel::set_obb(int idx) {
     road_local_obb.center = glm::vec3(0.0f, 0.0f, 0.0f);;
-    road_local_obb.half_length = glm::vec3(ROAD_SIZE / 2, 1.0f, ROAD_SIZE / 2);
+    road_local_obb.half_length = glm::vec3(ROAD_SIZE / 2, 0.1f, ROAD_SIZE / 2);
     road_local_obb.u[0] = glm::vec3(1.0f, 0.0f, 0.0f);
     road_local_obb.u[1] = glm::vec3(0.0f, 1.0f, 0.0f);
     road_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -290,6 +290,7 @@ void StaticModel::maze_obb_setup(bool a, bool b, bool c, bool d, bool e, bool f,
         }
     }
 }
+
 void StaticModel::SaveToBinary(const std::string& fileName) {
     std::ofstream out(fileName, std::ios::out | std::ios::binary);
     if (!out.is_open()) return;
@@ -337,6 +338,7 @@ void StaticModel::SaveToBinary(const std::string& fileName) {
     out.close();
     std::cout << "바이너리 저장 완료 (Static): " << fileName << std::endl;
 }
+
 bool StaticModel::LoadFromBinary(const std::string& fileName) {
     std::ifstream in(fileName, std::ios::in | std::ios::binary);
     if (!in.is_open()) return false;

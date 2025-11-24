@@ -40,11 +40,6 @@ void game_mode::Init() {
     // 모델 로드
     loadModels();
     for (auto& block : mazeBlocks) {
-        if (block.modelPtr) {
-            block.modelPtr->obstacle_world_obb = block.modelPtr->obstacle_local_obb;
-        }
-    }
-    for (auto& block : mazeBlocks) {
         update_world_obb(block);
     }
 
@@ -94,6 +89,20 @@ void game_mode::Draw() {
             }
         }
     }
+
+    //glDisable(GL_DEPTH_TEST); // OBB가 겹쳐도 항상 보이게 (선택 사항)
+    glLineWidth(3.0f);        // 선 굵기 설정
+
+    for (auto& block : mazeBlocks) {
+        if (block.modelPtr) {
+            drawDebugOBB(shaderProgramStatic, block.road_world_obb, view, proj, glm::vec3(0.0f, 1.0f, 0.0f));
+
+            for (int i = 0; i < block.obstacle_world_obb.size(); i++)
+                drawDebugOBB(shaderProgramStatic, block.obstacle_world_obb[i], view, proj, glm::vec3(1.0f, 1.0f, 0.0f)); // 노란색
+        }
+    }
+
+    //glEnable(GL_DEPTH_TEST); // DEPTH TEST 복원
 
     // --- 2. 애니메이션 캐릭터 ---
     glUseProgram(shaderProgramAnimated);
@@ -159,6 +168,9 @@ void game_mode::loadModels() {
     roads.push_back(new StaticModel("road/road13.obj"));  // 13ㅗ
     roads.push_back(new StaticModel("road/road14.obj"));  // 14+
     roads.push_back(new StaticModel("road/road15.obj"));  // 15x
+    for(int i = 0; i < roads.size(); i++) {
+        roads[i]->set_obb(i);
+	}
 
     // 미로 설정
     setMaze();
@@ -306,10 +318,6 @@ void game_mode::drawDebugOBB(GLuint shaderID, const OBB & obb, const glm::mat4 &
         obb.center - E_x - E_y - E_z   // 7: -X -Y -Z
     };
 
-    for (int i = 0; i < 8; i++) {
-        cout << "OBB Vertex " << i << ": (" << vertices[i].x << ", " << vertices[i].y << ", " << vertices[i].z << ")" << endl;
-    }
-
     // 12개의 선분을 그리기 위한 24개의 인덱스 (순서는 유지)
     unsigned int indices[] = {
         1, 0, 0, 2, 2, 3, 3, 1, // 앞면 (Z+)
@@ -343,10 +351,10 @@ void game_mode::drawDebugOBB(GLuint shaderID, const OBB & obb, const glm::mat4 &
     // OBB의 정보를 기반으로 Model Matrix를 구성 (Center + Orientation + Scale)
     glm::mat4 model = glm::mat4(1.0f);
 
-    model[0] = glm::vec4(obb.u[0] * obb.half_length.x, 0.0f); // X축 (u[0])
-    model[1] = glm::vec4(obb.u[1] * obb.half_length.y, 0.0f); // Y축 (u[1])
-    model[2] = glm::vec4(obb.u[2] * obb.half_length.z, 0.0f); // Z축 (u[2])
-    model[3] = glm::vec4(obb.center, 1.0f);
+    //model[0] = glm::vec4(obb.u[0] * obb.half_length.x, 0.0f); // X축 (u[0])
+    //model[1] = glm::vec4(obb.u[1] * obb.half_length.y, 0.0f); // Y축 (u[1])
+    //model[2] = glm::vec4(obb.u[2] * obb.half_length.z, 0.0f); // Z축 (u[2])
+    //model[3] = glm::vec4(obb.center, 1.0f);
 
     glUniformMatrix4fv(glGetUniformLocation(shaderID, "uModel"), 1, GL_FALSE, glm::value_ptr(model));
 

@@ -7,6 +7,9 @@ struct MazeBlockInstance {
     StaticModel* modelPtr;
     glm::mat4 modelMatrix;
     glm::vec3 reset;    // 미로 초기 위치 저장용
+
+    OBB road_world_obb;
+    std::vector<OBB> obstacle_world_obb;
 };
 extern std::vector<MazeBlockInstance> mazeBlocks;
 
