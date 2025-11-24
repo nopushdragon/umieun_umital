@@ -1,30 +1,42 @@
-#include "collision.h"
+ï»¿#include "collision.h"
 
 void update_world_obb(MazeBlockInstance& block) {
-	// ¸ðµ¨ ¸ÅÆ®¸¯½º¿¡¼­ È¸Àü ¹× ½ºÄÉÀÏ ºÎºÐ¸¸ ÃßÃâ
+	// ëª¨ë¸ ë§¤íŠ¸ë¦­ìŠ¤ì—ì„œ íšŒì „ ë° ìŠ¤ì¼€ì¼ ë¶€ë¶„ë§Œ ì¶”ì¶œ
     glm::mat3 rotation_scale_mat = glm::mat3(block.modelMatrix);
 
     //=========================================
-	// road_local_obb¸¦ road_world_obb·Î º¯È¯
-    glm::vec4 local_center_h = glm::vec4(block.modelPtr->road_local_obb.center, 1.0f);
-    block.modelPtr->road_world_obb.center = glm::vec3(block.modelMatrix * local_center_h);
+	// road_local_obbë¥¼ road_world_obbë¡œ ë³€í™˜
+    glm::vec4 road_local_center_h = glm::vec4(block.modelPtr->road_local_obb.center, 1.0f);
+    block.modelPtr->road_world_obb.center = glm::vec3(block.modelMatrix * road_local_center_h);
 
     for (int i = 0; i < 3; i++) {
         block.modelPtr->road_world_obb.u[i] = glm::normalize(rotation_scale_mat * block.modelPtr->road_local_obb.u[i]);
     }
 
-    glm::vec3 scale_factors = glm::vec3(
-        glm::length(rotation_scale_mat[0]), // XÃà ½ºÄÉÀÏ
-        glm::length(rotation_scale_mat[1]), // YÃà ½ºÄÉÀÏ
-        glm::length(rotation_scale_mat[2])  // ZÃà ½ºÄÉÀÏ
+    glm::vec3 road_scale_factors = glm::vec3(
+        glm::length(rotation_scale_mat[0]), // Xì¶• ìŠ¤ì¼€ì¼
+        glm::length(rotation_scale_mat[1]), // Yì¶• ìŠ¤ì¼€ì¼
+        glm::length(rotation_scale_mat[2])  // Zì¶• ìŠ¤ì¼€ì¼
     );
 
-    block.modelPtr->road_world_obb.half_length = block.modelPtr->road_local_obb.half_length * scale_factors;
+    block.modelPtr->road_world_obb.half_length = block.modelPtr->road_local_obb.half_length * road_scale_factors;
 	//=========================================
+    for (int i = 0; i < block.modelPtr->obstacle_local_obb.size();i++) {
+        glm::vec4 obstacle_local_center_h = glm::vec4(block.modelPtr->obstacle_local_obb[i].center, 1.0f);
+        block.modelPtr->obstacle_world_obb[i].center = glm::vec3(block.modelMatrix * obstacle_local_center_h);
 
-    //=========================================
-    //¿©±â¿¡ ³ª¸ÓÁö obb ÇØÁÙ°Íµéµµ ÇØ¾ßÇÔ
-    //=========================================
+        for (int j = 0; j < 3; j++) {
+            block.modelPtr->obstacle_world_obb[i].u[j] = glm::normalize(rotation_scale_mat * block.modelPtr->obstacle_local_obb[i].u[j]);
+        }
+
+        glm::vec3 obstacle_scale_factors = glm::vec3(
+            glm::length(rotation_scale_mat[0]), // Xì¶• ìŠ¤ì¼€ì¼
+            glm::length(rotation_scale_mat[1]), // Yì¶• ìŠ¤ì¼€ì¼
+            glm::length(rotation_scale_mat[2])  // Zì¶• ìŠ¤ì¼€ì¼
+        );
+
+        block.modelPtr->obstacle_world_obb[i].half_length = block.modelPtr->obstacle_local_obb[i].half_length * obstacle_scale_factors;
+    }
 }
 
 bool is_separated(const OBB& a, const OBB& b, const glm::vec3& axis) {

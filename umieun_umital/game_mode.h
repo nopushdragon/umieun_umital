@@ -3,6 +3,7 @@
 #include "static_model.h"
 #include "maze.h"
 #include "silver_wolf.h"
+#include "collision.h"
 
 class game_mode : public Scene
 {
@@ -34,6 +35,7 @@ private:
     void loadShader(const char* vertPath, const char* fragPath, GLuint& shaderID);
     void setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj);
     void loadModels();
+    void drawDebugOBB(GLuint shaderID, const OBB& obb, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
 public:
     game_mode();
     ~game_mode();

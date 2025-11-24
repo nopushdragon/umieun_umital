@@ -74,7 +74,22 @@ void StaticMesh::Draw(GLuint shaderID) const {
 // StaticModel
 // ===================================================================
 StaticModel::StaticModel(const std::string& objPath) {
+    // 1. 디렉토리 설정 (매우 중요)
+    directory = objPath.substr(0, objPath.find_last_of('/'));
+    if (directory == objPath) directory = "."; // 슬래시가 없으면 현재 경로
+
+    // 2. 바이너리 파일 확인 및 로딩 시도
+    std::string binPath = objPath.substr(0, objPath.find_last_of('.')) + ".bin";
+
+    if (LoadFromBinary(binPath)) {
+        return; // 성공 시 Assimp 스킵
+    }
+
+    // =========================================================
+    // 3. 실패 시 Assimp로 로딩 (느림)
+    // =========================================================
     Assimp::Importer importer;
+    // Tangent가 필요 없다면 CalcTangentSpace 옵션 빼도 됨 (속도 향상)
     const aiScene* scene = importer.ReadFile(objPath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -83,8 +98,10 @@ StaticModel::StaticModel(const std::string& objPath) {
     }
 
     processNode(scene->mRootNode, scene);
-}
 
+    // 4. 로딩 완료 후 저장 (다음 실행을 위해)
+    SaveToBinary(binPath);
+}
 void StaticModel::Draw(GLuint shaderID) {
     for (auto& mesh : meshes) mesh.Draw(shaderID);
 }
@@ -173,7 +190,7 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
             matInfo.path = str.C_Str();
             // 텍스처 로드 함수 호출 (현재 파일 경로를 기준으로 로드)
             // OBJ 파일이 있는 "현재 디렉토리"를 가정하고 경로 전달
-            matInfo.id = loadTextureFromFile(matInfo.path.c_str(), ".");
+            matInfo.id = loadTextureFromFile(matInfo.path.c_str(), this->directory);
             matInfo.type = "texture_diffuse";
         }
         else {
@@ -198,7 +215,7 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
 
 void StaticModel::set_obb(int idx) {
     road_local_obb.center = glm::vec3(0.0f, 0.0f, 0.0f);;
-    road_local_obb.half_length = glm::vec3(ROAD_SIZE / 2, 0.1f, ROAD_SIZE / 2);
+    road_local_obb.half_length = glm::vec3(ROAD_SIZE / 2, 1.0f, ROAD_SIZE / 2);
     road_local_obb.u[0] = glm::vec3(1.0f, 0.0f, 0.0f);
     road_local_obb.u[1] = glm::vec3(0.0f, 1.0f, 0.0f);
     road_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -207,34 +224,49 @@ void StaticModel::set_obb(int idx) {
         maze_obb_setup(true, true, true, true, false, false, true, true, true);
     }
     else if (idx == 1) { // 서
+        maze_obb_setup(true, true, true, false, false, true, true, true, true);
     }
     else if (idx == 2) { // 남
+        maze_obb_setup(true, true, true, true, false, true, true, false, true);
     }
     else if (idx == 3) { // 북
+        maze_obb_setup(true, false, true, true, false, true, true, true, true);
     }
     else if (idx == 4) { // ㅡ
+        maze_obb_setup(true, true, true, false, false, false, true, true, true);
     }
     else if (idx == 5) { // ㅣ
+        maze_obb_setup(true, false, true, true, false, true, true, false, true);
 	}
     else if (idx == 6) { // ┌
+        maze_obb_setup(true, true, true, true, false, false, true, false, true);
     }
     else if (idx == 7) { // ┐
+        maze_obb_setup(true, true, true, false, false, true, true, false, true);
     }
     else if (idx == 8) { // └
+        maze_obb_setup(true, false, true, true, false, false, true, true, true);
     }
     else if (idx == 9) { // ┘
+        maze_obb_setup(true, false, true, false, false, true, true, true, true);
     }
     else if (idx == 10) { // ㅏ
+        maze_obb_setup(true, false, true, true, false, false, true, false, true);
     }
     else if (idx == 11) { // ㅓ
+        maze_obb_setup(true, false, true, false, false, true, true, false, true);
     }
     else if (idx == 12) { // ㅜ
+        maze_obb_setup(true, true, true, false, false, false, true, false, true);
     }
     else if (idx == 13) { // ㅗ
+        maze_obb_setup(true, false, true, false, false, false, true, true, true);
     }
     else if (idx == 14) { // +
+        maze_obb_setup(true, false, true, false, false, false, true, false, true);
     }
     else if (idx == 15) { // x
+        maze_obb_setup(true, true, true, true, true, true, true, true, true);
 	}
 }
 
@@ -257,4 +289,129 @@ void StaticModel::maze_obb_setup(bool a, bool b, bool c, bool d, bool e, bool f,
             corner_idx++;
         }
     }
+}
+void StaticModel::SaveToBinary(const std::string& fileName) {
+    std::ofstream out(fileName, std::ios::out | std::ios::binary);
+    if (!out.is_open()) return;
+
+    // 1. 메쉬 개수
+    int meshCount = meshes.size();
+    out.write((char*)&meshCount, sizeof(int));
+
+    // 2. 메쉬 데이터
+    for (const auto& mesh : meshes) {
+        // 정점
+        int vSize = mesh.vertices.size();
+        out.write((char*)&vSize, sizeof(int));
+        out.write((char*)mesh.vertices.data(), vSize * sizeof(StaticVertex));
+
+        // 인덱스
+        int iSize = mesh.indices.size();
+        out.write((char*)&iSize, sizeof(int));
+        out.write((char*)mesh.indices.data(), iSize * sizeof(unsigned int));
+
+        // 텍스처 & 재질 정보
+        int texSize = mesh.textures.size();
+        out.write((char*)&texSize, sizeof(int));
+
+        for (const auto& tex : mesh.textures) {
+            // A. 문자열 정보 (Type, Path)
+            std::string type = tex.type;
+            int typeLen = type.length();
+            out.write((char*)&typeLen, sizeof(int));
+            out.write(type.c_str(), typeLen);
+
+            std::string path = tex.path;
+            int pathLen = path.length();
+            out.write((char*)&pathLen, sizeof(int));
+            out.write(path.c_str(), pathLen);
+
+            // ★ [추가] B. 재질 색상 정보 (Diffuse, Specular, Shininess)
+            // OBJ는 텍스처 없이 색상만 있는 경우가 많으므로 필수 저장
+            out.write((char*)&tex.diffuseColor, sizeof(glm::vec3));
+            out.write((char*)&tex.specularColor, sizeof(glm::vec3));
+            out.write((char*)&tex.shininess, sizeof(int));
+        }
+    }
+
+    out.close();
+    std::cout << "바이너리 저장 완료 (Static): " << fileName << std::endl;
+}
+bool StaticModel::LoadFromBinary(const std::string& fileName) {
+    std::ifstream in(fileName, std::ios::in | std::ios::binary);
+    if (!in.is_open()) return false;
+
+    int meshCount = 0;
+    in.read((char*)&meshCount, sizeof(int));
+
+    meshes.clear();
+    meshes.reserve(meshCount);
+
+    for (int i = 0; i < meshCount; i++) {
+        std::vector<StaticVertex> _vertices;
+        std::vector<unsigned int> _indices;
+        std::vector<Texture> _textures;
+
+        // 정점
+        int vSize = 0;
+        in.read((char*)&vSize, sizeof(int));
+        _vertices.resize(vSize);
+        in.read((char*)_vertices.data(), vSize * sizeof(StaticVertex));
+
+        // 인덱스
+        int iSize = 0;
+        in.read((char*)&iSize, sizeof(int));
+        _indices.resize(iSize);
+        in.read((char*)_indices.data(), iSize * sizeof(unsigned int));
+
+        // 텍스처 & 재질
+        int texSize = 0;
+        in.read((char*)&texSize, sizeof(int));
+
+        for (int k = 0; k < texSize; k++) {
+            Texture tex;
+
+            // A. 문자열 읽기
+            int typeLen = 0;
+            in.read((char*)&typeLen, sizeof(int));
+            std::string type(typeLen, '\0');
+            in.read(&type[0], typeLen);
+            tex.type = type;
+
+            int pathLen = 0;
+            in.read((char*)&pathLen, sizeof(int));
+            std::string path(pathLen, '\0');
+            in.read(&path[0], pathLen);
+            tex.path = path;
+
+            // ★ [추가] B. 재질 색상 읽기
+            in.read((char*)&tex.diffuseColor, sizeof(glm::vec3));
+            in.read((char*)&tex.specularColor, sizeof(glm::vec3));
+            in.read((char*)&tex.shininess, sizeof(int));
+
+            // C. 텍스처 파일 로딩 (경로가 있을 때만)
+            if (!tex.path.empty()) {
+                std::string fullPath = this->directory + '/' + tex.path;
+                tex.id = loadTextureFromFile(tex.path.c_str(), this->directory); // 인자 1개 버전 사용 시 수정 필요
+                // 만약 loadTextureFromFile 인자가 2개라면: loadTextureFromFile(tex.path.c_str(), this->directory);
+            }
+            else {
+                tex.id = 0; // 텍스처 없음
+            }
+
+            _textures.push_back(tex);
+        }
+
+        StaticMesh mesh;
+        mesh.vertices = _vertices;
+        mesh.indices = _indices;
+        mesh.textures = _textures;
+        mesh.setupMesh(); // ★ 필수: VAO/VBO 생성
+
+        meshes.push_back(mesh);
+    }
+
+    in.close();
+    //std::cout << "바이너리 로드 성공 (Static): " << fileName << std::endl;
+    return true;
 }

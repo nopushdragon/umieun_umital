@@ -23,6 +23,7 @@ class StaticModel {
 private:
     void processNode(aiNode* node, const aiScene* scene);
     StaticMesh processMesh(aiMesh* mesh, const aiScene* scene);
+    std::string directory;
 
 public:
     std::vector<StaticMesh> meshes;
@@ -36,7 +37,9 @@ public:
 	std::vector<OBB> obstacle_world_obb; // 장애물 월드 OBB 리스트 [0] ~ [3]까지는 모서리
 	void set_obb(int idx); // OBB 설정 함수 idx에 따라 장애물 다름
 	void maze_obb_setup(bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h, bool i); // 미로 OBB 세팅 함수
-
+    //캐시
+    void SaveToBinary(const std::string& fileName);
+    bool LoadFromBinary(const std::string& fileName);
     StaticModel(const std::string& objPath);
 
     void Draw(GLuint shaderID);
