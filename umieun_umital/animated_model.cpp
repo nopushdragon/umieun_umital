@@ -82,7 +82,7 @@ void Mesh::setupMesh() {
 NewModel::NewModel(string const& path, bool gamma) : gammaCorrection(gamma) {
     // 초기화
     pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
-    scale = glm::vec3(0.05f);
+    scale = glm::vec3(0.01f);
     angle = 0.0f;
     m_BoneCounter = 0;
 
@@ -109,22 +109,195 @@ void NewModel::Draw(GLuint shaderID, float currentTime) {
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shaderID);
 }
+void NewModel::SaveToBinary(const std::string& fileName) {
+    std::ofstream out(fileName, std::ios::out | std::ios::binary);
+    if (!out.is_open()) return;
 
+    // 1. 메쉬 개수
+    int meshCount = meshes.size();
+    out.write((char*)&meshCount, sizeof(int));
+
+    // 2. 메쉬 데이터
+    for (const auto& mesh : meshes) {
+        // 정점
+        int vSize = mesh.vertices.size();
+        out.write((char*)&vSize, sizeof(int));
+        // ★ 중요: ModelVertex 크기로 저장
+        out.write((char*)mesh.vertices.data(), vSize * sizeof(ModelVertex));
+
+        // 인덱스
+        int iSize = mesh.indices.size();
+        out.write((char*)&iSize, sizeof(int));
+        out.write((char*)mesh.indices.data(), iSize * sizeof(unsigned int));
+
+        // 텍스처
+        int texSize = mesh.textures.size();
+        out.write((char*)&texSize, sizeof(int));
+        for (const auto& tex : mesh.textures) {
+            std::string type = tex.type;
+            int typeLen = type.length();
+            out.write((char*)&typeLen, sizeof(int));
+            out.write(type.c_str(), typeLen);
+
+            std::string path = tex.path; // 여기에 "1.png"가 들어있어야 함
+            int pathLen = path.length();
+            out.write((char*)&pathLen, sizeof(int));
+            out.write(path.c_str(), pathLen);
+        }
+    }
+
+    // 3. 뼈 정보
+    int boneCount = m_BoneInfoMap.size();
+    out.write((char*)&boneCount, sizeof(int));
+    for (auto& entry : m_BoneInfoMap) {
+        std::string name = entry.first;
+        int nameLen = name.length();
+        out.write((char*)&nameLen, sizeof(int));
+        out.write(name.c_str(), nameLen);
+
+        BoneInfo info = entry.second;
+        out.write((char*)&info, sizeof(BoneInfo));
+    }
+
+    out.write((char*)&m_BoneCounter, sizeof(int));
+
+    // ★ [추가] 글로벌 역행렬도 저장해야 나중에 애니메이션이 꼬이지 않음
+    out.write((char*)&m_GlobalInverseTransform, sizeof(glm::mat4));
+
+    out.close();
+    cout << "바이너리 저장 완료: " << fileName << endl;
+}
+bool NewModel::LoadFromBinary(const std::string& fileName) {
+    std::ifstream in(fileName, std::ios::in | std::ios::binary);
+    if (!in.is_open()) return false;
+
+    int meshCount = 0;
+    in.read((char*)&meshCount, sizeof(int));
+
+    meshes.clear();
+    meshes.reserve(meshCount);
+
+    for (int i = 0; i < meshCount; i++) {
+        std::vector<ModelVertex> _vertices;
+        std::vector<unsigned int> _indices;
+
+        // 정점
+        int vSize = 0;
+        in.read((char*)&vSize, sizeof(int));
+        _vertices.resize(vSize);
+        in.read((char*)_vertices.data(), vSize * sizeof(ModelVertex));
+
+        // 인덱스
+        int iSize = 0;
+        in.read((char*)&iSize, sizeof(int));
+        _indices.resize(iSize);
+        in.read((char*)_indices.data(), iSize * sizeof(unsigned int));
+
+        // 텍스처
+        int texSize = 0;
+        in.read((char*)&texSize, sizeof(int));
+        std::vector<Texture_fbx> _textures;
+
+        for (int k = 0; k < texSize; k++) {
+            Texture_fbx tex;
+
+            // 타입 읽기
+            int typeLen = 0;
+            in.read((char*)&typeLen, sizeof(int));
+            std::string type(typeLen, '\0');
+            in.read(&type[0], typeLen);
+            tex.type = type;
+
+            // 경로 읽기 ("1.png")
+            int pathLen = 0;
+            in.read((char*)&pathLen, sizeof(int));
+            std::string path(pathLen, '\0');
+            in.read(&path[0], pathLen);
+            tex.path = path;
+
+            // ★ 경로 결합 및 로딩
+            std::string fullPath = this->directory + '/' + path;
+            tex.id = TextureFromFile(fullPath.c_str());
+
+            // ★ 디버깅용: 로딩 실패 시 콘솔 출력
+            if (tex.id == 0) {
+                cout << "[ERROR] 텍스처 로딩 실패! 경로 확인: " << fullPath << endl;
+            }
+
+            _textures.push_back(tex);
+        }
+        meshes.push_back(Mesh(_vertices, _indices, _textures));
+    }
+
+    // 뼈 정보 복구
+    int boneCount = 0;
+    in.read((char*)&boneCount, sizeof(int));
+    m_BoneInfoMap.clear();
+
+    for (int i = 0; i < boneCount; i++) {
+        int nameLen = 0;
+        in.read((char*)&nameLen, sizeof(int));
+        std::string name(nameLen, '\0');
+        in.read(&name[0], nameLen);
+
+        BoneInfo info;
+        in.read((char*)&info, sizeof(BoneInfo));
+        m_BoneInfoMap[name] = info;
+    }
+
+    in.read((char*)&m_BoneCounter, sizeof(int));
+
+    // ★ [추가] 글로벌 역행렬 복구
+    in.read((char*)&m_GlobalInverseTransform, sizeof(glm::mat4));
+
+    in.close();
+    cout << "바이너리 로드 성공: " << fileName << endl;
+    return true;
+}
 void NewModel::loadModel(string const& path) {
-    m_Scene = m_Importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights| aiProcess_FlipUVs);
+    // 1. 디렉토리 설정 (텍스처 로딩을 위해 필수)
+    directory = path.substr(0, path.find_last_of('/'));
+
+    // 2. 바이너리 파일 경로 생성
+    string binPath = path.substr(0, path.find_last_of('.')) + ".bin";
+
+    // ==========================================================
+    // ★ [핵심 전략] 캐릭터("silver_wolf")는 바이너리를 쓰지 않음!
+    // ==========================================================
+    // 파일 경로에 "silver_wolf"라는 단어가 포함되어 있다면? -> 애니메이션 모델임
+    bool isFbxFile = (path.find(".fbx") != string::npos) || (path.find(".FBX") != string::npos);
+
+    if (!isFbxFile) {
+        // 캐릭터가 아닐 때만(도로 등) 바이너리 로딩 시도
+        if (LoadFromBinary(binPath)) {
+            return; // 로딩 성공하면 여기서 끝!
+        }
+    }
+
+    // ==========================================================
+    // 3. Assimp로 로딩 (캐릭터이거나, 바이너리 파일이 없을 때)
+    // ==========================================================
+    // 캐릭터는 여기서 로딩되어야 애니메이션 데이터(m_Scene)가 생성됨
+    m_Scene = m_Importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights | aiProcess_FlipUVs);
 
     if (!m_Scene || m_Scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !m_Scene->mRootNode) {
         cout << "ERROR::ASSIMP:: " << m_Importer.GetErrorString() << endl;
         return;
     }
-    directory = path.substr(0, path.find_last_of('/'));
-    if (directory == "") directory = path.substr(0, path.find_last_of('\\'));
 
+    // 글로벌 역행렬 계산 (Assimp가 해줌 -> 누워있는 문제 해결)
     m_GlobalInverseTransform = AssimpGLMHelpers::ConvertMatrixToGLMFormat(m_Scene->mRootNode->mTransformation);
     m_GlobalInverseTransform = glm::inverse(m_GlobalInverseTransform);
 
-    RemoveRootMotion();
+    // 노드 처리
     processNode(m_Scene->mRootNode, m_Scene);
+
+    // ==========================================================
+    // 4. 저장 (캐릭터가 아닐 때만 저장)
+    // ==========================================================
+    if (!isFbxFile) {
+        SaveToBinary(binPath);
+    }
 }
 
 void NewModel::processNode(aiNode* node, const aiScene* scene) {
@@ -202,7 +375,7 @@ vector<Texture_fbx> NewModel::loadMaterialTextures(aiMaterial* mat, aiTextureTyp
 
             if (texture.id != 0) {
                 texture.type = typeName;
-                texture.path = str.C_Str();
+                texture.path = filename;
                 textures.push_back(texture);
                 textures_loaded.push_back(texture);
                 //cout << "[Success] Loaded: " << filename << endl;
@@ -364,13 +537,16 @@ void NewModel::RemoveRootMotion() {
             lowerName.find("hips") != string::npos ||
             lowerName.find("root") != string::npos ||
             lowerName.find("pelvis") != string::npos ||
-            lowerName.find("armature") != string::npos ||
+            lowerName.find("position") != string::npos ||
+            lowerName.find("reference") != string::npos ||
+            lowerName.find("bip01") != string::npos ||    
             lowerName.find("mixamo") != string::npos)
         {
             for (unsigned int k = 0; k < pNodeAnim->mNumPositionKeys; k++) {
                 aiVector3D& pos = pNodeAnim->mPositionKeys[k].mValue;
                 pos.x = 0.0f;
                 pos.z = 0.0f;
+                //pos.y = 0.0f;
             }
         }
     }
@@ -420,6 +596,12 @@ void NewModel::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const
 
 void NewModel::BoneTransform(float timeInSeconds, vector<glm::mat4>& Transforms) {
     glm::mat4 Identity = glm::mat4(1.0f);
+    if (!m_Scene || m_Scene->mNumAnimations == 0) {
+        // 기본 단위 행렬로 채워서 리턴 (안 그러면 캐릭터가 찌그러짐)
+        Transforms.resize(100);
+        for (int i = 0; i < 100; i++) Transforms[i] = glm::mat4(1.0f);
+        return;
+    }
     float TicksPerSecond = 25.0f;
     float Duration = 0.0f;
 

@@ -99,6 +99,10 @@ private:
     vector<Texture_fbx> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
     unsigned int TextureFromFile(const char* path);
 
+    //Ä³½Ã
+    void SaveToBinary(const std::string& fileName);
+    bool LoadFromBinary(const std::string& fileName);
+
     // »À °ü·Ã ÇïÆÛ
     void SetVertexBoneDataToDefault(ModelVertex& vertex);
     void SetVertexBoneData(ModelVertex& vertex, int boneID, float weight);

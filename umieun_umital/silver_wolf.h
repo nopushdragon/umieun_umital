@@ -7,7 +7,7 @@ public:
 	NewModel* silverWolfModel[7];
 	glm::mat4 modelMat = glm::mat4(1.0f);
 	int silver_wolf_fbx_size = 6;
-	string state = "idle";
+	string state = "running";
 public:
 	silver_wolf();
 

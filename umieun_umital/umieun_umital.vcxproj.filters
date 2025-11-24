@@ -43,6 +43,12 @@
     <Filter Include="충돌처리">
       <UniqueIdentifier>{bc3b7f76-ea31-45a1-a6d3-6896dedb414c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mesh">
+      <UniqueIdentifier>{19c18529-7a8a-4a58-8d42-7398466ba1df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="양현빈의 장난감박스">
+      <UniqueIdentifier>{fc13b0a1-391e-4612-a061-def3c53ed341}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -90,6 +96,12 @@
     <ClInclude Include="collision.h">
       <Filter>충돌처리</Filter>
     </ClInclude>
+    <ClInclude Include="allmesh.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="toy.h">
+      <Filter>양현빈의 장난감박스</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -136,6 +148,9 @@
     </ClCompile>
     <ClCompile Include="collision.cpp">
       <Filter>충돌처리</Filter>
+    </ClCompile>
+    <ClCompile Include="toy.cpp">
+      <Filter>양현빈의 장난감박스</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

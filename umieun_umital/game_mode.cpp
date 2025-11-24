@@ -45,8 +45,8 @@ void game_mode::Init() {
     //initmaze(&roads);
 
     // 카메라 위치
-    camPos = glm::vec3(start_x_pos, 25.0f, start_z_pos - 5.0f);
-    camTarget = glm::vec3(start_x_pos, 20.0f, start_z_pos);
+    camPos = glm::vec3(start_x_pos, 5.0f, start_z_pos - 5.0f);
+    camTarget = glm::vec3(start_x_pos, 0.0f, start_z_pos+5.0f);
 
     glEnable(GL_DEPTH_TEST);
 }
