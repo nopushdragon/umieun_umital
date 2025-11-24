@@ -82,8 +82,6 @@ StaticModel::StaticModel(const std::string& objPath) {
         return;
     }
 
-    // 텍스처/재질 로딩은 OBJ 파일의 경로에 따라 다름 (구현 필요)
-
     processNode(scene->mRootNode, scene);
 }
 
@@ -196,4 +194,67 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
     staticMesh.setupMesh(); // VAO/VBO/EBO 설정 호출
 
     return staticMesh;
+}
+
+void StaticModel::set_obb(int idx) {
+    road_local_obb.center = glm::vec3(0.0f, 0.0f, 0.0f);;
+    road_local_obb.half_length = glm::vec3(ROAD_SIZE / 2, 0.1f, ROAD_SIZE / 2);
+    road_local_obb.u[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+    road_local_obb.u[1] = glm::vec3(0.0f, 1.0f, 0.0f);
+    road_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
+
+    if (idx == 0) { // 동
+        maze_obb_setup(true, true, true, true, false, false, true, true, true);
+    }
+    else if (idx == 1) { // 서
+    }
+    else if (idx == 2) { // 남
+    }
+    else if (idx == 3) { // 북
+    }
+    else if (idx == 4) { // ㅡ
+    }
+    else if (idx == 5) { // ㅣ
+	}
+    else if (idx == 6) { // ┌
+    }
+    else if (idx == 7) { // ┐
+    }
+    else if (idx == 8) { // └
+    }
+    else if (idx == 9) { // ┘
+    }
+    else if (idx == 10) { // ㅏ
+    }
+    else if (idx == 11) { // ㅓ
+    }
+    else if (idx == 12) { // ㅜ
+    }
+    else if (idx == 13) { // ㅗ
+    }
+    else if (idx == 14) { // +
+    }
+    else if (idx == 15) { // x
+	}
+}
+
+void StaticModel::maze_obb_setup(bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h, bool i) {
+	bool corners[9] = { a, b, c, d, e, f, g, h, i };
+    int corner_idx = 0;
+
+    for (int i = -1; i < 2; i++) {
+        for (int j = -1; j < 2; j++) {
+            if (corners[corner_idx]) {
+                OBB obstacle;
+                float obb_half_size = ROAD_SIZE / 6;
+                obstacle.center = glm::vec3((j * obb_half_size) * 2, ROAD_SIZE / 2, (i * obb_half_size) * 2);
+                obstacle.half_length = glm::vec3(obb_half_size, ROAD_SIZE / 2, obb_half_size);
+                obstacle.u[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+                obstacle.u[1] = glm::vec3(0.0f, 1.0f, 0.0f);
+                obstacle.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
+                obstacle_local_obb.push_back(obstacle);
+            }
+            corner_idx++;
+        }
+    }
 }

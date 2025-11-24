@@ -1,5 +1,6 @@
 #pragma once
 #include "headers.h"
+#include "texture.h"
 
 struct StaticVertex {
     glm::vec3 Position;
@@ -26,6 +27,7 @@ private:
 public:
     std::vector<StaticMesh> meshes;
     glm::mat4 modelMatrix = glm::mat4(1.0f);
+
 
     StaticModel(const std::string& objPath);
 

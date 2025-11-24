@@ -41,26 +41,3 @@ extern int maze_y;
 extern int maze_x;
 extern float start_x_pos;
 extern float start_z_pos;
-// ===================================================================
-// 상수 및 전역 변수 정의
-// ===================================================================
-// --- 텍스처 로딩 유틸리티 함수 ---
-unsigned int loadTextureFromFile(const char* path, const std::string& directory);
-
-// --- 뼈대 정보 구조체 (FBX 애니메이션용) ---
-//struct BoneInfo {
-//    int id;
-//    glm::mat4 offset; // Assimp의 오프셋 행렬을 GLM 행렬로 변환해야 함
-//};
-void aiMatrix4x4ToGlm(const aiMatrix4x4* from, glm::mat4& to); // Assimp 행렬을 GLM으로 변환하는 함수 (구현 필요)
-
-// --- 텍스처 정보 구조체 (MTL/FBX 재질용) ---
-struct Texture {
-    unsigned int id;
-    std::string type;
-    std::string path;
-    glm::vec3 diffuseColor = glm::vec3(1.0f);   // 재질 색상 추가: 텍스처가 없을 경우 사용할 확산색
-
-    glm::vec3 specularColor = glm::vec3(0.0f); // Ks (거울 반사 색상)
-    int shininess = 1;                         // Ns (반사 강도)
-};
