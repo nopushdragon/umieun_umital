@@ -11,7 +11,7 @@ public:
 
 	NewModel* silverWolfModel[9];
 	glm::vec3 pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
-	glm::vec3 scale = glm::vec3(0.01f);
+	glm::vec3 scale = glm::vec3(0.005f);
 	float angle = 0.0f;
 	glm::mat4 modelMat = glm::mat4(1.0f);
 	int silver_wolf_fbx_size = 9;
@@ -23,7 +23,8 @@ public:
 	void set_obb(); // OBB 설정 함수
 
 	//여기서부터는 속도 관련된거
-	float walkSpeed = 2.0f; // 걷기 속도
+	float walkSpeed = 1.0f; // 걷기 속도
+	float runSpeed = 2.0f; // 걷기 속도
 
 
 	//여기서부터는 키 관련되게
@@ -31,6 +32,8 @@ public:
 	bool a_press = false;
 	bool s_press = false;
 	bool d_press = false;
+
+	bool shift_press = false;
 
 
 public:
@@ -47,6 +50,10 @@ public:
 	void Keyboard(unsigned char key, int x, int y);
 
 	void Keyupboard(unsigned char key, int x, int y);
+
+	void SpecialKeyboard(unsigned char key, int x, int y);
+
+	void SpecialUpKeyboard(unsigned char key, int x, int y);
 
 
 	~silver_wolf();

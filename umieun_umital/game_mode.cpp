@@ -405,3 +405,11 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
 
     silverWolf.Keyupboard(key, x, y);
 }
+
+void game_mode::SpecialKeyboard(int key, int x, int y) {
+	silverWolf.SpecialKeyboard(key, x, y);
+}
+
+void game_mode::SpecialUpKeyboard(int key, int x, int y) {
+	silverWolf.SpecialUpKeyboard(key, x, y);
+}

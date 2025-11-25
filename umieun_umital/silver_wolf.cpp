@@ -9,7 +9,7 @@ silver_wolf::silver_wolf()
 
 void silver_wolf::Init() {
 	pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
-	scale = glm::vec3(0.01f);
+	scale = glm::vec3(0.005f);
 	angle = 0.0f;
 	set_obb();
 }
@@ -29,38 +29,6 @@ void silver_wolf::ChangeState(WolfState* newState) {
 	currentState->Enter(this);    // 새 상태 진입 (Enter)
 	
 }
-
-//void silver_wolf::State(string state,float deltatime) {
-//	if (state == "idle") {
-//		// idle 상태일 때의 동작
-//	}
-//	else if (state == "walk") {
-//		//예외
-//		int move_count = w_press+ s_press+ a_press+ d_press;
-//		if (move_count > 2)return;
-//
-//
-//		//여긴 이동만
-//		if (w_press) pos.z += walkSpeed * deltatime;
-//		if (s_press) pos.z -= walkSpeed * deltatime;
-//		if (a_press) pos.x += walkSpeed * deltatime;
-//		if (d_press) pos.x -= walkSpeed * deltatime;
-//
-//		//여기는 회전까지
-//		if (w_press) angle = 0.0f;
-//		if (s_press) angle = 180.0f;
-//		if (a_press) angle = 90.0f;
-//		if (d_press) angle = -90.0f;
-//		if (w_press && a_press) angle = 45.0f;
-//		if (w_press && d_press) angle = -45.0f;
-//		if (s_press && a_press) angle = 135.0f;
-//		if (s_press && d_press) angle = -135.0f;
-//
-//
-//		
-//		
-//	}
-//}
 
 
 
@@ -112,10 +80,32 @@ void silver_wolf::Keyupboard(unsigned char key, int x, int y) {
 
 }
 
+void silver_wolf::SpecialKeyboard(unsigned char key, int x, int y) {
+	switch (key)
+	{
+	case GLUT_KEY_SHIFT_L:
+		shift_press = true;
+		break;
+	}
+}
+
+void silver_wolf::SpecialUpKeyboard(unsigned char key, int x, int y) {
+	switch (key)
+	{
+	case GLUT_KEY_SHIFT_L:
+		shift_press = false;
+		break;
+	}
+}
+
 
 
 void silver_wolf::Draw(GLuint shaderID, float currentTime=0.0f) {
-
+	for (int i = 0;i < 9;++i) {
+		silverWolfModel[i]->pos =	pos;
+		silverWolfModel[i]->scale = scale;
+		silverWolfModel[i]->angle = angle;
+	}
 	currentState->Draw(this, shaderID, currentTime);
 
 }
@@ -142,6 +132,14 @@ void State_Idle::Enter(silver_wolf* wolf) {
 
 }
 void State_Idle::Update(silver_wolf* wolf, float detatime) {
+	if((wolf->w_press|| wolf->a_press|| wolf->s_press|| wolf->d_press)&&wolf->shift_press)
+	{
+		wolf->ChangeState(new State_Run());
+	}
+	else if ((wolf->w_press || wolf->a_press || wolf->s_press || wolf->d_press))
+	{
+		wolf->ChangeState(new State_Walk());
+	}
 
 }
 void State_Idle::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
@@ -155,11 +153,39 @@ void State_Idle::Exit(silver_wolf* wolf) {
 void State_Walk::Enter(silver_wolf* wolf) {
 
 }
-void State_Walk::Update(silver_wolf* wolf, float detatime) {
+void State_Walk::Update(silver_wolf* wolf, float detlatime) {
+
+	if (wolf->w_press) wolf->pos.z += wolf->walkSpeed * detlatime;
+	if (wolf->s_press) wolf->pos.z -= wolf->walkSpeed * detlatime;
+	if (wolf->a_press) wolf->pos.x += wolf->walkSpeed * detlatime;
+	if (wolf->d_press) wolf->pos.x -= wolf->walkSpeed * detlatime;
+
+	//여기는 회전까지
+	if (wolf->w_press) wolf->angle = 0.0f;
+	if (wolf->s_press) wolf->angle = 180.0f;
+	if (wolf->a_press) wolf->angle = 90.0f;
+	if (wolf->d_press) wolf->angle = -90.0f;
+	if (wolf->w_press && wolf->a_press) wolf->angle = 45.0f;
+	if (wolf->w_press && wolf->d_press) wolf->angle = -45.0f;
+	if (wolf->s_press && wolf->a_press) wolf->angle = 135.0f;
+	if (wolf->s_press && wolf->d_press) wolf->angle = -135.0f;
+
+	if (!wolf->w_press && !wolf->a_press && !wolf->s_press && !wolf->d_press)
+	{
+		wolf->ChangeState(new State_Idle());
+	}
+	else if (wolf->shift_press)
+	{
+		wolf->ChangeState(new State_Run());
+	}
 
 }
 void State_Walk::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
-	wolf->silverWolfModel[1]->Draw(shaderID, time);
+	int press_num = wolf->w_press + wolf->a_press + wolf->s_press + wolf->d_press;
+	if(press_num>2||(wolf->w_press&& wolf->s_press)|| (wolf->a_press && wolf->d_press))
+		wolf->silverWolfModel[0]->Draw(shaderID, time);
+	else
+		wolf->silverWolfModel[1]->Draw(shaderID, time);
 }
 void State_Walk::Exit(silver_wolf* wolf) {
 
@@ -169,7 +195,7 @@ void State_Walk::Exit(silver_wolf* wolf) {
 void State_Stop_Walk::Enter(silver_wolf* wolf) {
 
 }
-void State_Stop_Walk::Update(silver_wolf* wolf, float detatime) {
+void State_Stop_Walk::Update(silver_wolf* wolf, float detlatime) {
 
 }
 void State_Stop_Walk::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
@@ -184,8 +210,30 @@ void State_Stop_Walk::Exit(silver_wolf* wolf) {
 void State_Run::Enter(silver_wolf* wolf) {
 
 }
-void State_Run::Update(silver_wolf* wolf, float detatime) {
+void State_Run::Update(silver_wolf* wolf, float detlatime) {
+	if (wolf->w_press) wolf->pos.z += wolf->runSpeed * detlatime;
+	if (wolf->s_press) wolf->pos.z -= wolf->runSpeed * detlatime;
+	if (wolf->a_press) wolf->pos.x += wolf->runSpeed * detlatime;
+	if (wolf->d_press) wolf->pos.x -= wolf->runSpeed * detlatime;
 
+	//여기는 회전까지
+	if (wolf->w_press) wolf->angle = 0.0f;
+	if (wolf->s_press) wolf->angle = 180.0f;
+	if (wolf->a_press) wolf->angle = 90.0f;
+	if (wolf->d_press) wolf->angle = -90.0f;
+	if (wolf->w_press && wolf->a_press) wolf->angle = 45.0f;
+	if (wolf->w_press && wolf->d_press) wolf->angle = -45.0f;
+	if (wolf->s_press && wolf->a_press) wolf->angle = 135.0f;
+	if (wolf->s_press && wolf->d_press) wolf->angle = -135.0f;
+
+	if (!wolf->w_press && !wolf->a_press && !wolf->s_press && !wolf->d_press)
+	{
+		wolf->ChangeState(new State_Idle());
+	}
+	else if (!wolf->shift_press)
+	{
+		wolf->ChangeState(new State_Walk());
+	}
 }
 void State_Run::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	wolf->silverWolfModel[3]->Draw(shaderID, time);
@@ -199,7 +247,7 @@ void State_Run::Exit(silver_wolf* wolf) {
 void State_Stop_Run::Enter(silver_wolf* wolf) {
 
 }
-void State_Stop_Run::Update(silver_wolf* wolf, float detatime) {
+void State_Stop_Run::Update(silver_wolf* wolf, float detlatime) {
 
 }
 void State_Stop_Run::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
@@ -212,7 +260,7 @@ void State_Stop_Run::Exit(silver_wolf* wolf) {
 //던지기 쓰로우 throw
 void State_Throw::Enter(silver_wolf* wolf) {
 }
-void State_Throw::Update(silver_wolf* wolf, float detatime) {
+void State_Throw::Update(silver_wolf* wolf, float detlatime) {
 }
 void State_Throw::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	wolf->silverWolfModel[5]->Draw(shaderID, time);
@@ -223,7 +271,7 @@ void State_Throw::Exit(silver_wolf* wolf) {
 //구르기 롤 roll
 void State_Roll::Enter(silver_wolf* wolf) {
 }
-void State_Roll::Update(silver_wolf* wolf, float detatime) {
+void State_Roll::Update(silver_wolf* wolf, float detlatime) {
 }
 void State_Roll::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	wolf->silverWolfModel[6]->Draw(shaderID, time);
@@ -234,7 +282,7 @@ void State_Roll::Exit(silver_wolf* wolf) {
 //점프 뛰기 jump
 void State_Jump::Enter(silver_wolf* wolf) {
 }
-void State_Jump::Update(silver_wolf* wolf, float detatime) {
+void State_Jump::Update(silver_wolf* wolf, float detlatime) {
 }
 void State_Jump::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	wolf->silverWolfModel[7]->Draw(shaderID, time);
@@ -245,7 +293,7 @@ void State_Jump::Exit(silver_wolf* wolf) {
 //달리면서 점프 Run Jump
 void State_Jump_Run::Enter(silver_wolf* wolf) {
 }
-void State_Jump_Run::Update(silver_wolf* wolf, float detatime) {
+void State_Jump_Run::Update(silver_wolf* wolf, float detlatime) {
 }
 void State_Jump_Run::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	wolf->silverWolfModel[8]->Draw(shaderID, time);
