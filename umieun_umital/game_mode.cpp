@@ -196,19 +196,19 @@ void game_mode::loadModels() {
     silverWolf.silverWolfModel[1] = new NewModel("silver_wolf/Walk.fbx");
     silverWolf.silverWolfModel[1]->state = "walk";
     silverWolf.silverWolfModel[2] = new NewModel("silver_wolf/Stop Walking.fbx");
-    silverWolf.silverWolfModel[2]->state = "stop_walking";
+    silverWolf.silverWolfModel[2]->state = "stop_walk";
     silverWolf.silverWolfModel[3] = new NewModel("silver_wolf/Running.fbx");
-    silverWolf.silverWolfModel[3]->state = "running";
+    silverWolf.silverWolfModel[3]->state = "run";
     silverWolf.silverWolfModel[4] = new NewModel("silver_wolf/Run To Stop.fbx");
-    silverWolf.silverWolfModel[4]->state = "run_to_stop";
+    silverWolf.silverWolfModel[4]->state = "stop_run";
     silverWolf.silverWolfModel[5] = new NewModel("silver_wolf/Throw.fbx");
     silverWolf.silverWolfModel[5]->state = "throw";
     silverWolf.silverWolfModel[6] = new NewModel("silver_wolf/Stand To Roll.fbx");
-    silverWolf.silverWolfModel[6]->state = "stand_to_roll";
+    silverWolf.silverWolfModel[6]->state = "roll";
     silverWolf.silverWolfModel[7] = new NewModel("silver_wolf/Jump.fbx");
     silverWolf.silverWolfModel[7]->state = "jump";
     silverWolf.silverWolfModel[8] = new NewModel("silver_wolf/Running Jump.fbx");
-    silverWolf.silverWolfModel[8]->state = "run_jump";
+    silverWolf.silverWolfModel[8]->state = "jump_run";
 
 }
 

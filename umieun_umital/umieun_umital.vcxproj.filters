@@ -102,6 +102,12 @@
     <ClInclude Include="toy.h">
       <Filter>양현빈의 장난감박스</Filter>
     </ClInclude>
+    <ClInclude Include="state_machine.h">
+      <Filter>우미은우미탈 주인공</Filter>
+    </ClInclude>
+    <ClInclude Include="silver_wolf_state.h">
+      <Filter>우미은우미탈 주인공</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

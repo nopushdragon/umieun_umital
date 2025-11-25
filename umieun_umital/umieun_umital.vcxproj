@@ -172,6 +172,8 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="scene_manager.h" />
     <ClInclude Include="silver_wolf.h" />
+    <ClInclude Include="silver_wolf_state.h" />
+    <ClInclude Include="state_machine.h" />
     <ClInclude Include="static_model.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>

@@ -1,7 +1,12 @@
 #pragma once
 #include "animated_model.h"
+
+class WolfState;
+
 class silver_wolf
 {
+private:
+	WolfState* currentState;
 public:
 
 	NewModel* silverWolfModel[9];
@@ -35,14 +40,14 @@ public:
 
 	void Update(float deltatime);
 
-	void State(string state, float deltatime);
-	void StateChange();
+	void ChangeState(WolfState* newState);
 
 	void Draw(GLuint shaderID, float currentTime);
 
 	void Keyboard(unsigned char key, int x, int y);
 
 	void Keyupboard(unsigned char key, int x, int y);
+
 
 	~silver_wolf();
 
