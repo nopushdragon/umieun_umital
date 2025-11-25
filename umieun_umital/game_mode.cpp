@@ -39,9 +39,6 @@ void game_mode::Init() {
 
     // 모델 로드
     loadModels();
-    for (auto& block : mazeBlocks) {
-        maze_update_world_obb(block);
-    }
 
     // 미로 설정
     //setMaze();
@@ -56,19 +53,26 @@ void game_mode::Init() {
 
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
-	silverWolf.Update(deltaTime);
-    silver_wolf_update_world_obb(silverWolf);
+    silverWolf.Update(deltaTime);
+    silverwolf_maze_collision();
+}
 
-    for(auto& block : mazeBlocks) {
+void game_mode::silverwolf_maze_collision() {
+
+    for (auto& block : maze.mazeBlocks) {
         if (check_collision(silverWolf.silverwolf_world_obb, block.road_world_obb)) {
             cout << "바닥충돌" << endl;
         }
-        for(int j = 0; j < block.obstacle_world_obb.size(); j++) {
+        for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
             if (check_collision(silverWolf.silverwolf_world_obb, block.obstacle_world_obb[j])) {
                 cout << "장애물충돌" << endl;
+
+                silverWolf.pos = silverWolf.old_pos;
+                silverWolf.update_world_obb();
+                break;
             }
-		}
-	}
+        }
+    }
 }
 
 // 3. 그리기 (기존 drawScene 함수 내용)
@@ -89,7 +93,7 @@ void game_mode::Draw() {
     // 기존 main.cpp에는 주석처리 되어있었으나, 
     // 실제로는 roads에 있는 모델들이 어딘가에서 그려져야 합니다.
     // (만약 roads 벡터를 순회하며 그려야 한다면 아래 코드 사용)
-    for (auto& block : mazeBlocks) {
+    for (auto& block : maze.mazeBlocks) {
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(block.modelMatrix));
         if (block.modelPtr)
         {
@@ -105,7 +109,7 @@ void game_mode::Draw() {
     //glDisable(GL_DEPTH_TEST); // OBB가 겹쳐도 항상 보이게 (선택 사항)
     glLineWidth(3.0f);        // 선 굵기 설정
 
-    for (auto& block : mazeBlocks) {
+    for (auto& block : maze.mazeBlocks) {
         if (block.modelPtr) {
             drawDebugOBB(shaderProgramStatic, block.road_world_obb, view, proj, glm::vec3(0.0f, 1.0f, 0.0f)); // 초록색
 
@@ -186,8 +190,8 @@ void game_mode::loadModels() {
 	}
 
     // 미로 설정
-    setMaze();
-    initmaze(&roads);
+    maze.setMaze();
+    maze.initmaze(&roads);
 
     silverWolf.Init();
 

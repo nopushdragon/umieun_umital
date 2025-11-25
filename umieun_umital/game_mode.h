@@ -14,6 +14,7 @@ private:
     // 모델 데이터
     silver_wolf silverWolf;
     std::vector<StaticModel*> roads;
+    MAZE maze;
     // StaticModel* wallModel; // main.cpp에서 nullptr로 초기화만 되고 사용되지 않아 주석 처리 (필요시 해제)
 
     // 카메라 및 화면 설정
@@ -41,6 +42,7 @@ public:
     ~game_mode();
 	void Init() override;
 	void Update(float deltaTime) override;
+	void silverwolf_maze_collision();
 
 	void OnPause() override;
 	void OnResume() override;

@@ -1,6 +1,7 @@
 #pragma once
 #include "animated_model.h"
 
+
 class WolfState;
 
 class silver_wolf
@@ -11,6 +12,7 @@ public:
 
 	NewModel* silverWolfModel[9];
 	glm::vec3 pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
+	glm::vec3 old_pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
 	glm::vec3 scale = glm::vec3(0.005f);
 	float angle = 0.0f;
 	glm::mat4 modelMat = glm::mat4(1.0f);
@@ -21,6 +23,7 @@ public:
 	OBB silverwolf_local_obb;
 	OBB silverwolf_world_obb;
 	void set_obb(); // OBB 설정 함수
+	void update_world_obb();
 
 	//여기서부터는 속도 관련된거
 	float walkSpeed = 1.0f; // 걷기 속도

@@ -3,21 +3,7 @@
 std::random_device rd;
 std::mt19937 mt(rd());
 
-std::vector<MazeBlockInstance> mazeBlocks;
-
-enum PATH_WALL {
-    PATH = 0,
-    WALL = 1
-};
-
-struct MAZE {
-	int path_wall = WALL; // 0: path, 1: wall
-	int type = 15;      // 0동 1서 2남 3북  4ㅡ 5ㅣ  6┌ 7┐ 8└ 9┘  10ㅏ 11ㅓ 12ㅜ 13ㅗ  14+ 15x
-};
-
-std::vector<std::vector<MAZE>> maze;
-
-void printMaze() {
+void MAZE::printMaze() {
     for (int y = 0; y < maze_y; ++y) {
         for (int x = 0; x < maze_x; ++x) {
             if (maze[y][x].path_wall == WALL) {
@@ -36,7 +22,7 @@ void printMaze() {
     }
 }
 
-void generateMaze(int cx, int cy) {
+void MAZE::generateMaze(int cx, int cy) {
     maze[cy][cx].path_wall = PATH;
 
     std::vector<std::pair<int, int>> directions = {
@@ -63,7 +49,7 @@ void generateMaze(int cx, int cy) {
     }
 }
 
-void generatetype() {
+void MAZE::generatetype() {
     for (int y = 1; y < maze_y-1; ++y) {
         for (int x = 1; x < maze_x-1; ++x) {
 
@@ -96,7 +82,7 @@ void generatetype() {
     }
 }
 
-void initmaze(std::vector<StaticModel*>* roads) {
+void MAZE::initmaze(std::vector<StaticModel*>* roads) {
     // road 인스턴스를 씬 중앙에 배치
     for (int i = 0; i < maze_y; i++) {
         for (int j = 0; j < maze_x; j++) {
@@ -111,13 +97,81 @@ void initmaze(std::vector<StaticModel*>* roads) {
 	}
     start_x_pos = ROAD_SIZE / 2 + (ROAD_SIZE)-((ROAD_SIZE * (float)maze_x) / 2);
     start_z_pos = ROAD_SIZE / 2 + (ROAD_SIZE)-((ROAD_SIZE * (float)maze_y) / 2);
+    update_world_obb();
 }
 
-void setMaze() {
-    std::vector<std::vector<MAZE>> a(maze_y, std::vector<MAZE>(maze_x));
+void MAZE::setMaze() {
+    std::vector<std::vector<MAZE_mem>> a(maze_y, std::vector<MAZE_mem>(maze_x));
     maze = a;
 
     generateMaze(1, 1);
     generatetype();
     printMaze();
+}
+
+void MAZE::update_world_obb() {
+    for (auto& block : mazeBlocks) {
+        glm::mat3 rotation_scale_mat = glm::mat3(block.modelMatrix);
+
+        // Local OBB 데이터 (StaticModel 내 공유되는 데이터)
+        const OBB& road_local_obb = block.modelPtr->road_local_obb;
+
+        //=========================================
+        // road_local_obb를 road_world_obb로 변환 (이제 block 인스턴스의 멤버에 씁니다)
+        glm::vec4 road_local_center_h = glm::vec4(road_local_obb.center, 1.0f);
+        glm::vec3 world_center = glm::vec3(block.modelMatrix * road_local_center_h);
+
+        block.road_world_obb.center = world_center;
+
+        for (int i = 0; i < 3; i++) {
+            glm::vec3 world_axis = rotation_scale_mat * road_local_obb.u[i];
+
+            if (glm::length(world_axis) > 1e-6) {
+                block.road_world_obb.u[i] = glm::normalize(world_axis);
+            }
+            else {
+                block.road_world_obb.u[i] = road_local_obb.u[i];
+            }
+        }
+
+        glm::vec3 road_scale_factors = glm::vec3(
+            glm::length(rotation_scale_mat[0]),
+            glm::length(rotation_scale_mat[1]),
+            glm::length(rotation_scale_mat[2])
+        );
+
+        block.road_world_obb.half_length = road_local_obb.half_length * road_scale_factors;
+        //=========================================
+
+        // obstacle_world_obb 업데이트
+        block.obstacle_world_obb.resize(block.modelPtr->obstacle_local_obb.size()); // World OBB 벡터 크기 조정
+
+        for (size_t i = 0; i < block.modelPtr->obstacle_local_obb.size(); i++) {
+            const OBB& obstacle_local_obb = block.modelPtr->obstacle_local_obb[i];
+
+            glm::vec4 obstacle_local_center_h = glm::vec4(obstacle_local_obb.center, 1.0f);
+            glm::vec3 obs_world_center = glm::vec3(block.modelMatrix * obstacle_local_center_h);
+
+            block.obstacle_world_obb[i].center = obs_world_center;
+
+            for (int j = 0; j < 3; j++) {
+                glm::vec3 world_axis = rotation_scale_mat * obstacle_local_obb.u[j];
+
+                if (glm::length(world_axis) > 1e-6) {
+                    block.obstacle_world_obb[i].u[j] = glm::normalize(world_axis);
+                }
+                else {
+                    block.obstacle_world_obb[i].u[j] = obstacle_local_obb.u[j];
+                }
+            }
+
+            glm::vec3 obstacle_scale_factors = glm::vec3(
+                glm::length(rotation_scale_mat[0]),
+                glm::length(rotation_scale_mat[1]),
+                glm::length(rotation_scale_mat[2])
+            );
+
+            block.obstacle_world_obb[i].half_length = obstacle_local_obb.half_length * obstacle_scale_factors;
+        }
+    }
 }

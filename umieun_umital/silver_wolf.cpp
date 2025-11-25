@@ -17,8 +17,10 @@ void silver_wolf::Init() {
 void silver_wolf::Update(float deltatime) {
 	
 
-	
+	old_pos = pos;
 	if (currentState) currentState->Update(this, deltatime);
+	update_world_obb();
+
 }
 void silver_wolf::ChangeState(WolfState* newState) {
 	if (currentState) {
@@ -136,6 +138,41 @@ void silver_wolf::set_obb() {  //¹Î¿ë
 	silverwolf_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
+void silver_wolf::update_world_obb() {
+	glm::mat4 modelMat = glm::mat4(1.0f);
+	modelMat = glm::translate(modelMat,  pos);
+	modelMat = glm::rotate(modelMat, glm::radians( angle), glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMat = glm::scale(modelMat,  scale);
+
+	glm::mat3 rotation_scale_mat = modelMat;
+
+	const OBB& new_silverwolf_local_obb =  silverwolf_local_obb;
+
+	glm::vec4 silverwolf_local_center_h = glm::vec4(new_silverwolf_local_obb.center, 1.0f);
+	glm::vec3 world_center = glm::vec3(modelMat * silverwolf_local_center_h);
+
+	 silverwolf_world_obb.center = world_center;
+
+	for (int i = 0; i < 3; i++) {
+		glm::vec3 world_axis = rotation_scale_mat * new_silverwolf_local_obb.u[i];
+
+		if (glm::length(world_axis) > 1e-6) {
+			 silverwolf_world_obb.u[i] = glm::normalize(world_axis);
+		}
+		else {
+			 silverwolf_world_obb.u[i] = new_silverwolf_local_obb.u[i];
+		}
+	}
+
+	glm::vec3 road_scale_factors = glm::vec3(
+		glm::length(rotation_scale_mat[0]),
+		glm::length(rotation_scale_mat[1]),
+		glm::length(rotation_scale_mat[2])
+	);
+
+	 silverwolf_world_obb.half_length = silverwolf_local_obb.half_length * road_scale_factors;
+}
+
 //±×³É ¾ÆÀÌµé ¸ØÃçÀÖ´Â »óÅÂ idle
 void State_Idle::Enter(silver_wolf* wolf) {
 
@@ -187,7 +224,6 @@ void State_Walk::Update(silver_wolf* wolf, float detlatime) {
 	{
 		wolf->ChangeState(new State_Run());
 	}
-
 }
 void State_Walk::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	int press_num = wolf->w_press + wolf->a_press + wolf->s_press + wolf->d_press;
