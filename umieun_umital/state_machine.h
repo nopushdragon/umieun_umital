@@ -21,14 +21,7 @@ public:
 
 };
 
-class State_Stop_Walk : public WolfState {
-public:
-	void Enter(silver_wolf* wolf)override;
-	void Update(silver_wolf* wolf, float detatime)override;
-	void Draw(silver_wolf* wolf, GLuint shaderID, float time)override;
-	void Exit(silver_wolf* wolf)override;
 
-};
 
 class State_Run : public WolfState {
 public:
@@ -39,14 +32,6 @@ public:
 
 };
 
-class State_Stop_Run : public WolfState {
-public:
-	void Enter(silver_wolf* wolf)override;
-	void Update(silver_wolf* wolf, float detatime)override;
-	void Draw(silver_wolf* wolf, GLuint shaderID, float time)override;
-	void Exit(silver_wolf* wolf)override;
-
-};
 
 class State_Throw : public WolfState {
 public:
@@ -83,7 +68,22 @@ public:
 	void Exit(silver_wolf* wolf)override;
 
 };
+class State_Stop_Run : public WolfState {
+public:
+	void Enter(silver_wolf* wolf)override;
+	void Update(silver_wolf* wolf, float detatime)override;
+	void Draw(silver_wolf* wolf, GLuint shaderID, float time)override;
+	void Exit(silver_wolf* wolf)override;
 
+};
+class State_Jump_Idle : public WolfState {
+public:
+	void Enter(silver_wolf* wolf)override;
+	void Update(silver_wolf* wolf, float detatime)override;
+	void Draw(silver_wolf* wolf, GLuint shaderID, float time)override;
+	void Exit(silver_wolf* wolf)override;
+
+};
 
 
 

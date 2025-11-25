@@ -3,7 +3,7 @@
 NewModel* s[7];
 
 void Resource_Init() {
-    s[0] = new NewModel("silver_wolf/Idle.fbx");
+   /* s[0] = new NewModel("silver_wolf/Idle.fbx");
     s[0]->state = "idle";
     s[1] = new NewModel("silver_wolf/Walk.fbx");
     s[1]->state = "walk";
@@ -16,5 +16,5 @@ void Resource_Init() {
     s[5] = new NewModel("silver_wolf/Throw.fbx");
     s[5]->state = "throw";
     s[6] = new NewModel("silver_wolf/Stand To Roll.fbx");
-    s[6]->state = "stand_to_roll";
+    s[6]->state = "stand_to_roll";*/
 }

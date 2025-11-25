@@ -84,8 +84,18 @@ public:
 
     int currentTextureNum = 1;
 
+    //애니메이션 끝나는 불값
+    bool throw_end = false;
+    bool run_end = false;
+    bool roll_end = false;
+    bool jump_end = false;
+
+    float m_AnimationTime = 0.0f;
+
     NewModel(string const& path, bool gamma = false);
-    void Draw(GLuint shaderID, float currentTime);
+    void Draw(GLuint shaderID, float deltaTime);
+    // [추가] 애니메이션 시간을 0으로 초기화하는 함수
+    void ResetAnimation();
 
     // 외부 호출용 뼈 변형 함수
     void BoneTransform(float timeInSeconds, vector<glm::mat4>& Transforms);

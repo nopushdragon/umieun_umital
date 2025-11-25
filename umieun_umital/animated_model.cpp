@@ -88,8 +88,16 @@ NewModel::NewModel(string const& path, bool gamma) : gammaCorrection(gamma) {
 
     loadModel(path);
 }
+void NewModel::ResetAnimation() {
+    m_AnimationTime = 0.0f;
+    //throw_end = false; // 필요하다면 애니메이션 종료 플래그도 리셋
+}
 
-void NewModel::Draw(GLuint shaderID, float currentTime) {
+void NewModel::Draw(GLuint shaderID, float deltaTime) {
+
+    // 1. 델타 타임 누적
+    m_AnimationTime += deltaTime;
+
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, pos);
     model = glm::scale(model, scale);
@@ -99,7 +107,9 @@ void NewModel::Draw(GLuint shaderID, float currentTime) {
     glUniformMatrix3fv(glGetUniformLocation(shaderID, "uModelNormal"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(model)))));
 
     vector<glm::mat4> transforms;
-    BoneTransform(currentTime, transforms);
+
+    // 2. 누적된 시간(m_AnimationTime)을 사용하여 뼈 변환 계산
+    BoneTransform(m_AnimationTime, transforms);
 
     for (unsigned int i = 0; i < transforms.size(); ++i) {
         string name = "uFinalBoneMatrices[" + to_string(i) + "]";
@@ -616,7 +626,6 @@ void NewModel::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const
 void NewModel::BoneTransform(float timeInSeconds, vector<glm::mat4>& Transforms) {
     glm::mat4 Identity = glm::mat4(1.0f);
     if (!m_Scene || m_Scene->mNumAnimations == 0) {
-        // 기본 단위 행렬로 채워서 리턴 (안 그러면 캐릭터가 찌그러짐)
         Transforms.resize(100);
         for (int i = 0; i < 100; i++) Transforms[i] = glm::mat4(1.0f);
         return;
@@ -633,7 +642,49 @@ void NewModel::BoneTransform(float timeInSeconds, vector<glm::mat4>& Transforms)
     }
 
     float TimeInTicks = timeInSeconds * TicksPerSecond;
+
+    // [중요] fmod를 사용하여 반복 재생 처리
     float AnimationTime = fmod(TimeInTicks, Duration);
+
+    // [옵션] Throw 같이 한 번만 재생해야 하는 애니메이션 처리 예시 (필요시 사용)
+    
+    if (state == "throw") {
+        if (TimeInTicks >= Duration) {
+            AnimationTime = Duration - 0.001f; // 마지막 프레임 고정
+            throw_end = true;
+        } else {
+            AnimationTime = TimeInTicks;
+        }
+    }
+    if (state == "stop_run") {
+        if (TimeInTicks >= Duration) {
+            AnimationTime = Duration - 0.001f; // 마지막 프레임 고정
+            run_end = true;
+        }
+        else {
+            AnimationTime = TimeInTicks;
+        }
+    }
+    if (state == "roll") {
+        if (TimeInTicks >= Duration) {
+            AnimationTime = Duration - 0.001f; // 마지막 프레임 고정
+            roll_end = true;
+        }
+        else {
+            AnimationTime = TimeInTicks;
+        }
+    }
+    if (state == "jump"|| state == "jump_run"|| state == "jump_idle") {
+        if (TimeInTicks >= Duration) {
+            AnimationTime = Duration - 0.001f; // 마지막 프레임 고정
+            jump_end = true;
+        }
+        else {
+            AnimationTime = TimeInTicks;
+        }
+    }
+
+    
 
     ReadNodeHeirarchy(AnimationTime, m_Scene->mRootNode, Identity);
 

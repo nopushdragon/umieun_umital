@@ -11,12 +11,13 @@ private:
 public:
 
 	NewModel* silverWolfModel[9];
+	int silver_wolf_fbx_size = 9;
+	int current_animation_index = 0;
 	glm::vec3 pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
 	glm::vec3 old_pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
 	glm::vec3 scale = glm::vec3(0.005f);
 	float angle = 0.0f;
 	glm::mat4 modelMat = glm::mat4(1.0f);
-	int silver_wolf_fbx_size = 9;
 	string state = "idle";
 
 	// OBB 민용
@@ -31,12 +32,29 @@ public:
 
 
 	//여기서부터는 키 관련되게
+	//기본 wasd
 	bool w_press = false;
 	bool a_press = false;
 	bool s_press = false;
 	bool d_press = false;
 
+	//달리기
 	bool shift_press = false;
+
+	//구르기 얜 안씀
+	bool f_press = false;
+
+	//던지기
+	bool throw_press = false;
+
+
+	//타이머
+	float run_timer = 0.0f;
+	float d_w_timer = 0.0f;
+	float d_a_timer = 0.0f;
+	float d_s_timer = 0.0f;
+	float d_d_timer = 0.0f;
+
 
 
 public:
@@ -58,7 +76,9 @@ public:
 
 	void SpecialUpKeyboard(unsigned char key, int x, int y);
 
-	void ResetInputs();
+	void Mouse(int button, int state, int x, int y);
+
+	void ForceToIdle();
 
 
 	~silver_wolf();

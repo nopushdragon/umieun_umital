@@ -7,12 +7,13 @@
 
 class game_mode : public Scene
 {
+public:
+    silver_wolf silverWolf;
 private:
     GLuint shaderProgramStatic;
     GLuint shaderProgramAnimated;
 
     // 모델 데이터
-    silver_wolf silverWolf;
     std::vector<StaticModel*> roads;
     MAZE maze;
     // StaticModel* wallModel; // main.cpp에서 nullptr로 초기화만 되고 사용되지 않아 주석 처리 (필요시 해제)
@@ -54,6 +55,8 @@ public:
     void Keyupboard(unsigned char key, int x, int y) override;
     void SpecialKeyboard(int key, int x, int y) override;
     void SpecialUpKeyboard(int key, int x, int y) override;
+
+    void Mouse(int button, int state, int x, int y) override;
 
 
 

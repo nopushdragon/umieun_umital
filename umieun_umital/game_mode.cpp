@@ -8,8 +8,13 @@ const char* FRAGMENT_LIGHT = "fragment.glsl";
 
 using namespace std;
 
+
+
+
+
 // 생성자: 변수 초기값 설정
 game_mode::game_mode() {
+
     camPos = glm::vec3(0.0f, 60.0f, 10.0f);
     camTarget = glm::vec3(0.0f, 0.0f, 0.0f);
     camUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -51,10 +56,12 @@ void game_mode::Init() {
     glEnable(GL_DEPTH_TEST);
 }
 
+float deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
     silverWolf.Update(deltaTime);
     silverwolf_maze_collision();
+	deltatime = deltaTime;
 }
 
 void game_mode::silverwolf_maze_collision() {
@@ -125,7 +132,7 @@ void game_mode::Draw() {
     setCommonUniforms(shaderProgramAnimated, view, proj);
 
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
-    silverWolf.Draw(shaderProgramAnimated, glutGet(GLUT_ELAPSED_TIME) / 1000.0f);
+    silverWolf.Draw(shaderProgramAnimated, deltatime);
     drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
 }
 
@@ -199,20 +206,21 @@ void game_mode::loadModels() {
     silverWolf.silverWolfModel[0]->state = "idle";
     silverWolf.silverWolfModel[1] = new NewModel("silver_wolf/Walk.fbx");
     silverWolf.silverWolfModel[1]->state = "walk";
-    silverWolf.silverWolfModel[2] = new NewModel("silver_wolf/Stop Walking.fbx");
-    silverWolf.silverWolfModel[2]->state = "stop_walk";
-    silverWolf.silverWolfModel[3] = new NewModel("silver_wolf/Running.fbx");
-    silverWolf.silverWolfModel[3]->state = "run";
-    silverWolf.silverWolfModel[4] = new NewModel("silver_wolf/Run To Stop.fbx");
-    silverWolf.silverWolfModel[4]->state = "stop_run";
-    silverWolf.silverWolfModel[5] = new NewModel("silver_wolf/Throw.fbx");
-    silverWolf.silverWolfModel[5]->state = "throw";
-    silverWolf.silverWolfModel[6] = new NewModel("silver_wolf/Stand To Roll.fbx");
-    silverWolf.silverWolfModel[6]->state = "roll";
-    silverWolf.silverWolfModel[7] = new NewModel("silver_wolf/Jump.fbx");
-    silverWolf.silverWolfModel[7]->state = "jump";
-    silverWolf.silverWolfModel[8] = new NewModel("silver_wolf/Running Jump.fbx");
-    silverWolf.silverWolfModel[8]->state = "jump_run";
+    silverWolf.silverWolfModel[2] = new NewModel("silver_wolf/Running.fbx");
+    silverWolf.silverWolfModel[2]->state = "run";
+    silverWolf.silverWolfModel[3] = new NewModel("silver_wolf/Throw.fbx");
+    silverWolf.silverWolfModel[3]->state = "throw";
+    silverWolf.silverWolfModel[4] = new NewModel("silver_wolf/Jump Over.fbx");
+    silverWolf.silverWolfModel[4]->state = "roll";
+    silverWolf.silverWolfModel[5] = new NewModel("silver_wolf/Jump.fbx");
+    silverWolf.silverWolfModel[5]->state = "jump";
+    silverWolf.silverWolfModel[6] = new NewModel("silver_wolf/Running Jump.fbx");
+    silverWolf.silverWolfModel[6]->state = "jump_run";
+    silverWolf.silverWolfModel[7] = new NewModel("silver_wolf/Run To Stop.fbx");
+    silverWolf.silverWolfModel[7]->state = "stop_run";
+    silverWolf.silverWolfModel[8] = new NewModel("silver_wolf/Backflip.fbx");
+    silverWolf.silverWolfModel[8]->state = "jump_idle";
+
 
 }
 
@@ -416,4 +424,8 @@ void game_mode::SpecialKeyboard(int key, int x, int y) {
 
 void game_mode::SpecialUpKeyboard(int key, int x, int y) {
 	silverWolf.SpecialUpKeyboard(key, x, y);
+}
+
+void game_mode::Mouse(int button, int state, int x, int y) {
+    silverWolf.Mouse(button, state,  x,  y);
 }
