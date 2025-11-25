@@ -53,6 +53,8 @@ public:
     void SpecialKeyboard(int key, int x, int y) override;
     void SpecialUpKeyboard(int key, int x, int y) override;
 
+
+
 	/*void Mouse(int button, int state, int x, int y) override;
 	void MouseWheel(int wheel, int direction, int x, int y) override;
 	void Motion(int x, int y) override;

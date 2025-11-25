@@ -118,6 +118,15 @@ silver_wolf::~silver_wolf()
 	}
 }
 
+void silver_wolf::ResetInputs() {
+	w_press = false;
+	a_press = false;
+	s_press = false;
+	d_press = false;
+	shift_press = false;
+	//space_press = false;
+
+}
 
 void silver_wolf::set_obb() {  //¹Î¿ë
 	silverwolf_local_obb.center = glm::vec3(0.0f, 70.0f, 0.0f);;

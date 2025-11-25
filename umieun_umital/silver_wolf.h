@@ -55,6 +55,8 @@ public:
 
 	void SpecialUpKeyboard(unsigned char key, int x, int y);
 
+	void ResetInputs();
+
 
 	~silver_wolf();
 
