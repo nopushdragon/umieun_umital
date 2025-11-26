@@ -11,6 +11,7 @@ void silver_wolf::Init() {
 	pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
 	scale = glm::vec3(0.005f);
 	angle = 0.0f;
+	init_success = false;
 	set_obb();
 }
 
@@ -21,7 +22,8 @@ void silver_wolf::Update(float deltatime) {
 	if (currentState) currentState->Update(this, deltatime);
 	update_world_obb();
 
-
+	//cout << pos.x << " " << pos.y << " " << pos.z << endl;
+	//cout << angle << endl;
 	
 }
 

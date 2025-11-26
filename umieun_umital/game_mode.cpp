@@ -15,15 +15,13 @@ using namespace std;
 // 생성자: 변수 초기값 설정
 game_mode::game_mode() {
 
-    camPos = glm::vec3(0.0f, 60.0f, 10.0f);
-    camTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    camUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
     lightPos = glm::vec3(0.0f, 2000.0f, 0.0f);
     lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     materialSpecular = glm::vec3(0.0f, 0.0f, 0.0f);
     ambientStrength = 0.1f;
     shininess = 32;
+    
 }
 
 game_mode::~game_mode() {
@@ -33,6 +31,8 @@ game_mode::~game_mode() {
 
 // 1. 초기화 (기존 init 함수 내용)
 void game_mode::Init() {
+
+
     // GLEW 초기화는 보통 Framework나 Main에서 한 번 하지만, 
     // 여기서 셰이더 컴파일을 수행합니다.
 
@@ -50,9 +50,15 @@ void game_mode::Init() {
     //initmaze(&roads);
 
     // 카메라 위치
-    camPos = glm::vec3(start_x_pos, 5.0f, start_z_pos - 5.0f);
-    camTarget = glm::vec3(start_x_pos, 0.0f, start_z_pos+5.0f);
+    /*camPos = glm::vec3(start_x_pos, 5.0f, start_z_pos - 5.0f);
+    camTarget = glm::vec3(start_x_pos, 0.0f, start_z_pos+5.0f);*/
+    glm::vec3 targetPos = silverWolf.pos;
+    
+    
+    glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+	gameCamera.Init(targetPos);
 
+    
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -60,7 +66,11 @@ float deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
     silverWolf.Update(deltaTime);
+    gameCamera.Update(deltaTime, silverWolf.pos);
     silverwolf_maze_collision();
+    //카메라 고정
+	if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
+	
 	deltatime = deltaTime;
 }
 
@@ -68,11 +78,11 @@ void game_mode::silverwolf_maze_collision() {
 
     for (auto& block : maze.mazeBlocks) {
         if (check_collision(silverWolf.silverwolf_world_obb, block.road_world_obb)) {
-            cout << "바닥충돌" << endl;
+           // cout << "바닥충돌" << endl;
         }
         for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
             if (check_collision(silverWolf.silverwolf_world_obb, block.obstacle_world_obb[j])) {
-                cout << "장애물충돌" << endl;
+                //cout << "장애물충돌" << endl;
 
                 silverWolf.pos = silverWolf.old_pos;
                 silverWolf.update_world_obb();
@@ -88,7 +98,7 @@ void game_mode::Draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // 뷰, 프로젝션 행렬 계산
-    glm::mat4 view = glm::lookAt(camPos, camTarget, camUp);
+    glm::mat4 view = glm::lookAt(gameCamera.camPos, gameCamera.camTarget, gameCamera.camUp);
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
 
     // --- 1. 정적 오브젝트 (미로, 바닥) ---
@@ -133,6 +143,8 @@ void game_mode::Draw() {
 
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
     silverWolf.Draw(shaderProgramAnimated, deltatime);
+    if(!silverWolf.init_success)
+	silverWolf.init_success = true;
     drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
 }
 
@@ -227,7 +239,7 @@ void game_mode::loadModels() {
 void game_mode::setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj) {
     glUniformMatrix4fv(glGetUniformLocation(shaderID, "uView"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(shaderID, "uProj"), 1, GL_FALSE, glm::value_ptr(proj));
-    glUniform3fv(glGetUniformLocation(shaderID, "viewPos"), 1, glm::value_ptr(camPos));
+    glUniform3fv(glGetUniformLocation(shaderID, "viewPos"), 1, glm::value_ptr(gameCamera.camPos));
 
     glUniform3fv(glGetUniformLocation(shaderID, "lightPos"), 1, glm::value_ptr(lightPos));
     glUniform3fv(glGetUniformLocation(shaderID, "lightColor"), 1, glm::value_ptr(lightColor));
@@ -303,14 +315,35 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
 
     silverWolf.Keyboard(key, x, y);
 
+    switch (key)
+    {
+    case'g':
+        camera_fixed = true;
+        glutSetCursor(GLUT_CURSOR_INHERIT);
+        break;
+    }
+
 }
 void game_mode::Keyupboard(unsigned char key, int x, int y) {
 
     silverWolf.Keyupboard(key, x, y);
+
+    switch (key)
+    {
+    case 27:
+            exit(0);
+            break;
+    case'g':
+        camera_fixed = false;
+        //glutSetCursor(GLUT_CURSOR_NONE);
+        break;
+    }
 }
 
 void game_mode::SpecialKeyboard(int key, int x, int y) {
 	silverWolf.SpecialKeyboard(key, x, y);
+    
+   
 }
 
 void game_mode::SpecialUpKeyboard(int key, int x, int y) {
@@ -320,3 +353,9 @@ void game_mode::SpecialUpKeyboard(int key, int x, int y) {
 void game_mode::Mouse(int button, int state, int x, int y) {
     silverWolf.Mouse(button, state,  x,  y);
 }
+
+void game_mode::PassiveMotion(int x, int y) {
+    if(silverWolf.init_success)
+	gameCamera.PassiveMotion(x, y);
+}
+

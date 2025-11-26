@@ -3,6 +3,7 @@
 #include "static_model.h"
 #include "maze.h"
 #include "silver_wolf.h"
+#include "camera.h"
 #include "collision.h"
 
 class game_mode : public Scene
@@ -16,14 +17,15 @@ private:
     // 모델 데이터
     std::vector<StaticModel*> roads;
     MAZE maze;
+
     // StaticModel* wallModel; // main.cpp에서 nullptr로 초기화만 되고 사용되지 않아 주석 처리 (필요시 해제)
 
     // 카메라 및 화면 설정
-    int WINDOW_WIDTH = 1200;
-    int WINDOW_HEIGHT = 800;
-    glm::vec3 camPos;
-    glm::vec3 camTarget;
-    glm::vec3 camUp;
+	camera gameCamera;
+    int WINDOW_WIDTH = winWidth;
+    int WINDOW_HEIGHT = winHeight;
+    //카메라고정풀기
+	bool camera_fixed = false;
 
     // 조명 및 재질 설정
     glm::vec3 lightPos;
@@ -56,6 +58,8 @@ public:
     void SpecialUpKeyboard(int key, int x, int y) override;
 
     void Mouse(int button, int state, int x, int y) override;
+
+    void PassiveMotion(int x, int y) override;
 
 
 

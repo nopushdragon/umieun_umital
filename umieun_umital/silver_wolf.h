@@ -54,6 +54,9 @@ public:
 	float d_a_timer = 0.0f;
 	float d_s_timer = 0.0f;
 	float d_d_timer = 0.0f;
+	
+	//초기화 성공
+	bool init_success = false;
 
 
 
