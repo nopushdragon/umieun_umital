@@ -77,17 +77,47 @@ void game_mode::Update(float deltaTime) {
 void game_mode::silverwolf_maze_collision() {
 
     for (auto& block : maze.mazeBlocks) {
+        block.is_colliding = false;
         if (check_collision(silverWolf.silverwolf_world_obb, block.road_world_obb)) {
-           // cout << "바닥충돌" << endl;
+            block.is_colliding = true;
         }
-        for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
-            if (check_collision(silverWolf.silverwolf_world_obb, block.obstacle_world_obb[j])) {
-                //cout << "장애물충돌" << endl;
+    }
 
-                silverWolf.pos = silverWolf.old_pos;
-                silverWolf.update_world_obb();
+    // 청크 단위 충돌
+    bool stop = false;
+    for (int i = 1; i < maze_y - 1; i++) {
+        for (int j = 1; j < maze_x - 1; j++) {
+            if (maze.mazeBlocks[(i * maze_x) + j].is_colliding == true) {
+                update_chunk(i, j, 2);
+                stop = true;
                 break;
             }
+        }
+        if (stop) break;
+    }
+
+    // 청크 기준으로 장애물 충돌 검사
+    for (auto& block : maze.mazeBlocks) {
+        if (block.is_colliding == true) {
+            for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
+                if (check_collision(silverWolf.silverwolf_world_obb, block.obstacle_world_obb[j])) {
+                    silverWolf.pos = silverWolf.old_pos;
+                    silverWolf.update_world_obb();
+                }
+            }
+        }
+    }
+}
+
+void game_mode::update_chunk(int y, int x, int size) {
+    int min_y = std::max(0, y - size);
+    int max_y = std::min(maze_y, y + size);
+    int min_x = std::max(0, x - size);
+    int max_x = std::min(maze_x, x + size);
+
+    for (int i = min_y; i <= max_y; i++) {
+        for (int j = min_x; j <= max_x; j++) {
+            maze.mazeBlocks[(i * maze_x) + j].is_colliding = true;
         }
     }
 }
@@ -111,14 +141,16 @@ void game_mode::Draw() {
     // 실제로는 roads에 있는 모델들이 어딘가에서 그려져야 합니다.
     // (만약 roads 벡터를 순회하며 그려야 한다면 아래 코드 사용)
     for (auto& block : maze.mazeBlocks) {
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(block.modelMatrix));
-        if (block.modelPtr)
-        {
-            // 메시별 재질/색상 정보 설정 및 드로우
-            for (auto& mesh : block.modelPtr->meshes)
+        if (block.is_colliding) {
+            glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(block.modelMatrix));
+            if (block.modelPtr)
             {
-                // 메시 그리기. 이제 Draw 함수가 재질 유니폼을 설정합니다.
-                mesh.Draw(shaderProgramStatic);
+                // 메시별 재질/색상 정보 설정 및 드로우
+                for (auto& mesh : block.modelPtr->meshes)
+                {
+                    // 메시 그리기. 이제 Draw 함수가 재질 유니폼을 설정합니다.
+                    mesh.Draw(shaderProgramStatic);
+                }
             }
         }
     }
@@ -127,11 +159,13 @@ void game_mode::Draw() {
     glLineWidth(3.0f);        // 선 굵기 설정
 
     for (auto& block : maze.mazeBlocks) {
-        if (block.modelPtr) {
-            drawDebugOBB(shaderProgramStatic, block.road_world_obb, view, proj, glm::vec3(0.0f, 1.0f, 0.0f)); // 초록색
+        if (block.is_colliding) {
+            if (block.modelPtr) {
+                drawDebugOBB(shaderProgramStatic, block.road_world_obb, view, proj, glm::vec3(0.0f, 1.0f, 0.0f)); // 초록색
 
-            for (int i = 0; i < block.obstacle_world_obb.size(); i++)
-                drawDebugOBB(shaderProgramStatic, block.obstacle_world_obb[i], view, proj, glm::vec3(1.0f, 1.0f, 0.0f)); // 노란색
+                for (int i = 0; i < block.obstacle_world_obb.size(); i++)
+                    drawDebugOBB(shaderProgramStatic, block.obstacle_world_obb[i], view, proj, glm::vec3(1.0f, 1.0f, 0.0f)); // 노란색
+            }
         }
     }
 
@@ -143,8 +177,7 @@ void game_mode::Draw() {
 
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
     silverWolf.Draw(shaderProgramAnimated, deltatime);
-    if(!silverWolf.init_success)
-	silverWolf.init_success = true;
+    if (!silverWolf.init_success) silverWolf.init_success = true;
     drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
 }
 

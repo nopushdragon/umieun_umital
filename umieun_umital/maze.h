@@ -20,6 +20,7 @@ struct MazeBlockInstance {
 
     OBB road_world_obb;
     std::vector<OBB> obstacle_world_obb;
+    bool is_colliding = false;
 };
 
 class MAZE {

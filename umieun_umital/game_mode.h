@@ -45,6 +45,7 @@ public:
 	void Init() override;
 	void Update(float deltaTime) override;
 	void silverwolf_maze_collision();
+    void update_chunk(int y, int x, int size);  // size: 중앙서부터 몇칸만큼의 범위로 할거냐
 
 	void OnPause() override;
 	void OnResume() override;
