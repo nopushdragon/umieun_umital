@@ -49,6 +49,9 @@
     <Filter Include="양현빈의 장난감박스">
       <UniqueIdentifier>{fc13b0a1-391e-4612-a061-def3c53ed341}</UniqueIdentifier>
     </Filter>
+    <Filter Include="지금부터는 카메라 타임">
+      <UniqueIdentifier>{801a017d-6fd4-4abb-9c00-fc862976f94c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -108,6 +111,9 @@
     <ClInclude Include="silver_wolf_state.h">
       <Filter>우미은우미탈 주인공</Filter>
     </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>지금부터는 카메라 타임</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -157,6 +163,9 @@
     </ClCompile>
     <ClCompile Include="toy.cpp">
       <Filter>양현빈의 장난감박스</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>지금부터는 카메라 타임</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
