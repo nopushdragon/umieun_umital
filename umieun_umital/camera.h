@@ -7,12 +7,12 @@ private:
 	int mousey = winHeight / 2;
 	//카메라 감도
 	float sense = 0.01f;
-	//카메라 각도
-	float camera_x_angle = 0.0f;
-	float camera_y_angle = 0.0f;
 	//카메라 거리
 	glm::vec3 offset = glm::vec3(0.0f, 1.0f, -2.0f);
 public:
+	//카메라 각도
+	float camera_x_angle = 0.0f;
+	float camera_y_angle = 0.0f;
 	glm::vec3 camPos;
 	glm::vec3 camTarget;
 	glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);

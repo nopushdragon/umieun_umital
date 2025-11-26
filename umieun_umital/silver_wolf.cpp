@@ -15,11 +15,12 @@ void silver_wolf::Init() {
 	set_obb();
 }
 
-void silver_wolf::Update(float deltatime) {
+void silver_wolf::Update(float deltatime, const float& camera_x_angle) {
 	
 
 	old_pos = pos;
 	if (currentState) currentState->Update(this, deltatime);
+	camera_angle = camera_x_angle;
 	update_world_obb();
 
 	//cout << pos.x << " " << pos.y << " " << pos.z << endl;
@@ -249,20 +250,28 @@ void State_Walk::Enter(silver_wolf* wolf) {
 }
 void State_Walk::Update(silver_wolf* wolf, float detlatime) {
 
-	if (wolf->w_press) wolf->pos.z += wolf->walkSpeed * detlatime;
-	if (wolf->s_press) wolf->pos.z -= wolf->walkSpeed * detlatime;
-	if (wolf->a_press) wolf->pos.x += wolf->walkSpeed * detlatime;
-	if (wolf->d_press) wolf->pos.x -= wolf->walkSpeed * detlatime;
+	glm::vec3 v(0.0f);
+
+	if (wolf->w_press) v.z += wolf->walkSpeed * detlatime;
+	if (wolf->s_press) v.z -= wolf->walkSpeed * detlatime;
+	if (wolf->a_press) v.x += wolf->walkSpeed * detlatime;
+	if (wolf->d_press) v.x -= wolf->walkSpeed * detlatime;
+
+	glm::mat4 m(1.0f);
+	m = glm::rotate(m, glm::radians(-wolf->camera_angle), glm::vec3(0.0f, 1.0f, 0.0f));
+	v = glm::vec3(m * glm::vec4(v, 1.0f));
+
+	wolf->pos += v;
 
 	//여기는 회전까지
-	if (wolf->w_press) wolf->angle = 0.0f;
-	if (wolf->s_press) wolf->angle = 180.0f;
-	if (wolf->a_press) wolf->angle = 90.0f;
-	if (wolf->d_press) wolf->angle = -90.0f;
-	if (wolf->w_press && wolf->a_press) wolf->angle = 45.0f;
-	if (wolf->w_press && wolf->d_press) wolf->angle = -45.0f;
-	if (wolf->s_press && wolf->a_press) wolf->angle = 135.0f;
-	if (wolf->s_press && wolf->d_press) wolf->angle = -135.0f;
+	if (wolf->w_press && wolf->a_press) wolf->angle = -wolf->camera_angle +45.0f;
+	else if (wolf->w_press && wolf->d_press) wolf->angle = -wolf->camera_angle -45.0f;
+	else if (wolf->s_press && wolf->a_press) wolf->angle = -wolf->camera_angle+135.0f;
+	else if (wolf->s_press && wolf->d_press) wolf->angle = -wolf->camera_angle -135.0f;
+	else if (wolf->w_press) wolf->angle = -wolf->camera_angle+0.0f;
+	else if (wolf->s_press) wolf->angle = -wolf->camera_angle+180.0f;
+	else if (wolf->a_press) wolf->angle = -wolf->camera_angle+90.0f;
+	else if (wolf->d_press) wolf->angle = -wolf->camera_angle-90.0f;
 
 	if (!wolf->w_press && !wolf->a_press && !wolf->s_press && !wolf->d_press)
 	{
@@ -295,20 +304,28 @@ void State_Run::Enter(silver_wolf* wolf) {
 void State_Run::Update(silver_wolf* wolf, float detlatime) {
 	wolf->run_timer += detlatime;
 
-	if (wolf->w_press) wolf->pos.z += wolf->runSpeed * detlatime;
-	if (wolf->s_press) wolf->pos.z -= wolf->runSpeed * detlatime;
-	if (wolf->a_press) wolf->pos.x += wolf->runSpeed * detlatime;
-	if (wolf->d_press) wolf->pos.x -= wolf->runSpeed * detlatime;
+	glm::vec3 v(0.0f);
+
+	if (wolf->w_press) v.z += wolf->runSpeed * detlatime;
+	if (wolf->s_press) v.z -= wolf->runSpeed * detlatime;
+	if (wolf->a_press) v.x += wolf->runSpeed * detlatime;
+	if (wolf->d_press) v.x -= wolf->runSpeed * detlatime;
+
+	glm::mat4 m(1.0f);
+	m = glm::rotate(m, glm::radians(-wolf->camera_angle), glm::vec3(0.0f, 1.0f, 0.0f));
+	v = glm::vec3(m * glm::vec4(v, 1.0f));
+
+	wolf->pos += v;
 
 	//여기는 회전까지
-	if (wolf->w_press) wolf->angle = 0.0f;
-	if (wolf->s_press) wolf->angle = 180.0f;
-	if (wolf->a_press) wolf->angle = 90.0f;
-	if (wolf->d_press) wolf->angle = -90.0f;
-	if (wolf->w_press && wolf->a_press) wolf->angle = 45.0f;
-	if (wolf->w_press && wolf->d_press) wolf->angle = -45.0f;
-	if (wolf->s_press && wolf->a_press) wolf->angle = 135.0f;
-	if (wolf->s_press && wolf->d_press) wolf->angle = -135.0f;
+	if (wolf->w_press && wolf->a_press) wolf->angle = -wolf->camera_angle + 45.0f;
+	else if (wolf->w_press && wolf->d_press) wolf->angle = -wolf->camera_angle - 45.0f;
+	else if (wolf->s_press && wolf->a_press) wolf->angle = -wolf->camera_angle + 135.0f;
+	else if (wolf->s_press && wolf->d_press) wolf->angle = -wolf->camera_angle - 135.0f;
+	else if (wolf->w_press) wolf->angle = -wolf->camera_angle + 0.0f;
+	else if (wolf->s_press) wolf->angle = -wolf->camera_angle + 180.0f;
+	else if (wolf->a_press) wolf->angle = -wolf->camera_angle + 90.0f;
+	else if (wolf->d_press) wolf->angle = -wolf->camera_angle - 90.0f;
 
 	if (!wolf->w_press && !wolf->a_press && !wolf->s_press && !wolf->d_press&& wolf->run_timer>=2.0f)
 	{

@@ -65,7 +65,7 @@ void game_mode::Init() {
 float deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
-    silverWolf.Update(deltaTime);
+    silverWolf.Update(deltaTime,gameCamera.camera_x_angle);
     gameCamera.Update(deltaTime, silverWolf.pos);
     silverwolf_maze_collision();
     //카메라 고정

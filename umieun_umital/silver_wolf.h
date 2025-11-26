@@ -58,6 +58,9 @@ public:
 	//초기화 성공
 	bool init_success = false;
 
+	//x앵글
+	float camera_angle = 0.0f;
+
 
 
 public:
@@ -65,7 +68,7 @@ public:
 
 	void Init();
 
-	void Update(float deltatime);
+	void Update(float deltatime,const float &camera_x_angle);
 
 	void ChangeState(WolfState* newState);
 
