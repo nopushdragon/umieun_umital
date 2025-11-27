@@ -45,10 +45,6 @@ void game_mode::Init() {
     // 모델 로드
     loadModels();
 
-    // 미로 설정
-    //setMaze();
-    //initmaze(&roads);
-
     // 카메라 위치
     /*camPos = glm::vec3(start_x_pos, 5.0f, start_z_pos - 5.0f);
     camTarget = glm::vec3(start_x_pos, 0.0f, start_z_pos+5.0f);*/
@@ -221,6 +217,7 @@ void game_mode::OnResume() {
 // ==========================================================
 
 void game_mode::loadModels() {
+    // 미로
     roads.push_back(new StaticModel("road/road0.obj"));   // 0동
     roads.push_back(new StaticModel("road/road1.obj"));   // 1서 
     roads.push_back(new StaticModel("road/road2.obj"));   // 2남 
@@ -238,13 +235,17 @@ void game_mode::loadModels() {
     roads.push_back(new StaticModel("road/road14.obj"));  // 14+
     roads.push_back(new StaticModel("road/road15.obj"));  // 15x
     for(int i = 0; i < roads.size(); i++) {
-        roads[i]->set_obb(i);
+        roads[i]->set_maze_obb(i);
 	}
-
-    // 미로 설정
     maze.setMaze();
     maze.initmaze(&roads);
 
+    //과녁
+	target_model = new StaticModel("target/cube.obj");
+    target.init(target_model,target_count);
+    set_taret_in_maze();    //미로에 과녁 배치
+
+    //은랑
     silverWolf.Init();
 
     silverWolf.silverWolfModel[0] = new NewModel("silver_wolf/Idle.fbx");
@@ -390,5 +391,9 @@ void game_mode::Mouse(int button, int state, int x, int y) {
 void game_mode::PassiveMotion(int x, int y) {
     if(silverWolf.init_success)
 	gameCamera.PassiveMotion(x, y);
+}
+
+void game_mode::set_taret_in_maze() {  // 과녁에서 미로 객체를 가져올 수 없어서 여기서 배치해줌
+
 }
 

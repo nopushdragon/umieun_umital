@@ -213,7 +213,7 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
     return staticMesh;
 }
 
-void StaticModel::set_obb(int idx) {
+void StaticModel::set_maze_obb(int idx) {
     road_local_obb.center = glm::vec3(0.0f, 0.0f, 0.0f);;
     road_local_obb.half_length = glm::vec3(ROAD_SIZE / 2, 0.1f, ROAD_SIZE / 2);
     road_local_obb.u[0] = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -221,57 +221,57 @@ void StaticModel::set_obb(int idx) {
     road_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
 
     if (idx == 0) { // 동
-        maze_obb_setup(true, true, true, true, false, false, true, true, true);
+        maze_obb_block(true, true, true, true, false, false, true, true, true);
     }
     else if (idx == 1) { // 서
-        maze_obb_setup(true, true, true, false, false, true, true, true, true);
+        maze_obb_block(true, true, true, false, false, true, true, true, true);
     }
     else if (idx == 2) { // 남
-        maze_obb_setup(true, true, true, true, false, true, true, false, true);
+        maze_obb_block(true, true, true, true, false, true, true, false, true);
     }
     else if (idx == 3) { // 북
-        maze_obb_setup(true, false, true, true, false, true, true, true, true);
+        maze_obb_block(true, false, true, true, false, true, true, true, true);
     }
     else if (idx == 4) { // ㅡ
-        maze_obb_setup(true, true, true, false, false, false, true, true, true);
+        maze_obb_block(true, true, true, false, false, false, true, true, true);
     }
     else if (idx == 5) { // ㅣ
-        maze_obb_setup(true, false, true, true, false, true, true, false, true);
+        maze_obb_block(true, false, true, true, false, true, true, false, true);
 	}
     else if (idx == 6) { // ┌
-        maze_obb_setup(true, true, true, true, false, false, true, false, true);
+        maze_obb_block(true, true, true, true, false, false, true, false, true);
     }
     else if (idx == 7) { // ┐
-        maze_obb_setup(true, true, true, false, false, true, true, false, true);
+        maze_obb_block(true, true, true, false, false, true, true, false, true);
     }
     else if (idx == 8) { // └
-        maze_obb_setup(true, false, true, true, false, false, true, true, true);
+        maze_obb_block(true, false, true, true, false, false, true, true, true);
     }
     else if (idx == 9) { // ┘
-        maze_obb_setup(true, false, true, false, false, true, true, true, true);
+        maze_obb_block(true, false, true, false, false, true, true, true, true);
     }
     else if (idx == 10) { // ㅏ
-        maze_obb_setup(true, false, true, true, false, false, true, false, true);
+        maze_obb_block(true, false, true, true, false, false, true, false, true);
     }
     else if (idx == 11) { // ㅓ
-        maze_obb_setup(true, false, true, false, false, true, true, false, true);
+        maze_obb_block(true, false, true, false, false, true, true, false, true);
     }
     else if (idx == 12) { // ㅜ
-        maze_obb_setup(true, true, true, false, false, false, true, false, true);
+        maze_obb_block(true, true, true, false, false, false, true, false, true);
     }
     else if (idx == 13) { // ㅗ
-        maze_obb_setup(true, false, true, false, false, false, true, true, true);
+        maze_obb_block(true, false, true, false, false, false, true, true, true);
     }
     else if (idx == 14) { // +
-        maze_obb_setup(true, false, true, false, false, false, true, false, true);
+        maze_obb_block(true, false, true, false, false, false, true, false, true);
     }
     else if (idx == 15) { // x
-        maze_obb_setup(true, true, true, true, true, true, true, true, true);
+        maze_obb_block(true, true, true, true, true, true, true, true, true);
 	}
 }
 
-void StaticModel::maze_obb_setup(bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h, bool i) {
-	bool corners[9] = { a, b, c, d, e, f, g, h, i };
+void StaticModel::maze_obb_block(bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h, bool i) {
+    bool corners[9] = { a, b, c, d, e, f, g, h, i };
     int corner_idx = 0;
 
     for (int i = -1; i < 2; i++) {
@@ -289,6 +289,14 @@ void StaticModel::maze_obb_setup(bool a, bool b, bool c, bool d, bool e, bool f,
             corner_idx++;
         }
     }
+}
+
+void StaticModel::set_target_obb(){
+    target_local_obb.center = glm::vec3(0.0f, 0.0f, 0.0f);;
+    target_local_obb.half_length = glm::vec3(target_size / 2, target_size / 2, target_size / 2);
+    target_local_obb.u[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+    target_local_obb.u[1] = glm::vec3(0.0f, 1.0f, 0.0f);
+    target_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
 void StaticModel::SaveToBinary(const std::string& fileName) {

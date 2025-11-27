@@ -2,9 +2,11 @@
 #include "scene_manager.h"
 #include "static_model.h"
 #include "maze.h"
+#include "target.h"
 #include "silver_wolf.h"
 #include "camera.h"
 #include "collision.h"
+
 
 class game_mode : public Scene
 {
@@ -18,7 +20,9 @@ private:
     std::vector<StaticModel*> roads;
     MAZE maze;
 
-    // StaticModel* wallModel; // main.cpp에서 nullptr로 초기화만 되고 사용되지 않아 주석 처리 (필요시 해제)
+	StaticModel* target_model;
+	int target_count = 5;
+	TARGET target;
 
     // 카메라 및 화면 설정
 	camera gameCamera;
@@ -46,6 +50,8 @@ public:
 	void Update(float deltaTime) override;
 	void silverwolf_maze_collision();
     void update_chunk(int y, int x, int size);  // size: 중앙서부터 몇칸만큼의 범위로 할거냐
+
+    void set_taret_in_maze();
 
 	void OnPause() override;
 	void OnResume() override;
