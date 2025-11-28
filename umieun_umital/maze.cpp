@@ -1,8 +1,5 @@
 #include "maze.h"
 
-std::random_device rd;
-std::mt19937 mt(rd());
-
 void MAZE::printMaze() {
     for (int y = 0; y < maze_y; ++y) {
         for (int x = 0; x < maze_x; ++x) {

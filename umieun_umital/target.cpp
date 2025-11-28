@@ -1,29 +1,81 @@
-#include "target.h"
+ï»¿#include "target.h"
 
 void TARGET::init(StaticModel* target_model, int target_cnt) {
 	for (int i = 0; i < target_cnt; i++) {
 		targetInstance new_target;
 		new_target.modelPtr = target_model;
 		new_target.modelMatrix = glm::mat4(1.0f);
-		new_target.reset = glm::vec3(0.0f);	//ÃÊ±â ½ÃÀÛ°ªÀº game_mode¿¡¼­ ¼³Á¤
+		new_target.reset = glm::vec3(0.0f);	//ì´ˆê¸° ì‹œìž‘ê°’ì€ game_modeì—ì„œ ì„¤ì •
+		new_target.is_break = false;
+		new_target.is_in_chunk = false;
+
+		uniform_real_distribution<float> rd_rotate(0.0f, 360.0f);
+		new_target.rotation_angle = rd_rotate(mt);
+
+
 		targetBlocks.push_back(new_target);
 	}
 }
 
 void TARGET::update() {
+	const float AMPLITUDE = 0.5f; // ìµœëŒ€ 0.5 ìƒìŠ¹/í•˜ê°•
+	const float SPEED_FACTOR = 0.05f; // ì›€ì§ìž„ ì†ë„ ì¡°ì ˆ
 
+	for (auto& target : targetBlocks) {
+		if (target.is_break || !target.is_in_chunk) continue;
+
+		// ëª©ì ì§€ ì„¤ì • ë° ì´ë™
+		if (target.move_t >= 1.5f) {
+			target.move_t = 0.0f;
+		}
+
+		if (target.move_t == 0.0f) {
+			uniform_real_distribution<float> rd_goal_x(target.reset.x - 5.0f, target.reset.x + 5.0f);
+			uniform_real_distribution<float> rd_goal_y(target.reset.y - 2.0f, target.reset.y + 5.0f);
+			uniform_real_distribution<float> rd_goal_z(target.reset.z - 5.0f, target.reset.z + 5.0f);
+
+			target.origin_pos = target.modelMatrix[3];
+			target.goal_pos = glm::vec3(rd_goal_x(mt), rd_goal_y(mt), rd_goal_z(mt));
+		}
+		target.move_t += 0.002f;
+		glm::vec3 move_pos;
+		if (target.move_t <= 1.0f) move_pos = (1.0f - target.move_t) * target.origin_pos + target.move_t * target.goal_pos;
+		else move_pos = target.goal_pos;
+
+		// ëª©ì ì§€ ë°”ë¼ë³´ê¸°
+		glm::vec3 direction = target.goal_pos - move_pos;
+		direction.y = 0.0f;
+		if (glm::length(direction) > 0.0001f) {
+			float angle_rad = atan2(direction.x, direction.z);
+			angle_rad -= glm::radians(90.0f);
+			target.rotation_angle = glm::degrees(angle_rad);
+		}
+
+		// ë‘¥ì‹¤ë‘¥ì‹¤
+		target.timer++;
+		float float_y_offset = AMPLITUDE * std::sin((float)target.timer * SPEED_FACTOR);
+		move_pos.y += float_y_offset;
+
+		target.modelMatrix = glm::mat4(1.0f);
+		target.modelMatrix = glm::translate(target.modelMatrix, move_pos);
+		target.modelMatrix = glm::rotate(target.modelMatrix, glm::radians(target.rotation_angle), glm::vec3(0.0f, 1.0f, 0.0f));
+		target.modelMatrix = glm::scale(target.modelMatrix, glm::vec3(0.3f));
+	}
+
+	update_world_obb();
 }
 
 void TARGET::update_world_obb() {
 	for(auto& target: targetBlocks) {
+		if (target.is_break || !target.is_in_chunk) continue;
 		glm::mat4 modelMat = target.modelMatrix;
 		glm::mat3 rotation_scale_mat = glm::mat3(modelMat);
 
-		// Local OBB µ¥ÀÌÅÍ (StaticModel ³» °øÀ¯µÇ´Â µ¥ÀÌÅÍ)
-		const OBB& target_local_obb = target.modelPtr->road_local_obb;
+		// Local OBB ë°ì´í„° (StaticModel ë‚´ ê³µìœ ë˜ëŠ” ë°ì´í„°)
+		const OBB& target_local_obb = target.modelPtr->target_local_obb;
 
 		//=========================================
-		// target_local_obb¸¦ target_world_obb·Î º¯È¯
+		// target_local_obbë¥¼ target_world_obbë¡œ ë³€í™˜
 		glm::vec4 target_local_center_h = glm::vec4(target_local_obb.center, 1.0f);
 		glm::vec3 world_center = glm::vec3(modelMat * target_local_center_h);
 		target.target_obb.center = world_center;
@@ -36,11 +88,11 @@ void TARGET::update_world_obb() {
 				target.target_obb.u[i] = target_local_obb.u[i];
 			}
 		}
-		glm::vec3 road_scale_factors = glm::vec3(
+		glm::vec3 target_scale_factors = glm::vec3(
 			glm::length(rotation_scale_mat[0]),
 			glm::length(rotation_scale_mat[1]),
 			glm::length(rotation_scale_mat[2])
 		);
-		target.target_obb.half_length = target_local_obb.half_length * road_scale_factors;
+		target.target_obb.half_length = target_local_obb.half_length * target_scale_factors;
 	}
 }

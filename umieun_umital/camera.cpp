@@ -28,12 +28,14 @@ void camera::Update(float deltatime, glm::vec3 targetPos) {
 		offset.z += 0.05f;
 		glm::vec3 v = glm::normalize(camPos - camTarget);
 		camPos = camTarget + v * (-offset.z);
+		camPos.x -= 0.02f;//¹Î¿ë
 
 	}
 	else if (!right_mouth && offset.z >= ori_offset.z) {
 		offset.z -= 0.05f;
 		glm::vec3 v = glm::normalize(camPos - camTarget);
 		camPos = camTarget + v * (-offset.z);
+		camPos.x += 0.02f;//¹Î¿ë
 	}
 
 

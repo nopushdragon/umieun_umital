@@ -1,7 +1,7 @@
-#define STB_IMAGE_IMPLEMENTATION
+ï»¿#define STB_IMAGE_IMPLEMENTATION
 #include "game_mode.h"
 
-// ¼ÎÀÌ´õ ÆÄÀÏ °æ·Î »ó¼ö
+// ì…°ì´ë” íŒŒì¼ ê²½ë¡œ ìƒìˆ˜
 const char* STATIC_VERT = "static_vertex.glsl";
 const char* ANIMATED_VERT = "animated_vertex.glsl";
 const char* FRAGMENT_LIGHT = "fragment.glsl";
@@ -10,9 +10,7 @@ using namespace std;
 
 
 
-
-
-// »ı¼ºÀÚ: º¯¼ö ÃÊ±â°ª ¼³Á¤
+// ìƒì„±ì: ë³€ìˆ˜ ì´ˆê¸°ê°’ ì„¤ì •
 game_mode::game_mode() {
 
 
@@ -21,53 +19,56 @@ game_mode::game_mode() {
     materialSpecular = glm::vec3(0.0f, 0.0f, 0.0f);
     ambientStrength = 0.1f;
     shininess = 32;
-    
+
 }
 
 game_mode::~game_mode() {
-    // Finish()°¡ È£ÃâµÇÁö ¾Ê°í ÆÄ±«µÉ °æ¿ì¸¦ ´ëºñ
-    // (ÀÏ¹İÀûÀ¸·Î´Â Finish¿¡¼­ Á¤¸®ÇÔ)
+    // Finish()ê°€ í˜¸ì¶œë˜ì§€ ì•Šê³  íŒŒê´´ë  ê²½ìš°ë¥¼ ëŒ€ë¹„
+    // (ì¼ë°˜ì ìœ¼ë¡œëŠ” Finishì—ì„œ ì •ë¦¬í•¨)
 }
 
-// 1. ÃÊ±âÈ­ (±âÁ¸ init ÇÔ¼ö ³»¿ë)
+// 1. ì´ˆê¸°í™” (ê¸°ì¡´ init í•¨ìˆ˜ ë‚´ìš©)
 void game_mode::Init() {
 
 
-    // GLEW ÃÊ±âÈ­´Â º¸Åë Framework³ª Main¿¡¼­ ÇÑ ¹ø ÇÏÁö¸¸, 
-    // ¿©±â¼­ ¼ÎÀÌ´õ ÄÄÆÄÀÏÀ» ¼öÇàÇÕ´Ï´Ù.
+    // GLEW ì´ˆê¸°í™”ëŠ” ë³´í†µ Frameworkë‚˜ Mainì—ì„œ í•œ ë²ˆ í•˜ì§€ë§Œ, 
+    // ì—¬ê¸°ì„œ ì…°ì´ë” ì»´íŒŒì¼ì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.
 
     cout << "[GameMode] Initializing..." << endl;
 
-    // ¼ÎÀÌ´õ ·Îµå
+    // ì…°ì´ë” ë¡œë“œ
     loadShader(STATIC_VERT, FRAGMENT_LIGHT, shaderProgramStatic);
     loadShader(ANIMATED_VERT, FRAGMENT_LIGHT, shaderProgramAnimated);
 
-    // ¸ğµ¨ ·Îµå
+    // ëª¨ë¸ ë¡œë“œ
     loadModels();
 
-    // Ä«¸Ş¶ó À§Ä¡
+    // ì¹´ë©”ë¼ ìœ„ì¹˜
     /*camPos = glm::vec3(start_x_pos, 5.0f, start_z_pos - 5.0f);
     camTarget = glm::vec3(start_x_pos, 0.0f, start_z_pos+5.0f);*/
     glm::vec3 targetPos = silverWolf.pos;
-    
-    
-    glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
-	gameCamera.Init(targetPos);
 
-    
+
+    glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+    gameCamera.Init(targetPos);
+
+
     glEnable(GL_DEPTH_TEST);
 }
 
 float deltatime;
-// 2. ¾÷µ¥ÀÌÆ® (±âÁ¸ timer ÇÔ¼ö ³»¿ë Áß ·ÎÁ÷ ºÎºĞ)
+// 2. ì—…ë°ì´íŠ¸ (ê¸°ì¡´ timer í•¨ìˆ˜ ë‚´ìš© ì¤‘ ë¡œì§ ë¶€ë¶„)
 void game_mode::Update(float deltaTime) {
-    silverWolf.Update(deltaTime,gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
+    silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
     gameCamera.Update(deltaTime, silverWolf.pos);
     silverwolf_maze_collision();
-    //Ä«¸Ş¶ó °íÁ¤
-	if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
-	
-	deltatime = deltaTime;
+    //ì¹´ë©”ë¼ ê³ ì •
+    if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+
+    //ê³¼ë…
+    target.update();
+
+    deltatime = deltaTime;
 }
 
 void game_mode::silverwolf_maze_collision() {
@@ -79,7 +80,7 @@ void game_mode::silverwolf_maze_collision() {
         }
     }
 
-    // Ã»Å© ´ÜÀ§ Ãæµ¹
+    // ì²­í¬ ë‹¨ìœ„ ì¶©ëŒ
     bool stop = false;
     for (int i = 1; i < maze_y - 1; i++) {
         for (int j = 1; j < maze_x - 1; j++) {
@@ -92,7 +93,7 @@ void game_mode::silverwolf_maze_collision() {
         if (stop) break;
     }
 
-    // Ã»Å© ±âÁØÀ¸·Î Àå¾Ö¹° Ãæµ¹ °Ë»ç
+    // ì²­í¬ ê¸°ì¤€ìœ¼ë¡œ ì¥ì• ë¬¼ ì¶©ëŒ ê²€ì‚¬
     for (auto& block : maze.mazeBlocks) {
         if (block.is_colliding == true) {
             for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
@@ -116,65 +117,87 @@ void game_mode::update_chunk(int y, int x, int size) {
             maze.mazeBlocks[(i * maze_x) + j].is_colliding = true;
         }
     }
+
+    for (auto& t : target.targetBlocks) {
+        t.is_in_chunk = false;
+        if (t.modelMatrix[3].x > (min_x * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && t.modelMatrix[3].x < ((max_x + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
+            t.modelMatrix[3].y >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && t.modelMatrix[3].y < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
+            t.is_in_chunk = true;
+        }
+    }
 }
 
-// 3. ±×¸®±â (±âÁ¸ drawScene ÇÔ¼ö ³»¿ë)
+// 3. ê·¸ë¦¬ê¸° (ê¸°ì¡´ drawScene í•¨ìˆ˜ ë‚´ìš©)
 void game_mode::Draw() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // ºä, ÇÁ·ÎÁ§¼Ç Çà·Ä °è»ê
+    // ë·°, í”„ë¡œì ì…˜ í–‰ë ¬ ê³„ì‚°
     glm::mat4 view = glm::lookAt(gameCamera.camPos, gameCamera.camTarget, gameCamera.camUp);
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
 
-    // --- 1. Á¤Àû ¿ÀºêÁ§Æ® (¹Ì·Î, ¹Ù´Ú) ---
+    // static ëª¨ë¸ ê·¸ë¦¬ê¸°
     glUseProgram(shaderProgramStatic);
     setCommonUniforms(shaderProgramStatic, view, proj);
 
-    // ¹Ì·Î ±×¸®±â´Â initmaze ³»ºÎ¿¡¼­ ¼³Á¤µÈ roads º¤ÅÍ³ª 
-    // mazeBlocks¸¦ ÅëÇØ ±×·ÁÁú °ÍÀ¸·Î ÃßÁ¤µË´Ï´Ù.
-    // ±âÁ¸ main.cpp¿¡´Â ÁÖ¼®Ã³¸® µÇ¾îÀÖ¾úÀ¸³ª, 
-    // ½ÇÁ¦·Î´Â roads¿¡ ÀÖ´Â ¸ğµ¨µéÀÌ ¾îµò°¡¿¡¼­ ±×·ÁÁ®¾ß ÇÕ´Ï´Ù.
-    // (¸¸¾à roads º¤ÅÍ¸¦ ¼øÈ¸ÇÏ¸ç ±×·Á¾ß ÇÑ´Ù¸é ¾Æ·¡ ÄÚµå »ç¿ë)
-    for (auto& block : maze.mazeBlocks) {
+    for (auto& block : maze.mazeBlocks) {   //ë¯¸ë¡œ
         if (block.is_colliding) {
             glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(block.modelMatrix));
             if (block.modelPtr)
             {
-                // ¸Ş½Ãº° ÀçÁú/»ö»ó Á¤º¸ ¼³Á¤ ¹× µå·Î¿ì
+                // ë©”ì‹œë³„ ì¬ì§ˆ/ìƒ‰ìƒ ì •ë³´ ì„¤ì • ë° ë“œë¡œìš°
                 for (auto& mesh : block.modelPtr->meshes)
                 {
-                    // ¸Ş½Ã ±×¸®±â. ÀÌÁ¦ Draw ÇÔ¼ö°¡ ÀçÁú À¯´ÏÆûÀ» ¼³Á¤ÇÕ´Ï´Ù.
+                    // ë©”ì‹œ ê·¸ë¦¬ê¸°. ì´ì œ Draw í•¨ìˆ˜ê°€ ì¬ì§ˆ ìœ ë‹ˆí¼ì„ ì„¤ì •í•©ë‹ˆë‹¤.
                     mesh.Draw(shaderProgramStatic);
                 }
             }
         }
     }
 
-    //glDisable(GL_DEPTH_TEST); // OBB°¡ °ãÃÄµµ Ç×»ó º¸ÀÌ°Ô (¼±ÅÃ »çÇ×)
-    glLineWidth(3.0f);        // ¼± ±½±â ¼³Á¤
-
-    for (auto& block : maze.mazeBlocks) {
-        if (block.is_colliding) {
-            if (block.modelPtr) {
-                drawDebugOBB(shaderProgramStatic, block.road_world_obb, view, proj, glm::vec3(0.0f, 1.0f, 0.0f)); // ÃÊ·Ï»ö
-
-                for (int i = 0; i < block.obstacle_world_obb.size(); i++)
-                    drawDebugOBB(shaderProgramStatic, block.obstacle_world_obb[i], view, proj, glm::vec3(1.0f, 1.0f, 0.0f)); // ³ë¶õ»ö
+    for (auto& t : target.targetBlocks) {   //ê³¼ë…
+        if (t.is_break || !t.is_in_chunk) continue;
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(t.modelMatrix));
+        if (t.modelPtr)
+        {
+            // ë©”ì‹œë³„ ì¬ì§ˆ/ìƒ‰ìƒ ì •ë³´ ì„¤ì • ë° ë“œë¡œìš°
+            for (auto& mesh : t.modelPtr->meshes)
+            {
+                // ë©”ì‹œ ê·¸ë¦¬ê¸°. ì´ì œ Draw í•¨ìˆ˜ê°€ ì¬ì§ˆ ìœ ë‹ˆí¼ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+                mesh.Draw(shaderProgramStatic);
             }
         }
     }
 
-    //glEnable(GL_DEPTH_TEST); // DEPTH TEST º¹¿ø
+    // ë””ë²„ê·¸ìš© OBB ê·¸ë¦¬ê¸°
+    glLineWidth(3.0f);        // ì„  êµµê¸° ì„¤ì •
 
-    // --- 2. ¾Ö´Ï¸ŞÀÌ¼Ç Ä³¸¯ÅÍ ---
+    for (auto& block : maze.mazeBlocks) {   // ë¯¸ë¡œ obb
+        if (block.is_colliding) {
+            if (block.modelPtr) {
+                drawDebugOBB(shaderProgramStatic, block.road_world_obb, view, proj, glm::vec3(0.0f, 1.0f, 0.0f)); // ì´ˆë¡ìƒ‰
+
+                for (int i = 0; i < block.obstacle_world_obb.size(); i++) {
+                    drawDebugOBB(shaderProgramStatic, block.obstacle_world_obb[i], view, proj, glm::vec3(1.0f, 1.0f, 0.0f)); // ë…¸ë€ìƒ‰
+                }
+            }
+        }
+    }
+
+    for (auto& t : target.targetBlocks) {   // ê³¼ë… obb
+        if (t.is_break || !t.is_in_chunk) continue;
+        drawDebugOBB(shaderProgramStatic, t.target_obb, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // íŒŒë€ìƒ‰
+    }
+
+
+    // --- 2. ì• ë‹ˆë©”ì´ì…˜ ìºë¦­í„° ---
     glUseProgram(shaderProgramAnimated);
     setCommonUniforms(shaderProgramAnimated, view, proj);
 
-    // ½Ã°£°ª Àü´Ş (glutGetÀ» ±×´ë·Î »ç¿ëÇÏ°Å³ª, ´©Àû ½Ã°£À» »ç¿ëÇÒ ¼ö ÀÖÀ½)
-    silverWolf.Draw(shaderProgramAnimated, deltatime, view,  proj, glm::vec3(1.0f, 0.0f, 1.0f));
+    // ì‹œê°„ê°’ ì „ë‹¬ (glutGetì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•˜ê±°ë‚˜, ëˆ„ì  ì‹œê°„ì„ ì‚¬ìš©í•  ìˆ˜ ìˆìŒ)
+    silverWolf.Draw(shaderProgramAnimated, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
-    drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // »¡°£»ö
+    drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // ë¹¨ê°„ìƒ‰
 }
 
 void game_mode::Keyboard(unsigned char key, int x, int y) {
@@ -228,29 +251,26 @@ void game_mode::PassiveMotion(int x, int y) {
         gameCamera.PassiveMotion(x, y, camera_fixed);
 }
 
-void game_mode::set_taret_in_maze() {  // °ú³á¿¡¼­ ¹Ì·Î °´Ã¼¸¦ °¡Á®¿Ã ¼ö ¾ø¾î¼­ ¿©±â¼­ ¹èÄ¡ÇØÁÜ
-    //¤Ç
-}
 void  game_mode::Motion(int x, int y) {
     gameCamera.Motion(x, y, camera_fixed);
 }
 
-// 4. Á¤¸® (Á¾·á ½Ã ¸Ş¸ğ¸® ÇØÁ¦)
+// 4. ì •ë¦¬ (ì¢…ë£Œ ì‹œ ë©”ëª¨ë¦¬ í•´ì œ)
 void game_mode::Finish() {
-    // ·ÎµåµÈ µµ·Î ¸ğµ¨µé »èÁ¦
+    // ë¡œë“œëœ ë„ë¡œ ëª¨ë¸ë“¤ ì‚­ì œ
     for (auto p : roads) {
         delete p;
     }
     roads.clear();
 
-    // ´Á´ë ¸ğµ¨ »èÁ¦ (silver_wolf Å¬·¡½º ³»ºÎ ±¸Á¶¿¡ µû¶ó ´Ù¸¦ ¼ö ÀÖÀ½)
-    // NewModel* Æ÷ÀÎÅÍµéÀ» °¡Áö°í ÀÖ´Ù¸é ¿©±â¼­ delete ÇØÁÖ´Â °ÍÀÌ ÁÁÀ½
+    // ëŠ‘ëŒ€ ëª¨ë¸ ì‚­ì œ (silver_wolf í´ë˜ìŠ¤ ë‚´ë¶€ êµ¬ì¡°ì— ë”°ë¼ ë‹¤ë¥¼ ìˆ˜ ìˆìŒ)
+    // NewModel* í¬ì¸í„°ë“¤ì„ ê°€ì§€ê³  ìˆë‹¤ë©´ ì—¬ê¸°ì„œ delete í•´ì£¼ëŠ” ê²ƒì´ ì¢‹ìŒ
     for (int i = 0; i < 7; ++i) {
         if (silverWolf.silverWolfModel[i])
             delete silverWolf.silverWolfModel[i];
     }
 
-    // ¼ÎÀÌ´õ ÇÁ·Î±×·¥ »èÁ¦
+    // ì…°ì´ë” í”„ë¡œê·¸ë¨ ì‚­ì œ
     glDeleteProgram(shaderProgramStatic);
     glDeleteProgram(shaderProgramAnimated);
 }
@@ -262,48 +282,49 @@ void game_mode::Reshape(int w, int h) {
 }
 
 void game_mode::OnPause() {
-    // ¿É¼Ç Ã¢ µîÀ» ¿­¾úÀ» ¶§ ¸ØÃç¾ß ÇÒ ·ÎÁ÷ÀÌ ÀÖ´Ù¸é ¿©±â¿¡ ÀÛ¼º
+    // ì˜µì…˜ ì°½ ë“±ì„ ì—´ì—ˆì„ ë•Œ ë©ˆì¶°ì•¼ í•  ë¡œì§ì´ ìˆë‹¤ë©´ ì—¬ê¸°ì— ì‘ì„±
 }
 
 void game_mode::OnResume() {
-    // ¿É¼Ç Ã¢ ´İ°í µ¹¾Æ¿ÔÀ» ¶§ º¹±¸ÇÒ ·ÎÁ÷
-    glEnable(GL_DEPTH_TEST); // È¤½Ã ´Ù¸¥ ¾À¿¡¼­ ²°À»±îºÁ ´Ù½Ã ÄÔ
+    // ì˜µì…˜ ì°½ ë‹«ê³  ëŒì•„ì™”ì„ ë•Œ ë³µêµ¬í•  ë¡œì§
+    glEnable(GL_DEPTH_TEST); // í˜¹ì‹œ ë‹¤ë¥¸ ì”¬ì—ì„œ ê»ì„ê¹Œë´ ë‹¤ì‹œ ì¼¬
 }
 
 // ==========================================================
-// [Helper Functions] ±âÁ¸ main.cppÀÇ ÇÔ¼öµéÀ» ¸â¹ö ÇÔ¼ö·Î ÀÌ½Ä
+// [Helper Functions] ê¸°ì¡´ main.cppì˜ í•¨ìˆ˜ë“¤ì„ ë©¤ë²„ í•¨ìˆ˜ë¡œ ì´ì‹
 // ==========================================================
 
 void game_mode::loadModels() {
-    // ¹Ì·Î
-    roads.push_back(new StaticModel("road/road0.obj"));   // 0µ¿
-    roads.push_back(new StaticModel("road/road1.obj"));   // 1¼­ 
-    roads.push_back(new StaticModel("road/road2.obj"));   // 2³² 
-    roads.push_back(new StaticModel("road/road3.obj"));   // 3ºÏ
-    roads.push_back(new StaticModel("road/road4.obj"));   // 4¤Ñ
-    roads.push_back(new StaticModel("road/road5.obj"));   // 5¤Ó
-    roads.push_back(new StaticModel("road/road6.obj"));   // 6¦£
-    roads.push_back(new StaticModel("road/road7.obj"));   // 7¦¤
-    roads.push_back(new StaticModel("road/road8.obj"));   // 8¦¦
-    roads.push_back(new StaticModel("road/road9.obj"));   // 9¦¥
-    roads.push_back(new StaticModel("road/road10.obj"));  // 10¤¿
-    roads.push_back(new StaticModel("road/road11.obj"));  // 11¤Ã
-    roads.push_back(new StaticModel("road/road12.obj"));  // 12¤Ì
-    roads.push_back(new StaticModel("road/road13.obj"));  // 13¤Ç
+    // ë¯¸ë¡œ
+    roads.push_back(new StaticModel("road/road0.obj"));   // 0ë™
+    roads.push_back(new StaticModel("road/road1.obj"));   // 1ì„œ 
+    roads.push_back(new StaticModel("road/road2.obj"));   // 2ë‚¨ 
+    roads.push_back(new StaticModel("road/road3.obj"));   // 3ë¶
+    roads.push_back(new StaticModel("road/road4.obj"));   // 4ã…¡
+    roads.push_back(new StaticModel("road/road5.obj"));   // 5ã…£
+    roads.push_back(new StaticModel("road/road6.obj"));   // 6â”Œ
+    roads.push_back(new StaticModel("road/road7.obj"));   // 7â”
+    roads.push_back(new StaticModel("road/road8.obj"));   // 8â””
+    roads.push_back(new StaticModel("road/road9.obj"));   // 9â”˜
+    roads.push_back(new StaticModel("road/road10.obj"));  // 10ã…
+    roads.push_back(new StaticModel("road/road11.obj"));  // 11ã…“
+    roads.push_back(new StaticModel("road/road12.obj"));  // 12ã…œ
+    roads.push_back(new StaticModel("road/road13.obj"));  // 13ã…—
     roads.push_back(new StaticModel("road/road14.obj"));  // 14+
     roads.push_back(new StaticModel("road/road15.obj"));  // 15x
-    for(int i = 0; i < roads.size(); i++) {
+    for (int i = 0; i < roads.size(); i++) {
         roads[i]->set_maze_obb(i);
-	}
+    }
     maze.setMaze();
     maze.initmaze(&roads);
 
-    //°ú³á
-	target_model = new StaticModel("target/cube.obj");
-    target.init(target_model,target_count);
-    set_taret_in_maze();    //¹Ì·Î¿¡ °ú³á ¹èÄ¡
+    //ê³¼ë…
+    target_model = new StaticModel("target/baudrive.obj");
+    target_model->set_target_obb();
+    target.init(target_model, target_count);
+    set_taret_in_maze();    //ë¯¸ë¡œì— ê³¼ë… ë°°ì¹˜
 
-    //Àº¶û
+    //ì€ë‘
     silverWolf.Init();
 
     silverWolf.silverWolfModel[0] = new NewModel("silver_wolf/Idle.fbx");
@@ -403,5 +424,29 @@ void game_mode::loadShader(const char* vertPath, const char* fragPath, GLuint& s
     glDeleteShader(fragShader);
 }
 
+void game_mode::set_taret_in_maze() {  // ê³¼ë…ì—ì„œ ë¯¸ë¡œ ê°ì²´ë¥¼ ê°€ì ¸ì˜¬ ìˆ˜ ì—†ì–´ì„œ ì—¬ê¸°ì„œ ë°°ì¹˜í•´ì¤Œ
+    uniform_int_distribution<int> rd_x(1, maze_x - 2);
+    uniform_int_distribution<int> rd_y(1, maze_y - 2);
 
+    for (int i = 0; i < target.targetBlocks.size();i++) {
 
+        while (1) {
+            int rand_x = rd_x(mt), rand_y = rd_y(mt);
+            bool rd_flag = false;
+            if (maze.maze[rand_y][rand_x].path_wall == WALL || maze.maze[rand_y][rand_x].type == 15 || (rand_y == 1 && rand_x == 1)) continue;
+            for (int j = 0; j < i;j++) {
+                if (target.targetBlocks[j].modelMatrix == maze.mazeBlocks[(rand_y * maze_x) + rand_x].modelMatrix) {
+                    rd_flag = true;
+                    break;
+                }
+            }
+            if (rd_flag) continue;
+
+            target.targetBlocks[i].modelMatrix = maze.mazeBlocks[(rand_y * maze_x) + rand_x].modelMatrix;
+            target.targetBlocks[i].reset = glm::vec3(target.targetBlocks[i].modelMatrix[3][0], ROAD_SIZE / 4, target.targetBlocks[i].modelMatrix[3][2]); // ìœ„ì¹˜ ì €ì¥
+            cout << rand_y << "," << rand_x << endl;
+            break;
+        }
+    }
+
+}
