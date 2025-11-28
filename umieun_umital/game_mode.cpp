@@ -61,7 +61,7 @@ void game_mode::Init() {
 float deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
-    silverWolf.Update(deltaTime,gameCamera.camera_x_angle);
+    silverWolf.Update(deltaTime,gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
     gameCamera.Update(deltaTime, silverWolf.pos);
     silverwolf_maze_collision();
     //카메라 고정
@@ -172,9 +172,67 @@ void game_mode::Draw() {
     setCommonUniforms(shaderProgramAnimated, view, proj);
 
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
-    silverWolf.Draw(shaderProgramAnimated, deltatime);
+    silverWolf.Draw(shaderProgramAnimated, deltatime, view,  proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
     drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
+}
+
+void game_mode::Keyboard(unsigned char key, int x, int y) {
+
+    silverWolf.Keyboard(key, x, y);
+
+    switch (key)
+    {
+    case'g':
+    case'G':
+        camera_fixed = true;
+        glutSetCursor(GLUT_CURSOR_INHERIT);
+        break;
+    }
+
+}
+void game_mode::Keyupboard(unsigned char key, int x, int y) {
+
+    silverWolf.Keyupboard(key, x, y);
+
+    switch (key)
+    {
+    case 27:
+        exit(0);
+        break;
+    case'g':
+    case'G':
+        camera_fixed = false;
+        //glutSetCursor(GLUT_CURSOR_NONE);
+        break;
+    }
+}
+
+void game_mode::SpecialKeyboard(int key, int x, int y) {
+    silverWolf.SpecialKeyboard(key, x, y);
+
+
+}
+
+void game_mode::SpecialUpKeyboard(int key, int x, int y) {
+    silverWolf.SpecialUpKeyboard(key, x, y);
+}
+
+void game_mode::Mouse(int button, int state, int x, int y) {
+    gameCamera.Mouse(button, state, x, y);
+    silverWolf.Mouse(button, state, x, y);
+}
+
+void game_mode::PassiveMotion(int x, int y) {
+    if (silverWolf.init_success)
+        gameCamera.PassiveMotion(x, y, camera_fixed);
+}
+
+void game_mode::set_taret_in_maze() {  // 과녁에서 미로 객체를 가져올 수 없어서 여기서 배치해줌
+    //ㅗ
+}
+void  game_mode::Motion(int x, int y) {
+    gameCamera.Motion(x, y, camera_fixed);
 }
 
 // 4. 정리 (종료 시 메모리 해제)
@@ -345,55 +403,5 @@ void game_mode::loadShader(const char* vertPath, const char* fragPath, GLuint& s
     glDeleteShader(fragShader);
 }
 
-void game_mode::Keyboard(unsigned char key, int x, int y) {
 
-    silverWolf.Keyboard(key, x, y);
-
-    switch (key)
-    {
-    case'g':
-        camera_fixed = true;
-        glutSetCursor(GLUT_CURSOR_INHERIT);
-        break;
-    }
-
-}
-void game_mode::Keyupboard(unsigned char key, int x, int y) {
-
-    silverWolf.Keyupboard(key, x, y);
-
-    switch (key)
-    {
-    case 27:
-            exit(0);
-            break;
-    case'g':
-        camera_fixed = false;
-        //glutSetCursor(GLUT_CURSOR_NONE);
-        break;
-    }
-}
-
-void game_mode::SpecialKeyboard(int key, int x, int y) {
-	silverWolf.SpecialKeyboard(key, x, y);
-    
-   
-}
-
-void game_mode::SpecialUpKeyboard(int key, int x, int y) {
-	silverWolf.SpecialUpKeyboard(key, x, y);
-}
-
-void game_mode::Mouse(int button, int state, int x, int y) {
-    silverWolf.Mouse(button, state,  x,  y);
-}
-
-void game_mode::PassiveMotion(int x, int y) {
-    if(silverWolf.init_success)
-	gameCamera.PassiveMotion(x, y);
-}
-
-void game_mode::set_taret_in_maze() {  // 과녁에서 미로 객체를 가져올 수 없어서 여기서 배치해줌
-
-}
 

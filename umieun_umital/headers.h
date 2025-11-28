@@ -11,6 +11,7 @@
 #include <fstream>
 #include <random>
 #include <sstream>
+#include <array>
 #include <map>
 #include <string_view>
 #include "fmod.hpp"

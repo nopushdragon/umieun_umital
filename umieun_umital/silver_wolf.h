@@ -8,6 +8,20 @@ class silver_wolf
 {
 private:
 	WolfState* currentState;
+
+	float max_rock_distance = 10.0f;
+	float max_angle_difference = 30.0f;
+	float min_rock_distance = 1.0f;
+	float rock_distance = max_rock_distance - min_rock_distance;
+	
+	
+	glm::vec3 rock_height_pos = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	glm::vec3 rock_end_pos = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	array<glm::vec3, 500> rock_path;
+
+	
 public:
 
 	NewModel* silverWolfModel[9];
@@ -19,6 +33,7 @@ public:
 	float angle = 0.0f;
 	glm::mat4 modelMat = glm::mat4(1.0f);
 	string state = "idle";
+	bool camera_right_mouth = false;
 
 	// OBB ¹Î¿ë
 	OBB silverwolf_local_obb;
@@ -60,6 +75,13 @@ public:
 
 	//x¾Þ±Û
 	float camera_angle = 0.0f;
+	float old_camera_angle = 0.0f;
+
+	//Àº¶û °¢µµ
+	float silver_angle = 0.0f;
+
+	//µ¹ À§Ä¡
+
 
 
 
@@ -68,11 +90,11 @@ public:
 
 	void Init();
 
-	void Update(float deltatime,const float &camera_x_angle);
+	void Update(float deltatime,const float &camera_x_angle, const float& camera_y_angle, const bool& right_mouth);
 
 	void ChangeState(WolfState* newState);
 
-	void Draw(GLuint shaderID, float currentTime);
+	void Draw(GLuint shaderID, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
 
 	void Keyboard(unsigned char key, int x, int y);
 
@@ -85,6 +107,11 @@ public:
 	void Mouse(int button, int state, int x, int y);
 
 	void ForceToIdle();
+
+	void Calculate(const float& camera_y_angle);
+
+	void Rock_path_draw(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
+
 
 
 	~silver_wolf();

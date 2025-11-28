@@ -15,18 +15,175 @@ void silver_wolf::Init() {
 	set_obb();
 }
 
-void silver_wolf::Update(float deltatime, const float& camera_x_angle) {
+void silver_wolf::Update(float deltatime, const float& camera_x_angle, const float& camera_y_angle, const bool& right_mouth) {
 	
 
 	old_pos = pos;
-	if (currentState) currentState->Update(this, deltatime);
 	camera_angle = camera_x_angle;
+	camera_right_mouth = right_mouth;
+
+	if (currentState) currentState->Update(this, deltatime);
 	update_world_obb();
 
-	//cout << pos.x << " " << pos.y << " " << pos.z << endl;
-	//cout << angle << endl;
-	
+
+
+	if (camera_right_mouth) {
+		glm::mat4 m = glm::rotate(glm::mat4(1.0f), glm::radians(-camera_x_angle), glm::vec3(0.0f, 1.0f, 0.0f));
+		//pos = glm::vec3(m * glm::vec4(pos, 1.0f));
+		angle = -camera_x_angle;
+		old_camera_angle = camera_x_angle;
+
+		Calculate(camera_y_angle);
+
+
+	}
 }
+
+void silver_wolf::Calculate(const float& camera_y_angle) {
+
+	//p1
+	glm::vec3 handOffset = glm::vec3(0.0f, 2.0f, 0.0f);
+	glm::vec3 p0 = pos + handOffset;
+
+
+	float angle_abs = std::abs(camera_y_angle);
+
+	float distance = max_rock_distance - (rock_distance / max_angle_difference * angle_abs);
+
+	glm::vec4 localDist = glm::vec4(0.0f, 0.0f, distance, 1.0f);
+
+	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(-old_camera_angle + silver_angle), glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+	//p2
+	glm::vec3 p2 = glm::vec3(rotation * localDist);
+	p2.x += pos.x;
+	p2.z += pos.z;
+	p2.y = 0.0f; 
+
+
+	glm::vec3 midPoint = (p0 + p2) * 0.5f;
+
+
+	float clampedPitch = std::max(0.0f, camera_y_angle);
+	float arcFactor = 0.5f;
+
+
+	float addedHeight = max_rock_distance * std::tan(glm::radians(clampedPitch)) * arcFactor*5;
+	rock_height_pos = midPoint;
+	rock_height_pos.y += addedHeight;
+
+	//버텍스 넣어주기
+	for (int i = 0;i < 500;++i) {
+		float t = static_cast<float>(i) / 499.0f;
+		glm::vec3 pointOnCurve = (1 - t) * (1 - t) * pos + 2 * (1 - t) * t * rock_height_pos + t * t * p2;
+		rock_path[i] = pointOnCurve;
+	}
+
+	/*cout << camera_y_angle << endl;
+	cout << "p0: " << p0.x << ", " << p0.y << ", " << p0.z << endl;
+	cout << "p1: " << rock_height_pos.x << ", " << rock_height_pos.y << ", " << rock_height_pos.z << endl;
+	cout << "p2: " << p2.x << ", " << p2.y << ", " << p2.z << endl;*/
+}
+
+
+
+void silver_wolf::Draw(GLuint shaderID, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
+	for (int i = 0;i < silver_wolf_fbx_size;++i) {
+		silverWolfModel[i]->pos = pos;
+		silverWolfModel[i]->scale = scale;
+		silverWolfModel[i]->angle = angle;
+	}
+	
+	currentState->Draw(this, shaderID, currentTime);
+
+	if (camera_right_mouth) {
+		Rock_path_draw(shaderID, view,proj, color);
+	}
+
+}
+
+void silver_wolf::Rock_path_draw(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
+	if (shaderID == 0) return;
+
+	glUseProgram(shaderID);
+
+	// 1. 필수 공통 유니폼 설정 (이동, 카메라 위치, 조명 위치 등)
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "uView"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "uProj"), 1, GL_FALSE, glm::value_ptr(proj));
+	glUniform3fv(glGetUniformLocation(shaderID, "viewPos"), 1, glm::value_ptr(view[0]));
+
+	GLint originalBUseTexture;
+	glm::vec3 originalMaterialColorDefault;
+	float originalAmbientStrength;
+	int originalShininess;
+	glm::vec3 originalMaterialSpecular;
+
+	// A. 현재 상태 저장 (이 값들을 복원해야 함)
+	glGetUniformiv(shaderID, glGetUniformLocation(shaderID, "bUseTexture"), &originalBUseTexture);
+	glGetUniformfv(shaderID, glGetUniformLocation(shaderID, "materialColorDefault"), glm::value_ptr(originalMaterialColorDefault));
+	glGetUniformfv(shaderID, glGetUniformLocation(shaderID, "ambientStrength"), &originalAmbientStrength);
+	glGetUniformiv(shaderID, glGetUniformLocation(shaderID, "shininess"), &originalShininess);
+	glGetUniformfv(shaderID, glGetUniformLocation(shaderID, "materialSpecular"), glm::value_ptr(originalMaterialSpecular));
+
+	// B. 조명 무시를 위한 값 강제 설정
+	glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), 0); // 텍스처 비활성화 [cite: 2, 5]
+	glUniform3fv(glGetUniformLocation(shaderID, "materialColorDefault"), 1, glm::value_ptr(color)); // 기본 색상으로 디버그 색상 주입 [cite: 2, 7]
+	glUniform1f(glGetUniformLocation(shaderID, "ambientStrength"), 1.0f); // 앰비언트 최대화 (조명 색상 * 기본 색상) [cite: 3, 7]
+	glUniform1i(glGetUniformLocation(shaderID, "shininess"), 1); // pow(..., 1)이 되어 specular가 조명 강도에만 영향을 받게 하거나, 
+	// 0으로 설정하여 아예 거울 반사를 없앨 수 있습니다.
+	// 여기서는 1로 두어 스페큘러 항을 최소화하고, materialSpecular를 0으로 설정합니다. [cite: 3, 11]
+	glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(glm::vec3(0.0f))); // 스페큘러 기여도 0으로 설정 [cite: 3, 12]
+
+
+
+	GLuint rockVAO, rockVBO;
+	glGenVertexArrays(1, &rockVAO);
+	glGenBuffers(1, &rockVBO);
+	// --- VAO 설정 ---
+	glBindVertexArray(rockVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, rockVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rock_path), &rock_path, GL_STATIC_DRAW);
+
+
+	// 정점 속성 포인터 설정 (기존 셰이더의 aPos 위치 0 사용)
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+	glDisableVertexAttribArray(1); // aNormal (Location 1) 
+	glDisableVertexAttribArray(2); // aTexCoords (Location 2)
+
+
+	glm::mat4 model = glm::mat4(1.0f);
+
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "uModel"), 1, GL_FALSE, glm::value_ptr(model));
+
+	// 드로우 호출 (GL_LINES)
+	glBindVertexArray(rockVAO);
+	glDrawArrays(GL_LINE_STRIP, 0, 500);
+
+	
+	glBindVertexArray(0);
+
+	// --- 리소스 해제 ---
+	glDeleteBuffers(1, &rockVBO);
+	glDeleteVertexArrays(1, &rockVAO);
+
+	// 환경 복원
+	glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), originalBUseTexture);
+	glUniform3fv(glGetUniformLocation(shaderID, "materialColorDefault"), 1, glm::value_ptr(originalMaterialColorDefault));
+	glUniform1f(glGetUniformLocation(shaderID, "ambientStrength"), originalAmbientStrength);
+	glUniform1i(glGetUniformLocation(shaderID, "shininess"), originalShininess);
+	glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(originalMaterialSpecular));
+
+}
+
+
+
+
+
+
+
 
 void silver_wolf::ChangeState(WolfState* newState) {
 	if (currentState) {
@@ -62,16 +219,18 @@ void silver_wolf::Keyboard(unsigned char key, int x, int y) {
 		break;
 	case 'f':
 	case 'F':
-		if(current_animation_index>=0&& current_animation_index <= 2)
+		if(current_animation_index>=0&& current_animation_index <= 2&&!camera_right_mouth)
 			ChangeState(new State_Roll());
 		break;
 	case ' ':
-		if (current_animation_index == 0)
-			ChangeState(new State_Jump_Idle());
-		else if (current_animation_index == 1)
-			ChangeState(new State_Jump());
-		else if (current_animation_index == 2)
-			ChangeState(new State_Jump_Run());
+		if (!camera_right_mouth) {
+			if (current_animation_index == 0)
+				ChangeState(new State_Jump_Idle());
+			else if (current_animation_index == 1)
+				ChangeState(new State_Jump());
+			else if (current_animation_index == 2)
+				ChangeState(new State_Jump_Run());
+		}
 
 		break;
 	}
@@ -110,17 +269,12 @@ void silver_wolf::Keyupboard(unsigned char key, int x, int y) {
 
 }
 
-void silver_wolf::Mouse(int button, int state, int x, int y) {
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN&&!throw_press) {
+void silver_wolf::Mouse(int button, int state, int x, int yh) {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN&&!throw_press&& camera_right_mouth) {
 		ChangeState(new State_Throw());
 		throw_press = true;
 	}
-	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-	
-	}
-	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP) {
-		
-	}
+
 }
 
 void silver_wolf::SpecialKeyboard(unsigned char key, int x, int y) {
@@ -143,15 +297,7 @@ void silver_wolf::SpecialUpKeyboard(unsigned char key, int x, int y) {
 
 
 
-void silver_wolf::Draw(GLuint shaderID, float currentTime=0.0f) {
-	for (int i = 0;i < silver_wolf_fbx_size;++i) {
-		silverWolfModel[i]->pos =	pos;
-		silverWolfModel[i]->scale = scale;
-		silverWolfModel[i]->angle = angle;
-	}
-	currentState->Draw(this, shaderID, currentTime);
 
-}
 
 silver_wolf::~silver_wolf()
 {
@@ -224,11 +370,13 @@ void State_Idle::Enter(silver_wolf* wolf) {
 	}
 }
 void State_Idle::Update(silver_wolf* wolf, float detatime) {
-	if((wolf->w_press|| wolf->a_press|| wolf->s_press|| wolf->d_press)&&wolf->shift_press)
+
+
+	if((wolf->w_press|| wolf->a_press|| wolf->s_press|| wolf->d_press)&&wolf->shift_press&& !wolf->camera_right_mouth)
 	{
 		wolf->ChangeState(new State_Run());
 	}
-	else if ((wolf->w_press || wolf->a_press || wolf->s_press || wolf->d_press))
+	else if ((wolf->w_press || wolf->a_press || wolf->s_press || wolf->d_press) &&!wolf->camera_right_mouth)
 	{
 		wolf->ChangeState(new State_Walk());
 	}
@@ -263,6 +411,8 @@ void State_Walk::Update(silver_wolf* wolf, float detlatime) {
 
 	wolf->pos += v;
 
+	wolf->old_camera_angle = wolf->camera_angle;
+
 	//여기는 회전까지
 	if (wolf->w_press && wolf->a_press) wolf->angle = -wolf->camera_angle +45.0f;
 	else if (wolf->w_press && wolf->d_press) wolf->angle = -wolf->camera_angle -45.0f;
@@ -273,7 +423,10 @@ void State_Walk::Update(silver_wolf* wolf, float detlatime) {
 	else if (wolf->a_press) wolf->angle = -wolf->camera_angle+90.0f;
 	else if (wolf->d_press) wolf->angle = -wolf->camera_angle-90.0f;
 
-	if (!wolf->w_press && !wolf->a_press && !wolf->s_press && !wolf->d_press)
+	wolf->silver_angle = wolf->angle + wolf->camera_angle;
+
+	if(wolf->camera_right_mouth)wolf->ChangeState(new State_Idle());
+	else if (!wolf->w_press && !wolf->a_press && !wolf->s_press && !wolf->d_press)
 	{
 		wolf->ChangeState(new State_Idle());
 	}
@@ -317,6 +470,8 @@ void State_Run::Update(silver_wolf* wolf, float detlatime) {
 
 	wolf->pos += v;
 
+	wolf->old_camera_angle = wolf->camera_angle;
+
 	//여기는 회전까지
 	if (wolf->w_press && wolf->a_press) wolf->angle = -wolf->camera_angle + 45.0f;
 	else if (wolf->w_press && wolf->d_press) wolf->angle = -wolf->camera_angle - 45.0f;
@@ -327,7 +482,10 @@ void State_Run::Update(silver_wolf* wolf, float detlatime) {
 	else if (wolf->a_press) wolf->angle = -wolf->camera_angle + 90.0f;
 	else if (wolf->d_press) wolf->angle = -wolf->camera_angle - 90.0f;
 
-	if (!wolf->w_press && !wolf->a_press && !wolf->s_press && !wolf->d_press&& wolf->run_timer>=2.0f)
+	wolf->silver_angle = wolf->angle + wolf->camera_angle;
+
+	if (wolf->camera_right_mouth)wolf->ChangeState(new State_Idle());
+	else if (!wolf->w_press && !wolf->a_press && !wolf->s_press && !wolf->d_press&& wolf->run_timer>=2.0f)
 	{
 		wolf->ChangeState(new State_Stop_Run());
 	}

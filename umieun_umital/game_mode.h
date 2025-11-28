@@ -67,6 +67,7 @@ public:
     void Mouse(int button, int state, int x, int y) override;
 
     void PassiveMotion(int x, int y) override;
+    void Motion(int x, int y) override;
 
 
 
