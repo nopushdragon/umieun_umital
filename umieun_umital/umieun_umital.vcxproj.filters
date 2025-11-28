@@ -52,6 +52,9 @@
     <Filter Include="지금부터는 카메라 타임">
       <UniqueIdentifier>{801a017d-6fd4-4abb-9c00-fc862976f94c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="과녁">
+      <UniqueIdentifier>{f626acc1-d953-4fc3-bd13-edf1e5167a81}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -114,11 +117,11 @@
     <ClInclude Include="camera.h">
       <Filter>지금부터는 카메라 타임</Filter>
     </ClInclude>
+    <ClInclude Include="target.h">
+      <Filter>과녁</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="animated_model.cpp">
       <Filter>텍스쳐들\animated_model</Filter>
     </ClCompile>
@@ -166,6 +169,12 @@
     </ClCompile>
     <ClCompile Include="camera.cpp">
       <Filter>지금부터는 카메라 타임</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="target.cpp">
+      <Filter>과녁</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
