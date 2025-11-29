@@ -204,12 +204,14 @@ void game_mode::Draw() {
 	}
 
 
+	silverWolf.Ball_Draw(shaderProgramStatic, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
+
     // --- 2. 애니메이션 캐릭터 ---
     glUseProgram(shaderProgramAnimated);
     setCommonUniforms(shaderProgramAnimated, view, proj);
 
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
-    silverWolf.Draw(shaderProgramAnimated, shaderProgramStatic, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
+    silverWolf.Draw(shaderProgramAnimated,deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
 
     // --- 3. 오브젝트들 OBB ---
@@ -239,7 +241,10 @@ void game_mode::Draw() {
 		
 
         // 은랑 obb
-        drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
+        silverWolf.DebugOBB_Ball(shaderProgramStatic, view, proj, glm::vec3(1.0f, 0.0f, 1.0f)); // 보라색
+        silverWolf.DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
+
+        
     }
 }
 

@@ -46,6 +46,9 @@ public:
     void set_chest_obb();
 
     //몬스터볼
+    OBB ball_local_obb; //로컬 OBB(과녁)
+    float ball_size = 150.0f;
+    void set_ball_obb();
 
     //캐시
     void SaveToBinary(const std::string& fileName);

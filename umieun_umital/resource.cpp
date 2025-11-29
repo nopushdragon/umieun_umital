@@ -1,7 +1,7 @@
 #include "resource.h"
 
 NewModel* s[7];
-
+StaticModel* ball_model;
 void Resource_Init() {
    /* s[0] = new NewModel("silver_wolf/Idle.fbx");
     s[0]->state = "idle";
@@ -17,4 +17,7 @@ void Resource_Init() {
     s[5]->state = "throw";
     s[6] = new NewModel("silver_wolf/Stand To Roll.fbx");
     s[6]->state = "stand_to_roll";*/
+
+	ball_model = new StaticModel("ball/Pokeball.obj");
+    ball_model->set_ball_obb();
 }

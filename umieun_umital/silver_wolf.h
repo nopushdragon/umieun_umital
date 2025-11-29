@@ -1,5 +1,7 @@
 #pragma once
 #include "animated_model.h"
+#include "ball.h"
+#include "collision.h"
 
 
 class WolfState;
@@ -37,6 +39,8 @@ public:
 	glm::vec3 p1;
 	glm::vec3 p2;
 
+	vector<Ball> ball;
+
 	// OBB 민용
 	OBB silverwolf_local_obb;
 	OBB silverwolf_world_obb;
@@ -64,6 +68,12 @@ public:
 	//던지기
 	bool throw_press = false;
 
+	//공 던지는 타이머
+	bool throw_start = false;
+	float throw_timer = 0.0f;
+	float throw_time = 0.8f;
+
+
 
 	//타이머
 	float run_timer = 0.0f;
@@ -82,8 +92,7 @@ public:
 	//은랑 각도
 	float silver_angle = 0.0f;
 
-	//돌 위치
-
+	
 
 
 
@@ -96,7 +105,9 @@ public:
 
 	void ChangeState(WolfState* newState);
 
-	void Draw(GLuint shaderID, GLuint shaderProgramStatic, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
+	void Draw(GLuint shaderID, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
+
+	void Ball_Draw(GLuint shaderProgramStatic, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
 
 	void Keyboard(unsigned char key, int x, int y);
 
@@ -113,6 +124,11 @@ public:
 	void Calculate(const float& camera_y_angle);
 
 	void Rock_path_draw(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
+
+	void DebugOBB(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
+
+	void DebugOBB_Ball(GLuint shaderProgramStatic, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
+
 
 
 

@@ -90,7 +90,7 @@ StaticModel::StaticModel(const std::string& objPath) {
     // =========================================================
     Assimp::Importer importer;
     // Tangent가 필요 없다면 CalcTangentSpace 옵션 빼도 됨 (속도 향상)
-    const aiScene* scene = importer.ReadFile(objPath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    const aiScene* scene = importer.ReadFile(objPath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace| aiProcess_GenSmoothNormals);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
@@ -305,6 +305,13 @@ void StaticModel::set_chest_obb() {
     chest_local_obb.u[0] = glm::vec3(1.0f, 0.0f, 0.0f);
     chest_local_obb.u[1] = glm::vec3(0.0f, 1.0f, 0.0f);
     chest_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
+}
+void StaticModel::set_ball_obb() {
+    ball_local_obb.center = glm::vec3(0.0f, 0.0f, 0.0f);;
+    ball_local_obb.half_length = glm::vec3(ball_size, ball_size, ball_size);
+    ball_local_obb.u[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+    ball_local_obb.u[1] = glm::vec3(0.0f, 1.0f, 0.0f);
+    ball_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
 void StaticModel::SaveToBinary(const std::string& fileName) {

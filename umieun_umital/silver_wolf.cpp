@@ -1,5 +1,6 @@
 #include "silver_wolf.h"
 #include "state_machine.h"
+
 silver_wolf::silver_wolf()
 {
 	currentState = new State_Idle();
@@ -44,7 +45,6 @@ void silver_wolf::Update(float deltatime, const float& camera_x_angle, const flo
 	camera_right_mouth = right_mouth;
 
 	if (currentState) currentState->Update(this, deltatime);
-	update_world_obb();
 
 
 
@@ -58,6 +58,17 @@ void silver_wolf::Update(float deltatime, const float& camera_x_angle, const flo
 
 
 	}
+
+	if (!ball.empty()) {
+		for (int i = ball.size() - 1;i >= 0;--i) {
+			ball[i].Update(deltatime);
+			if(ball[i].end_pos)
+				ball.erase(ball.begin() + i);
+		}
+	}
+
+
+	update_world_obb();
 }
 
 void silver_wolf::Calculate(const float& camera_y_angle) {
@@ -118,7 +129,7 @@ void silver_wolf::Calculate(const float& camera_y_angle) {
 
 
 
-void silver_wolf::Draw(GLuint shaderID, GLuint shaderProgramStatic, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
+void silver_wolf::Draw(GLuint shaderID, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
 	for (int i = 0;i < silver_wolf_fbx_size;++i) {
 		silverWolfModel[i]->pos = pos;
 		silverWolfModel[i]->scale = scale;
@@ -129,6 +140,34 @@ void silver_wolf::Draw(GLuint shaderID, GLuint shaderProgramStatic, float curren
 
 	if (camera_right_mouth) {
 		Rock_path_draw(shaderID, view,proj, color);
+	}
+
+}
+void silver_wolf::Ball_Draw(GLuint shaderProgramStatic, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
+
+
+	if (!ball.empty()) {
+		for (int i = ball.size() - 1;i >= 0;--i) {
+			ball[i].Draw(shaderProgramStatic);
+		}
+	}
+
+
+
+}
+
+void silver_wolf::DebugOBB(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
+	drawDebugOBB(shaderID, silverwolf_world_obb, view, proj, color);
+
+
+}
+
+void silver_wolf::DebugOBB_Ball(GLuint shaderProgramStatic, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
+
+	if (!ball.empty()) {
+		for (int i = ball.size() - 1;i >= 0;--i) {
+			ball[i].DebugOBB(shaderProgramStatic, view, proj, glm::vec3(1.0f, 0.0, 1.0f));
+		}
 	}
 
 }
@@ -546,10 +585,21 @@ void State_Throw::Enter(silver_wolf* wolf) {
 		wolf->silverWolfModel[3]->throw_end = false;
 		wolf->current_animation_index = 3;
 	}
+	wolf->throw_timer = 0.0f;
+	wolf->throw_start = false;
+
 }
 void State_Throw::Update(silver_wolf* wolf, float detlatime) {
 	if (wolf->silverWolfModel[3]->throw_end)
 		wolf->ChangeState(new State_Idle());
+	wolf->throw_timer += detlatime;
+	if (wolf->throw_timer >= wolf->throw_time && wolf->throw_press&& !wolf->throw_start) {
+		wolf->ball.emplace_back(Ball(wolf->p0, wolf->p1, wolf->p2, false));
+		wolf->ball.back().Init();
+		wolf->throw_start = true;
+		cout << wolf->ball.size() << endl;;
+	}
+
 }
 void State_Throw::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	wolf->silverWolfModel[3]->Draw(shaderID, time);

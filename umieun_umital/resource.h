@@ -4,7 +4,7 @@
 
 extern NewModel* s[7];
 
-
+extern StaticModel* ball_model;
 
 
 void Resource_Init();
