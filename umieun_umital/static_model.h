@@ -41,6 +41,11 @@ public:
 	void set_target_obb();
 
     //보물
+    OBB chest_local_obb; //로컬 OBB(과녁)
+    float chest_size = 2.0f;
+    void set_chest_obb();
+
+    //몬스터볼
 
     //캐시
     void SaveToBinary(const std::string& fileName);

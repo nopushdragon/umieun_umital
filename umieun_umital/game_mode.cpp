@@ -61,17 +61,19 @@ float deltatime;
 void game_mode::Update(float deltaTime) {
     silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
     gameCamera.Update(deltaTime, silverWolf.pos);
-    silverwolf_maze_collision();
     //카메라 고정
     if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+
+    silverwolf_chunk_collision();   //청크  
 
     //과녁
     target.update();
 
+
     deltatime = deltaTime;
 }
 
-void game_mode::silverwolf_maze_collision() {
+void game_mode::silverwolf_chunk_collision() {
 
     for (auto& block : maze.mazeBlocks) {
         block.is_colliding = false;
@@ -104,6 +106,16 @@ void game_mode::silverwolf_maze_collision() {
             }
         }
     }
+
+    for (auto& c : chest.chestBlocks) {
+        if (!c.is_in_chunk) continue;
+        c.is_nearby = false;
+        if (check_collision(silverWolf.silverwolf_world_obb, c.chest_obb)) {
+            silverWolf.pos = silverWolf.old_pos;
+			c.is_nearby = true;
+            silverWolf.update_world_obb();
+        }
+    }
 }
 
 void game_mode::update_chunk(int y, int x, int size) {
@@ -123,6 +135,14 @@ void game_mode::update_chunk(int y, int x, int size) {
         if (t.modelMatrix[3].x > (min_x * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && t.modelMatrix[3].x < ((max_x + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
             t.modelMatrix[3].y >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && t.modelMatrix[3].y < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
             t.is_in_chunk = true;
+        }
+    }
+
+    for (auto& c : chest.chestBlocks) {
+		c.is_in_chunk = false;
+        if (c.modelMatrix[3].x > (min_x * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && c.modelMatrix[3].x < ((max_x + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
+            c.modelMatrix[3].y >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && c.modelMatrix[3].y < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
+            c.is_in_chunk = true;
         }
     }
 }
@@ -169,6 +189,20 @@ void game_mode::Draw() {
         }
     }
 
+    for(auto& c : chest.chestBlocks) {   //보물
+        if (!c.is_in_chunk) continue;
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(c.modelMatrix));
+        if (c.modelPtr)
+        {
+            // 메시별 재질/색상 정보 설정 및 드로우
+            for (auto& mesh : c.modelPtr->meshes)
+            {
+                // 메시 그리기. 이제 Draw 함수가 재질 유니폼을 설정합니다.
+                mesh.Draw(shaderProgramStatic);
+            }
+        }
+	}
+
 
     // --- 2. 애니메이션 캐릭터 ---
     glUseProgram(shaderProgramAnimated);
@@ -198,6 +232,12 @@ void game_mode::Draw() {
             drawDebugOBB(shaderProgramStatic, t.target_obb, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
         }
 
+        for (auto& c: chest.chestBlocks) {   // 보물 obb
+            if (!c.is_in_chunk) continue;
+            drawDebugOBB(shaderProgramStatic, c.chest_obb, view, proj, glm::vec3(1.0f, 0.5f, 0.0f)); // 주황색
+		}
+		
+
         // 은랑 obb
         drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
     }
@@ -216,6 +256,9 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
     case'G':
         camera_fixed = true;
         glutSetCursor(GLUT_CURSOR_INHERIT);
+        break;
+    case 'o':
+        chest.open_chest();
         break;
     }
 
@@ -266,6 +309,10 @@ void game_mode::Finish() {
         delete p;
     }
     roads.clear();
+
+    delete target_model;
+	delete chest_model;
+	
 
     // 늑대 모델 삭제 (silver_wolf 클래스 내부 구조에 따라 다를 수 있음)
     // NewModel* 포인터들을 가지고 있다면 여기서 delete 해주는 것이 좋음
@@ -327,6 +374,11 @@ void game_mode::loadModels() {
     target_model->set_target_obb();
     target.init(target_model, target_count);
     set_taret_in_maze();    //미로에 과녁 배치
+
+    //보물
+	chest_model = new StaticModel("chest/chest.obj");
+	chest_model->set_chest_obb();
+	chest.init(chest_model, maze.mazeBlocks[maze_x+1].reset);
 
     //은랑
     silverWolf.Init();

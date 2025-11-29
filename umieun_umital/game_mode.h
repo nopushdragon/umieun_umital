@@ -3,6 +3,7 @@
 #include "static_model.h"
 #include "maze.h"
 #include "target.h"
+#include "chest.h"
 #include "silver_wolf.h"
 #include "camera.h"
 #include "collision.h"
@@ -19,10 +20,14 @@ private:
     // 모델 데이터
     std::vector<StaticModel*> roads;
     MAZE maze;
+
 	StaticModel* target_model;
 	int target_count = 5;
 	TARGET target;
-	bool collision_on = false;
+
+    StaticModel* chest_model;
+    CHEST chest;
+	bool collision_on = false;  // obb 선 그리기용
 
     // 카메라 및 화면 설정
 	camera gameCamera;
@@ -48,7 +53,7 @@ public:
     ~game_mode();
 	void Init() override;
 	void Update(float deltaTime) override;
-	void silverwolf_maze_collision();
+	void silverwolf_chunk_collision();
     void update_chunk(int y, int x, int size);  // size: 중앙서부터 몇칸만큼의 범위로 할거냐
 
     void set_taret_in_maze();

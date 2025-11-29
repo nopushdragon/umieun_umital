@@ -55,6 +55,9 @@
     <Filter Include="과녁">
       <UniqueIdentifier>{f626acc1-d953-4fc3-bd13-edf1e5167a81}</UniqueIdentifier>
     </Filter>
+    <Filter Include="보물상자">
+      <UniqueIdentifier>{96c6c060-7705-44f4-97da-d2a61d8a4987}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -120,6 +123,9 @@
     <ClInclude Include="target.h">
       <Filter>과녁</Filter>
     </ClInclude>
+    <ClInclude Include="chest.h">
+      <Filter>보물상자</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animated_model.cpp">
@@ -175,6 +181,9 @@
     </ClCompile>
     <ClCompile Include="target.cpp">
       <Filter>과녁</Filter>
+    </ClCompile>
+    <ClCompile Include="chest.cpp">
+      <Filter>보물상자</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

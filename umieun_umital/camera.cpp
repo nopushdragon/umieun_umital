@@ -124,11 +124,12 @@ void camera::Draw(GLuint shaderID) {
 }
 
 void camera::title_update(float deltatime, glm::vec3 targetPos) {//¹Î¿ë
-	if(start_move)
+	if(start_move == 1)
 	{
 		static float move_t = 0.0f;
 		static glm::vec3 start_pos = camPos;
-		static glm::vec3 middle_pos = targetPos + glm::vec3(5.0f, 2.0f, 0.0f);
+		//static glm::vec3 middle_pos = targetPos + glm::vec3(5.0f, 2.0f, 0.0f);
+		static glm::vec3 middle_pos = targetPos + glm::vec3(5.0f, 2.0f, 1.0f);
 		static glm::vec3 end_pos = targetPos + glm::vec3(-0.2f, 0.65f, 0.4f);
 
 		move_t += 0.01f;
@@ -143,7 +144,7 @@ void camera::title_update(float deltatime, glm::vec3 targetPos) {//¹Î¿ë
 		else {
 			// ÀÌµ¿ ¿Ï·á
 			camPos = end_pos;
-			start_move = false;
+			start_move = 0;
 			move_t = 0.0f;
 		}
 

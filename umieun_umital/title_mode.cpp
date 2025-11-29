@@ -94,8 +94,9 @@ void title_mode::Init() {
 
     glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
     gameCamera.Init(targetPos);
+	gameCamera.camTarget = silverWolf.pos;
     camera_fixed = true;
-    gameCamera.start_move = true;
+    gameCamera.start_move = 0;
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -147,14 +148,13 @@ void title_mode::Draw() {
 void title_mode::Keyboard(unsigned char key, int x, int y) {
     switch (key)
     {
-    case'g':
-        break;
-    case'G':
-        break;
     case 'p':
         if (g_Framework && g_Framework->sceneManager) {
             g_Framework->sceneManager->Change_Mode(new game_mode());
         }
+        break;
+    case '1':
+		gameCamera.start_move = 1;
         break;
     }
 

@@ -299,6 +299,14 @@ void StaticModel::set_target_obb(){
     target_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
+void StaticModel::set_chest_obb() {
+    chest_local_obb.center = glm::vec3(0.0f, 0.0f, 0.0f);;
+    chest_local_obb.half_length = glm::vec3(chest_size, chest_size, chest_size/2);
+    chest_local_obb.u[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+    chest_local_obb.u[1] = glm::vec3(0.0f, 1.0f, 0.0f);
+    chest_local_obb.u[2] = glm::vec3(0.0f, 0.0f, 1.0f);
+}
+
 void StaticModel::SaveToBinary(const std::string& fileName) {
     std::ofstream out(fileName, std::ios::out | std::ios::binary);
     if (!out.is_open()) return;

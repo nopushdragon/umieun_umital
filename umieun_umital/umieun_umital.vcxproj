@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="animated_model.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="chest.h" />
     <ClInclude Include="collision.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="game_framwork.h" />
@@ -190,6 +191,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="chest.cpp" />
     <ClCompile Include="collision.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="game_mode.cpp" />
