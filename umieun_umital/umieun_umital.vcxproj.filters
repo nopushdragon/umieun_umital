@@ -58,6 +58,12 @@
     <Filter Include="보물상자">
       <UniqueIdentifier>{96c6c060-7705-44f4-97da-d2a61d8a4987}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ui임 ㅇㅅㅇ">
+      <UniqueIdentifier>{0d04c626-329f-4251-8a94-4dd290c0bf1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="텍스트임 ㅇㅅㅇ">
+      <UniqueIdentifier>{290661ad-bf5d-4bc6-8cf3-bdfc400043ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -126,6 +132,12 @@
     <ClInclude Include="chest.h">
       <Filter>보물상자</Filter>
     </ClInclude>
+    <ClInclude Include="text.h">
+      <Filter>텍스트임 ㅇㅅㅇ</Filter>
+    </ClInclude>
+    <ClInclude Include="image.h">
+      <Filter>ui임 ㅇㅅㅇ</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animated_model.cpp">
@@ -185,6 +197,15 @@
     <ClCompile Include="chest.cpp">
       <Filter>보물상자</Filter>
     </ClCompile>
+    <ClCompile Include="text.cpp">
+      <Filter>텍스트임 ㅇㅅㅇ</Filter>
+    </ClCompile>
+    <ClCompile Include="image.cpp">
+      <Filter>ui임 ㅇㅅㅇ</Filter>
+    </ClCompile>
+    <ClCompile Include="텍스트 이미지 .cpp">
+      <Filter>양현빈의 장난감박스</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="animated_vertex.glsl">
@@ -194,6 +215,18 @@
       <Filter>헤더 파일</Filter>
     </None>
     <None Include="static_vertex.glsl">
+      <Filter>헤더 파일</Filter>
+    </None>
+    <None Include="fragment_image.glsl">
+      <Filter>헤더 파일</Filter>
+    </None>
+    <None Include="fragment_text.glsl">
+      <Filter>헤더 파일</Filter>
+    </None>
+    <None Include="vertex_image.glsl">
+      <Filter>헤더 파일</Filter>
+    </None>
+    <None Include="vertex_text.glsl">
       <Filter>헤더 파일</Filter>
     </None>
   </ItemGroup>
