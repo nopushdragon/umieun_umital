@@ -9,7 +9,7 @@
 
 // 전역 포인터 (GLUT 콜백이 정적 함수여야 해서 필요함)
 class GameFramework;
-GameFramework* g_Framework = nullptr;
+extern GameFramework* g_Framework;
 
 class GameFramework {
 public:

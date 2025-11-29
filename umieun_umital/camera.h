@@ -32,5 +32,7 @@ public:
 
 	void camera_move(int x, int y, bool l_alt);
 
+	void title_update(float deltatime, glm::vec3 targetPos);//¹Î¿ë
+	bool start_move = false;
 };
 

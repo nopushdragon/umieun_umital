@@ -169,26 +169,6 @@ void game_mode::Draw() {
         }
     }
 
-    // 디버그용 OBB 그리기
-    glLineWidth(3.0f);        // 선 굵기 설정
-
-    for (auto& block : maze.mazeBlocks) {   // 미로 obb
-        if (block.is_colliding) {
-            if (block.modelPtr) {
-                drawDebugOBB(shaderProgramStatic, block.road_world_obb, view, proj, glm::vec3(0.0f, 1.0f, 0.0f)); // 초록색
-
-                for (int i = 0; i < block.obstacle_world_obb.size(); i++) {
-                    drawDebugOBB(shaderProgramStatic, block.obstacle_world_obb[i], view, proj, glm::vec3(1.0f, 1.0f, 0.0f)); // 노란색
-                }
-            }
-        }
-    }
-
-    for (auto& t : target.targetBlocks) {   // 과녁 obb
-        if (t.is_break || !t.is_in_chunk) continue;
-        drawDebugOBB(shaderProgramStatic, t.target_obb, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
-    }
-
 
     // --- 2. 애니메이션 캐릭터 ---
     glUseProgram(shaderProgramAnimated);
@@ -197,7 +177,30 @@ void game_mode::Draw() {
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
     silverWolf.Draw(shaderProgramAnimated, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
-    drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
+
+    // --- 3. 오브젝트들 OBB ---
+    if (collision_on) {
+        glLineWidth(3.0f);        // 선 굵기 설정
+        for (auto& block : maze.mazeBlocks) {   // 미로 obb
+            if (block.is_colliding) {
+                if (block.modelPtr) {
+                    drawDebugOBB(shaderProgramStatic, block.road_world_obb, view, proj, glm::vec3(0.0f, 1.0f, 0.0f)); // 초록색
+
+                    for (int i = 0; i < block.obstacle_world_obb.size(); i++) {
+                        drawDebugOBB(shaderProgramStatic, block.obstacle_world_obb[i], view, proj, glm::vec3(1.0f, 1.0f, 0.0f)); // 노란색
+                    }
+                }
+            }
+        }
+
+        for (auto& t : target.targetBlocks) {   // 과녁 obb
+            if (t.is_break || !t.is_in_chunk) continue;
+            drawDebugOBB(shaderProgramStatic, t.target_obb, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
+        }
+
+        // 은랑 obb
+        drawDebugOBB(shaderProgramStatic, silverWolf.silverwolf_world_obb, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
+    }
 }
 
 void game_mode::Keyboard(unsigned char key, int x, int y) {
@@ -206,6 +209,9 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
 
     switch (key)
     {
+    case 9:
+        collision_on = !collision_on;
+		break;
     case'g':
     case'G':
         camera_fixed = true;
@@ -233,8 +239,6 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
 
 void game_mode::SpecialKeyboard(int key, int x, int y) {
     silverWolf.SpecialKeyboard(key, x, y);
-
-
 }
 
 void game_mode::SpecialUpKeyboard(int key, int x, int y) {

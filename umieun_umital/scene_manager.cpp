@@ -45,16 +45,16 @@ void Scene::SpecialUpKeyboard(int key, int x, int y) {
 }
 
 
-
 void SceneManager::Change_Mode(Scene* newScene) {
 	while (!sceneStack.empty()) {
-		sceneStack.back()->Init();
+		sceneStack.back()->Finish();
 		delete sceneStack.back();
 		sceneStack.pop_back();
 	}
 	newScene->Init();
 	sceneStack.push_back(newScene);
 }
+
 void SceneManager::Push_Mode(Scene* newScene) {
 	if (!sceneStack.empty()) {
 		sceneStack.back()->OnPause();

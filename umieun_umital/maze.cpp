@@ -106,6 +106,18 @@ void MAZE::setMaze() {
     printMaze();
 }
 
+void MAZE::title_maze(std::vector<StaticModel*>* roads) {
+    MazeBlockInstance roadInstance;
+    roadInstance.modelPtr = roads->at(0);
+    roadInstance.modelMatrix = glm::mat4(1.0f);
+    roadInstance.reset = glm::vec3(0.0f);
+    mazeBlocks.push_back(roadInstance);
+
+	start_x_pos = 0.0f;
+    start_z_pos = 0.0f;
+	update_world_obb();
+}
+
 void MAZE::update_world_obb() {
     for (auto& block : mazeBlocks) {
         glm::mat3 rotation_scale_mat = glm::mat3(block.modelMatrix);

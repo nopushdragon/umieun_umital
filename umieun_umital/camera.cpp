@@ -28,14 +28,14 @@ void camera::Update(float deltatime, glm::vec3 targetPos) {
 		offset.z += 0.05f;
 		glm::vec3 v = glm::normalize(camPos - camTarget);
 		camPos = camTarget + v * (-offset.z);
-		camPos.x -= 0.02f;//團辨
+		camPos.x -= 0.015f;//團辨
 
 	}
 	else if (!right_mouth && offset.z >= ori_offset.z) {
 		offset.z -= 0.05f;
 		glm::vec3 v = glm::normalize(camPos - camTarget);
 		camPos = camTarget + v * (-offset.z);
-		camPos.x += 0.02f;//團辨
+		camPos.x += 0.015f;//團辨
 	}
 
 
@@ -44,7 +44,6 @@ void camera::Update(float deltatime, glm::vec3 targetPos) {
 	camPos += targetPos - camTarget;
 	camTarget = targetPos;
 
-	
 }
 
 void camera::Mouse(int button, int state, int x, int y) {
@@ -122,4 +121,31 @@ void camera::camera_move(int x, int y, bool l_alt) {
 
 void camera::Draw(GLuint shaderID) {
 	
+}
+
+void camera::title_update(float deltatime, glm::vec3 targetPos) {//團辨
+	if(start_move)
+	{
+		static float move_t = 0.0f;
+		static glm::vec3 start_pos = camPos;
+		static glm::vec3 middle_pos = targetPos + glm::vec3(5.0f, 2.0f, 0.0f);
+		static glm::vec3 end_pos = targetPos + glm::vec3(-0.2f, 0.65f, 0.4f);
+
+		move_t += 0.01f;
+
+		if (move_t <= 1.0f) {
+			float one_minus_t = 1.0f - move_t;
+
+			camPos = (one_minus_t * one_minus_t) * start_pos + (2.0f * one_minus_t * move_t) * middle_pos + (move_t * move_t) * end_pos;
+
+			camTarget = targetPos + glm::vec3(-0.1f, 0.7f, 0.0f);
+		}
+		else {
+			// 檜翕 諫猿
+			camPos = end_pos;
+			start_move = false;
+			move_t = 0.0f;
+		}
+
+	}
 }
