@@ -14,8 +14,6 @@ private:
 	float min_rock_distance = 1.0f;
 	float rock_distance = max_rock_distance - min_rock_distance;
 	
-	
-	glm::vec3 rock_height_pos = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	glm::vec3 rock_end_pos = glm::vec3(0.0f, 0.0f, 0.0f);
 
@@ -34,6 +32,10 @@ public:
 	glm::mat4 modelMat = glm::mat4(1.0f);
 	string state = "idle";
 	bool camera_right_mouth = false;
+
+	glm::vec3 p0;
+	glm::vec3 p1;
+	glm::vec3 p2;
 
 	// OBB ¹Î¿ë
 	OBB silverwolf_local_obb;
@@ -94,7 +96,7 @@ public:
 
 	void ChangeState(WolfState* newState);
 
-	void Draw(GLuint shaderID, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
+	void Draw(GLuint shaderID, GLuint shaderProgramStatic, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
 
 	void Keyboard(unsigned char key, int x, int y);
 

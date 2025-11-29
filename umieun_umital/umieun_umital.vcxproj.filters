@@ -64,6 +64,9 @@
     <Filter Include="텍스트임 ㅇㅅㅇ">
       <UniqueIdentifier>{290661ad-bf5d-4bc6-8cf3-bdfc400043ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="가랏 몬스터볼 너희 엄마를 잡아">
+      <UniqueIdentifier>{6e37f9d4-7c30-40bc-bfec-d0fc742d9d13}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -138,6 +141,9 @@
     <ClInclude Include="image.h">
       <Filter>ui임 ㅇㅅㅇ</Filter>
     </ClInclude>
+    <ClInclude Include="ball.h">
+      <Filter>가랏 몬스터볼 너희 엄마를 잡아</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animated_model.cpp">
@@ -205,6 +211,9 @@
     </ClCompile>
     <ClCompile Include="텍스트 이미지 .cpp">
       <Filter>양현빈의 장난감박스</Filter>
+    </ClCompile>
+    <ClCompile Include="ball.cpp">
+      <Filter>가랏 몬스터볼 너희 엄마를 잡아</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

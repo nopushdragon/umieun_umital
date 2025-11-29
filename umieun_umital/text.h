@@ -1,15 +1,5 @@
 #pragma once
-#define _CRT_SECURE_NO_WARNINGS //--- 프로그램 맨 앞에 선언할 것
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include <gl/glew.h>
-#include <gl/freeglut.h>
-#include <gl/freeglut_ext.h> 
-#include<glm/glm.hpp>
-#include<glm/gtc/matrix_transform.hpp>
-#include <glm/ext.hpp>
-#include "dtd.h" 
-#include <gl/glu.h>
+#include "headers.h" 
 
 class Text
 {

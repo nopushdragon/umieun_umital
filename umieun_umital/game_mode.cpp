@@ -209,7 +209,7 @@ void game_mode::Draw() {
     setCommonUniforms(shaderProgramAnimated, view, proj);
 
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
-    silverWolf.Draw(shaderProgramAnimated, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
+    silverWolf.Draw(shaderProgramAnimated, shaderProgramStatic, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
 
     // --- 3. 오브젝트들 OBB ---
@@ -383,24 +383,7 @@ void game_mode::loadModels() {
     //은랑
     silverWolf.Init();
 
-    silverWolf.silverWolfModel[0] = new NewModel("silver_wolf/Idle.fbx");
-    silverWolf.silverWolfModel[0]->state = "idle";
-    silverWolf.silverWolfModel[1] = new NewModel("silver_wolf/Walk.fbx");
-    silverWolf.silverWolfModel[1]->state = "walk";
-    silverWolf.silverWolfModel[2] = new NewModel("silver_wolf/Running.fbx");
-    silverWolf.silverWolfModel[2]->state = "run";
-    silverWolf.silverWolfModel[3] = new NewModel("silver_wolf/Throw.fbx");
-    silverWolf.silverWolfModel[3]->state = "throw";
-    silverWolf.silverWolfModel[4] = new NewModel("silver_wolf/Jump Over.fbx");
-    silverWolf.silverWolfModel[4]->state = "roll";
-    silverWolf.silverWolfModel[5] = new NewModel("silver_wolf/Jump.fbx");
-    silverWolf.silverWolfModel[5]->state = "jump";
-    silverWolf.silverWolfModel[6] = new NewModel("silver_wolf/Running Jump.fbx");
-    silverWolf.silverWolfModel[6]->state = "jump_run";
-    silverWolf.silverWolfModel[7] = new NewModel("silver_wolf/Run To Stop.fbx");
-    silverWolf.silverWolfModel[7]->state = "stop_run";
-    silverWolf.silverWolfModel[8] = new NewModel("silver_wolf/Backflip.fbx");
-    silverWolf.silverWolfModel[8]->state = "jump_idle";
+    //몬스터볼 ㅇㅅㅇ;
 
 
 }

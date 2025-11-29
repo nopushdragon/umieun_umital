@@ -8,6 +8,27 @@ silver_wolf::silver_wolf()
 }
 
 void silver_wolf::Init() {
+	silverWolfModel[0] = new NewModel("silver_wolf/Idle.fbx");
+	silverWolfModel[0]->state = "idle";
+	silverWolfModel[1] = new NewModel("silver_wolf/Walk.fbx");
+	silverWolfModel[1]->state = "walk";
+	silverWolfModel[2] = new NewModel("silver_wolf/Running.fbx");
+	silverWolfModel[2]->state = "run";
+	silverWolfModel[3] = new NewModel("silver_wolf/Throw.fbx");
+	silverWolfModel[3]->state = "throw";
+	silverWolfModel[4] = new NewModel("silver_wolf/Jump Over.fbx");
+	silverWolfModel[4]->state = "roll";
+	silverWolfModel[5] = new NewModel("silver_wolf/Jump.fbx");
+	silverWolfModel[5]->state = "jump";
+	silverWolfModel[6] = new NewModel("silver_wolf/Running Jump.fbx");
+	silverWolfModel[6]->state = "jump_run";
+	silverWolfModel[7] = new NewModel("silver_wolf/Run To Stop.fbx");
+	silverWolfModel[7]->state = "stop_run";
+	silverWolfModel[8] = new NewModel("silver_wolf/Backflip.fbx");
+	silverWolfModel[8]->state = "jump_idle";
+
+
+
 	pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
 	scale = glm::vec3(0.005f);
 	angle = 0.0f;
@@ -43,7 +64,7 @@ void silver_wolf::Calculate(const float& camera_y_angle) {
 
 	//p1
 	glm::vec3 handOffset = glm::vec3(0.0f, 2.0f, 0.0f);
-	glm::vec3 p0 = pos + handOffset;
+	p0 = pos + handOffset;
 
 
 	float angle_abs = std::abs(camera_y_angle);
@@ -52,11 +73,11 @@ void silver_wolf::Calculate(const float& camera_y_angle) {
 
 	glm::vec4 localDist = glm::vec4(0.0f, 0.0f, distance, 1.0f);
 
-	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(-old_camera_angle + silver_angle), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(-old_camera_angle), glm::vec3(0.0f, 1.0f, 0.0f));
 
 
 	//p2
-	glm::vec3 p2 = glm::vec3(rotation * localDist);
+	p2 = glm::vec3(rotation * localDist);
 	p2.x += pos.x;
 	p2.z += pos.z;
 	p2.y = 0.0f; 
@@ -70,13 +91,22 @@ void silver_wolf::Calculate(const float& camera_y_angle) {
 
 
 	float addedHeight = max_rock_distance * std::tan(glm::radians(clampedPitch)) * arcFactor*5;
-	rock_height_pos = midPoint;
-	rock_height_pos.y += addedHeight;
+	p1 = midPoint;
+	p1.y += addedHeight;
+
+
+	p0.y -= 1.3f;
+
+	glm::vec3 v(0.0f);v.x = 0.1f;
+	glm::mat4 m = glm::rotate(glm::mat4(1.0f), glm::radians(-old_camera_angle), glm::vec3(0.0f, 1.0f, 0.0f));
+	v = glm::vec3(m * glm::vec4(v, 1.0f));
+
+	p0 -= v;
 
 	//버텍스 넣어주기
 	for (int i = 0;i < 500;++i) {
 		float t = static_cast<float>(i) / 499.0f;
-		glm::vec3 pointOnCurve = (1 - t) * (1 - t) * pos + 2 * (1 - t) * t * rock_height_pos + t * t * p2;
+		glm::vec3 pointOnCurve = (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
 		rock_path[i] = pointOnCurve;
 	}
 
@@ -88,7 +118,7 @@ void silver_wolf::Calculate(const float& camera_y_angle) {
 
 
 
-void silver_wolf::Draw(GLuint shaderID, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
+void silver_wolf::Draw(GLuint shaderID, GLuint shaderProgramStatic, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
 	for (int i = 0;i < silver_wolf_fbx_size;++i) {
 		silverWolfModel[i]->pos = pos;
 		silverWolfModel[i]->scale = scale;
