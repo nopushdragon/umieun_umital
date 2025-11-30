@@ -17,7 +17,7 @@ game_mode::game_mode() {
     lightPos = glm::vec3(0.0f, 2000.0f, 0.0f);
     lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     materialSpecular = glm::vec3(0.0f, 0.0f, 0.0f);
-    ambientStrength = 0.1f;
+    ambientStrength = 0.3f;
     shininess = 32;
 
 }
@@ -72,7 +72,6 @@ void game_mode::Update(float deltaTime) {
     //과녁
     target.update();
 
-
     deltatime = deltaTime;
 }
 
@@ -115,8 +114,20 @@ void game_mode::silverwolf_chunk_collision() {
         c.is_nearby = false;
         if (check_collision(silverWolf.silverwolf_world_obb, c.chest_obb)) {
             silverWolf.pos = silverWolf.old_pos;
-			c.is_nearby = true;
+            c.is_nearby = true;
             silverWolf.update_world_obb();
+        }
+    }
+
+    for (auto& t : target.targetBlocks) {
+        if (t.is_break || !t.is_in_chunk) continue;
+        for (auto& b : silverWolf.ball) {
+            if (!b.end_pos) {
+                if (check_collision(b.ball_obb, t.target_obb)) {
+                    t.is_break = true;
+                    b.end_pos = true;
+                }
+            }
         }
     }
 }
@@ -142,7 +153,7 @@ void game_mode::update_chunk(int y, int x, int size) {
     }
 
     for (auto& c : chest.chestBlocks) {
-		c.is_in_chunk = false;
+        c.is_in_chunk = false;
         if (c.modelMatrix[3].x > (min_x * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && c.modelMatrix[3].x < ((max_x + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
             c.modelMatrix[3].y >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && c.modelMatrix[3].y < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
             c.is_in_chunk = true;
@@ -152,8 +163,6 @@ void game_mode::update_chunk(int y, int x, int size) {
 
 // 3. 그리기 (기존 drawScene 함수 내용)
 void game_mode::Draw() {
-
-
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -194,7 +203,7 @@ void game_mode::Draw() {
         }
     }
 
-    for(auto& c : chest.chestBlocks) {   //보물
+    for (auto& c : chest.chestBlocks) {   //보물
         if (!c.is_in_chunk) continue;
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(c.modelMatrix));
         if (c.modelPtr)
@@ -206,17 +215,17 @@ void game_mode::Draw() {
                 mesh.Draw(shaderProgramStatic);
             }
         }
-	}
+    }
 
 
-	silverWolf.Ball_Draw(shaderProgramStatic, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
+    silverWolf.Ball_Draw(shaderProgramStatic, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
 
     // --- 2. 애니메이션 캐릭터 ---
     glUseProgram(shaderProgramAnimated);
     setCommonUniforms(shaderProgramAnimated, view, proj);
 
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
-    silverWolf.Draw(shaderProgramAnimated,deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
+    silverWolf.Draw(shaderProgramAnimated, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
 
     // --- 3. 스카이박스 ---
@@ -244,17 +253,17 @@ void game_mode::Draw() {
             drawDebugOBB(shaderProgramStatic, t.target_obb, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
         }
 
-        for (auto& c: chest.chestBlocks) {   // 보물 obb
+        for (auto& c : chest.chestBlocks) {   // 보물 obb
             if (!c.is_in_chunk) continue;
             drawDebugOBB(shaderProgramStatic, c.chest_obb, view, proj, glm::vec3(1.0f, 0.5f, 0.0f)); // 주황색
-		}
-		
+        }
+
 
         // 은랑 obb
         silverWolf.DebugOBB_Ball(shaderProgramStatic, view, proj, glm::vec3(1.0f, 0.0f, 1.0f)); // 보라색
         silverWolf.DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
 
-        
+
     }
 }
 
@@ -266,7 +275,7 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
     {
     case 9:
         collision_on = !collision_on;
-		break;
+        break;
     case'g':
     case'G':
         camera_fixed = true;
@@ -326,8 +335,8 @@ void game_mode::Finish() {
     roads.clear();
 
     delete target_model;
-	delete chest_model;
-	
+    delete chest_model;
+
 
     // 늑대 모델 삭제 (silver_wolf 클래스 내부 구조에 따라 다를 수 있음)
     // NewModel* 포인터들을 가지고 있다면 여기서 delete 해주는 것이 좋음
@@ -392,9 +401,9 @@ void game_mode::loadModels() {
     set_taret_in_maze();    //미로에 과녁 배치
 
     //보물
-	chest_model = new StaticModel("chest/chest.obj");
-	chest_model->set_chest_obb();
-	chest.init(chest_model, maze.mazeBlocks[maze_x+1].reset);
+    chest_model = new StaticModel("chest/chest.obj");
+    chest_model->set_chest_obb();
+    chest.init(chest_model, maze.mazeBlocks[maze_x + 1].reset);
 
     //은랑
     silverWolf.Init();
@@ -498,7 +507,7 @@ void game_mode::set_taret_in_maze() {  // 과녁에서 미로 객체를 가져�
             if (rd_flag) continue;
 
             target.targetBlocks[i].modelMatrix = maze.mazeBlocks[(rand_y * maze_x) + rand_x].modelMatrix;
-            target.targetBlocks[i].reset = glm::vec3(target.targetBlocks[i].modelMatrix[3][0], ROAD_SIZE / 4, target.targetBlocks[i].modelMatrix[3][2]); // 위치 저장
+            target.targetBlocks[i].reset = glm::vec3(target.targetBlocks[i].modelMatrix[3][0], ROAD_SIZE / 7, target.targetBlocks[i].modelMatrix[3][2]); // 위치 저장
             cout << rand_y << "," << rand_x << endl;
             break;
         }

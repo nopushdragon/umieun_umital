@@ -32,7 +32,8 @@ public:
 
 	void camera_move(int x, int y, bool l_alt);
 
-	void title_update(float deltatime, glm::vec3 targetPos);//¹Î¿ë
-	int start_move = 0;
+	void title_update(float deltatime, glm::vec3 targetPos, int start_pos_idx, int end_pos_idx);//¹Î¿ë
+	int now_pos_idx = 0;
+	bool moving = false;
 };
 

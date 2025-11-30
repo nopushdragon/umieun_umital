@@ -31,7 +31,7 @@ void TARGET::update() {
 
 		if (target.move_t == 0.0f) {
 			uniform_real_distribution<float> rd_goal_x(target.reset.x - 5.0f, target.reset.x + 5.0f);
-			uniform_real_distribution<float> rd_goal_y(target.reset.y - 2.0f, target.reset.y + 5.0f);
+			uniform_real_distribution<float> rd_goal_y(target.reset.y - 1.2f, target.reset.y + 1.2f);
 			uniform_real_distribution<float> rd_goal_z(target.reset.z - 5.0f, target.reset.z + 5.0f);
 
 			target.origin_pos = target.modelMatrix[3];

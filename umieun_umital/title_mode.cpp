@@ -1,18 +1,17 @@
 #include "title_mode.h"
 #include "game_mode.h"
 #include "game_framwork.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 
 // 생성자: 변수 초기값 설정
 title_mode::title_mode() {
 
-	
-
 
     lightPos = glm::vec3(0.0f, 2000.0f, 0.0f);
     lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     materialSpecular = glm::vec3(0.0f, 0.0f, 0.0f);
-    ambientStrength = 0.1f;
+    ambientStrength = 0.3f;
     shininess = 32;
 
 
@@ -37,10 +36,16 @@ void title_mode::Finish() {
             delete silverWolf.silverWolfModel[i];
     }
 
+    delete white_background;
+    delete title;
+    delete set_maze;
+
     // 셰이더 프로그램 삭제
     glDeleteProgram(shaderProgramStatic);
     glDeleteProgram(shaderProgramAnimated);
-	glDeleteProgram(shaderProgramSkybox);
+    glDeleteProgram(shaderProgramImage);
+    glDeleteProgram(shaderProgramSkybox);
+    stbi_set_flip_vertically_on_load(false);
 }
 
 void title_mode::loadModels() {
@@ -51,41 +56,62 @@ void title_mode::loadModels() {
     //은랑
     silverWolf.Init();
 
+}
+void title_mode::loadImages() {
+    stbi_set_flip_vertically_on_load(true);
 
+    glm::vec2 size1 = glm::vec2((float)winWidth, (float)winHeight);
+    glm::vec2 pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
 
+    white_background = new Image(LoadTexture("title/white_background.png"), pos1, size1);
+    white_background->color.w = 0.4f;
 
+    title = new Image(LoadTexture("title/title.png"), pos1, size1);
+    title->color.w = 1.0f;
+
+    main.push_back(new Image(LoadTexture("title/main.png"), pos1, size1));
+    main.push_back(new Image(LoadTexture("title/main_start.png"), pos1, size1));
+    main.push_back(new Image(LoadTexture("title/main_option.png"), pos1, size1));
+    main.push_back(new Image(LoadTexture("title/main_exit.png"), pos1, size1));
+    for (auto& m : main)m->color.w = 1.0f;
+    main_idx = 0;
+
+    set_maze = new Image(LoadTexture("title/set_maze.png"), pos1, size1);
+    draw_set_maze = false;
+
+    stbi_set_flip_vertically_on_load(false);
 }
 
 // 1. 초기화 (기존 init 함수 내용)
 void title_mode::Init() {
-
-
-    // GLEW 초기화는 보통 Framework나 Main에서 한 번 하지만, 
-    // 여기서 셰이더 컴파일을 수행합니다.
+    //========== 이미지 로드 설정 ==========
+    loadImages();
+    //========================================
 
     cout << "[TitleMode] Initializing..." << endl;
-
 
     // 셰이더 로드
     loadShader(STATIC_VERT, FRAGMENT_LIGHT, shaderProgramStatic);
     loadShader(ANIMATED_VERT, FRAGMENT_LIGHT, shaderProgramAnimated);
+    shaderProgramImage = LoadShader(IMAGE_VERT, IMAGE_FRAG);
     loadShader("vertex_sky.glsl", "fragment_sky.glsl", shaderProgramSkybox);
 
     // 모델 로드
     loadModels();
 
-    // 카메라 위치
-    /*camPos = glm::vec3(start_x_pos, 5.0f, start_z_pos - 5.0f);
-    camTarget = glm::vec3(start_x_pos, 0.0f, start_z_pos+5.0f);*/
-    glm::vec3 targetPos = silverWolf.pos + glm::vec3(0.0f,10.0f,-10.0f);
-
+    // 스카이박스
     skybox = new Skybox("skybox/sun.png", "skybox/moon.png");
+
+    // 카메라 위치
+    glm::vec3 targetPos = silverWolf.pos + glm::vec3(0.0f, 10.0f, -10.0f);
+
 
     glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
     gameCamera.Init(targetPos);
-	gameCamera.camTarget = silverWolf.pos;
+    gameCamera.camTarget = silverWolf.pos;
     camera_fixed = true;
-    gameCamera.start_move = 0;
+    gameCamera.now_pos_idx = 0;
+    gameCamera.moving = false;
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -94,7 +120,7 @@ float title_deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void title_mode::Update(float deltaTime) {
     silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
-    gameCamera.title_update(deltaTime, silverWolf.pos);
+    if (gameCamera.moving) gameCamera.title_update(deltaTime, silverWolf.pos, start_pos_idx, end_pos_idx);
 
     title_deltatime = deltaTime;
 }
@@ -133,10 +159,31 @@ void title_mode::Draw() {
     silverWolf.Draw(shaderProgramAnimated, title_deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
 
-	// --- 3. 스카이박스 ---
+    // 스카이박스 그리기
     glUseProgram(shaderProgramSkybox);
     //setCommonUniforms(shaderProgramSkybox, view, proj);
-	skybox->Draw(view, proj, shaderProgramSkybox);
+    skybox->Draw(view, proj, shaderProgramSkybox);
+
+    // --- 3. UI 그리기 ---
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glm::mat4 uiProj = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT);
+    if (!gameCamera.moving && gameCamera.now_pos_idx == 0) {
+        white_background->Draw(shaderProgramImage, uiProj);
+        title->Draw(shaderProgramImage, uiProj);
+    }
+    else if (!gameCamera.moving && gameCamera.now_pos_idx == 1) {
+        main[main_idx]->Draw(shaderProgramImage, uiProj);
+        if (draw_set_maze) {
+            white_background->Draw(shaderProgramImage, uiProj);
+            set_maze->Draw(shaderProgramImage, uiProj);
+        }
+    }
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void title_mode::Keyboard(unsigned char key, int x, int y) {
@@ -148,23 +195,31 @@ void title_mode::Keyboard(unsigned char key, int x, int y) {
         }
         break;
     case '1':
-		gameCamera.start_move = 1;
+        if (!gameCamera.moving && gameCamera.now_pos_idx == 0) {
+            start_pos_idx = 0;
+            end_pos_idx = 1;
+            gameCamera.moving = true;
+        }
         break;
-    }
-
-}
-void title_mode::Keyupboard(unsigned char key, int x, int y) {
-
-    switch (key)
-    {
     case 27:
-        exit(0);
-        break;
-    case'g':
-        break;
-    case'G':
+        if (!gameCamera.moving && gameCamera.now_pos_idx == 0) {
+            exit(0);
+        }
+        else if (!gameCamera.moving && gameCamera.now_pos_idx == 1) {
+            if (!draw_set_maze) {
+                start_pos_idx = 1;
+                end_pos_idx = 0;
+                gameCamera.moving = true;
+            }
+            else {
+                draw_set_maze = false;
+            }
+        }
         break;
     }
+}
+
+void title_mode::Keyupboard(unsigned char key, int x, int y) {
 }
 
 void title_mode::SpecialKeyboard(int key, int x, int y) {
@@ -174,9 +229,39 @@ void title_mode::SpecialUpKeyboard(int key, int x, int y) {
 }
 
 void title_mode::Mouse(int button, int state, int x, int y) {
+    if (gameCamera.now_pos_idx == 1) {
+        if (!draw_set_maze) {
+            if (x >= 30 && x <= 450 && y >= 160 && y <= 240) { //start
+                draw_set_maze = true;
+                main_idx = 0;
+            }
+            else if (x >= 30 && x <= 450 && y >= 360 && y <= 440) { //option
+            }
+            else if (x >= 30 && x <= 450 && y >= 560 && y <= 640) {  //exit
+                exit(0);
+            }
+        }
+        else {
+
+        }
+    }
 }
 
 void title_mode::PassiveMotion(int x, int y) {
+    if (!draw_set_maze && gameCamera.now_pos_idx == 1) {
+        if (x >= 30 && x <= 450 && y >= 160 && y <= 240) { //start
+            main_idx = 1;
+        }
+        else if (x >= 30 && x <= 450 && y >= 360 && y <= 440) { //option
+            main_idx = 2;
+        }
+        else if (x >= 30 && x <= 450 && y >= 560 && y <= 640) {  //exit
+            main_idx = 3;
+        }
+        else {
+            main_idx = 0;
+        }
+    }
 }
 
 void  title_mode::Motion(int x, int y) {
@@ -188,7 +273,7 @@ void title_mode::OnPause() {
 
 void title_mode::OnResume() {
     // 옵션 창 닫고 돌아왔을 때 복구할 로직
-    glEnable(GL_DEPTH_TEST); // 혹시 다른 씬에서 껐을까봐 다시 켬 벅유
+    glEnable(GL_DEPTH_TEST); // 혹시 다른 씬에서 껐을까봐 다시 켬
 }
 
 void title_mode::Reshape(int w, int h) {

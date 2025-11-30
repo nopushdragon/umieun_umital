@@ -123,30 +123,41 @@ void camera::Draw(GLuint shaderID) {
 	
 }
 
-void camera::title_update(float deltatime, glm::vec3 targetPos) {//민용
-	if(start_move == 1)
-	{
-		static float move_t = 0.0f;
-		static glm::vec3 start_pos = camPos;
-		//static glm::vec3 middle_pos = targetPos + glm::vec3(5.0f, 2.0f, 0.0f);
-		static glm::vec3 middle_pos = targetPos + glm::vec3(5.0f, 2.0f, 1.0f);
-		static glm::vec3 end_pos = targetPos + glm::vec3(-0.2f, 0.65f, 0.4f);
+void camera::title_update(float deltatime, glm::vec3 targetPos , int start_pos_idx, int end_pos_idx) {//민용
+	static float move_t = 0.0f;
+	static glm::vec3 start_pos;
+	static glm::vec3 middle_pos;
+	static glm::vec3 end_pos;
+
+	if(start_pos_idx == 0 && end_pos_idx == 1) {
+		start_pos = targetPos + glm::vec3(0.0f, 10.0f, -10.0f);
+		middle_pos = targetPos + glm::vec3(5.0f, 2.0f, 1.0f);
+		end_pos = targetPos + glm::vec3(-0.2f, 0.65f, 0.4f);
 
 		move_t += 0.01f;
-
 		if (move_t <= 1.0f) {
 			float one_minus_t = 1.0f - move_t;
-
 			camPos = (one_minus_t * one_minus_t) * start_pos + (2.0f * one_minus_t * move_t) * middle_pos + (move_t * move_t) * end_pos;
-
 			camTarget = targetPos + glm::vec3(-0.1f, 0.7f, 0.0f);
 		}
-		else {
-			// 이동 완료
-			camPos = end_pos;
-			start_move = 0;
-			move_t = 0.0f;
-		}
+	}
+	else if (start_pos_idx == 1 && end_pos_idx == 0) {
+		start_pos = targetPos + glm::vec3(-0.2f, 0.65f, 0.4f);
+		middle_pos = targetPos + glm::vec3(5.0f, 2.0f, 1.0f);
+		end_pos = targetPos + glm::vec3(0.0f, 10.0f, -10.0f);
 
+		move_t += 0.01f;
+		if (move_t <= 1.0f) {
+			float one_minus_t = 1.0f - move_t;
+			camPos = (one_minus_t * one_minus_t) * start_pos + (2.0f * one_minus_t * move_t) * middle_pos + (move_t * move_t) * end_pos;
+			camTarget = targetPos + glm::vec3(-0.1f, 0.7f, 0.0f);
+		}
+	}
+
+	//이동 완료
+	if (move_t >= 1.0f) {
+		now_pos_idx = end_pos_idx;
+		moving = false;
+		move_t = 0.0f;
 	}
 }
