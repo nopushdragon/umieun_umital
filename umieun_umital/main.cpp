@@ -1,9 +1,9 @@
 ﻿#include "game_framwork.h"
 #include "game_mode.h"
-#include "title_mode.h"
+#include "logo_mode.h"
 #include "resource.h"
 GameFramework* g_Framework = nullptr;
-auto* mode = new title_mode();
+auto* mode = new logo_mode();
 
 int main(int argc, char** argv) {
     // 1. 프레임워크 생성

@@ -79,3 +79,58 @@ void Image::Draw(GLuint shaderProgramID, const glm::mat4& projection)
     glBindVertexArray(0);
     glUseProgram(0);
 }
+
+GLuint LoadTexture(const char* path)
+{
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum internalFormat;
+        GLenum dataFormat;
+
+        if (nrComponents == 4) {
+            internalFormat = GL_RGBA;
+            dataFormat = GL_RGBA;
+        }
+        else if (nrComponents == 3) {
+            internalFormat = GL_RGB;
+            dataFormat = GL_RGB;
+        }
+        else if (nrComponents == 1) {
+            internalFormat = GL_RED;
+            dataFormat = GL_RED;
+        }
+        else {
+            internalFormat = GL_RGB;
+            dataFormat = GL_RGB;
+        }
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        if (nrComponents == 1) {
+            GLint swizzleMask[] = { GL_RED, GL_RED, GL_RED, GL_ONE };
+            glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+        return 0;
+    }
+
+    return textureID;
+}

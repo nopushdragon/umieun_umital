@@ -1,9 +1,5 @@
 #pragma once
-
-#include <gl/glew.h>
-#include <glm/glm.hpp>
-#include <map>
-#include <string> 
+#include "headers.h"
 
 class Image
 {
@@ -29,3 +25,5 @@ private:
     Image(const Image&) = delete;
     Image& operator=(const Image&) = delete;
 };
+
+GLuint LoadTexture(const char* path);
