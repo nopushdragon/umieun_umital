@@ -3,6 +3,8 @@
 #include "image.h"
 #include "text.h"
 #include "camera.h"
+#include "game_framwork.h"
+#include "title_mode.h"
 class logo_mode : public Scene
 {
 private:
@@ -10,16 +12,14 @@ private:
 	Image* tuk_image = nullptr;
 	Image* logo_Image = nullptr;
 
-	camera camera;
 	int WINDOW_WIDTH = winWidth;
 	int WINDOW_HEIGHT = winHeight;
 
-	// 조명 및 재질 설정
-	glm::vec3 lightPos;
-	glm::vec3 lightColor;
-	glm::vec3 materialSpecular;
-	float ambientStrength;
-	int shininess;
+	bool turn_image = false;
+
+	float logo_time = 0.1f;
+	float logo_timer = 0.0f;
+
 
 
 public:

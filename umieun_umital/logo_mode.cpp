@@ -13,11 +13,11 @@ void logo_mode::Init() {
 	background_Image->color.w = 1.0f;
 
 
-	tuk_image = new Image(LoadTexture("logo/logo.png"), pos1, size1);
-	tuk_image->color.w = 1.0f;
+	tuk_image = new Image(LoadTexture("logo/tuk_credit.png"), pos1, size1);
+	tuk_image->color.w = 0.0f;
 
 
-	logo_Image = new Image(LoadTexture("logo/tuk_credit.png"), pos1, size1);
+	logo_Image = new Image(LoadTexture("logo/logo.png"), pos1, size1);
 	logo_Image->color.w = 1.0f;
 
 	glEnable(GL_BLEND);
@@ -28,14 +28,27 @@ void logo_mode::Init() {
 
 void logo_mode::Update(float deltaTime) {
 	// 로고 모드 업데이트 코드 작성
+	if (!turn_image) {
+		tuk_image->color.w += deltaTime / 8.0f;
+		if (tuk_image->color.w >= 1.0f) {
+			turn_image = true;
+		}
+	}
+	else if (turn_image&& logo_timer < logo_time) {
+		logo_timer += deltaTime;
+	}
+	else if (g_Framework && g_Framework->sceneManager) {
+		stbi_set_flip_vertically_on_load(false);
+		g_Framework->sceneManager->Change_Mode(new title_mode());
+	}
 }
 
 void logo_mode::Draw() {
 	// 로고 모드 그리기 코드 작성
 	glm::mat4 uiProj = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT);
 	if (background_Image) background_Image->Draw(uiShaderProgram, uiProj);
-	//if (tuk_image) tuk_image->Draw(uiShaderProgram, uiProj);
-	//if (logo_Image) logo_Image->Draw(uiShaderProgram, uiProj);
+	if (!turn_image) tuk_image->Draw(uiShaderProgram, uiProj);
+	if (turn_image) logo_Image->Draw(uiShaderProgram, uiProj);
 
 }
 
@@ -59,8 +72,10 @@ void logo_mode::Reshape(int w, int h) {
 
 void logo_mode::Mouse(int button, int state, int x, int y) {
 	// 로고 모드 마우스 이벤트 처리 코드 작성
+	turn_image = true;
 }
 
 void logo_mode::Keyboard(unsigned char key, int x, int y) {
 	// 로고 모드 키보드 이벤트 처리 코드 작성
+	turn_image = true;
 }
