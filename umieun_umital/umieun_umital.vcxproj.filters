@@ -67,6 +67,9 @@
     <Filter Include="가랏 몬스터볼 너희 엄마를 잡아">
       <UniqueIdentifier>{6e37f9d4-7c30-40bc-bfec-d0fc742d9d13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="스벅%28스카이 벅스라는 뜻 ㅋㅋㅋ fuck you%29">
+      <UniqueIdentifier>{b8752916-d7f3-406e-b82d-bca2dbecf0a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -144,6 +147,9 @@
     <ClInclude Include="ball.h">
       <Filter>가랏 몬스터볼 너희 엄마를 잡아</Filter>
     </ClInclude>
+    <ClInclude Include="skybox.h">
+      <Filter>스벅%28스카이 벅스라는 뜻 ㅋㅋㅋ fuck you%29</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animated_model.cpp">
@@ -215,6 +221,9 @@
     <ClCompile Include="ball.cpp">
       <Filter>가랏 몬스터볼 너희 엄마를 잡아</Filter>
     </ClCompile>
+    <ClCompile Include="skybox.cpp">
+      <Filter>스벅%28스카이 벅스라는 뜻 ㅋㅋㅋ fuck you%29</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="animated_vertex.glsl">
@@ -236,6 +245,12 @@
       <Filter>헤더 파일</Filter>
     </None>
     <None Include="vertex_text.glsl">
+      <Filter>헤더 파일</Filter>
+    </None>
+    <None Include="vertex_sky.glsl">
+      <Filter>헤더 파일</Filter>
+    </None>
+    <None Include="fragment_sky.glsl">
       <Filter>헤더 파일</Filter>
     </None>
   </ItemGroup>

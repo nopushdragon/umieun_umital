@@ -39,6 +39,7 @@ void game_mode::Init() {
     // 셰이더 로드
     loadShader(STATIC_VERT, FRAGMENT_LIGHT, shaderProgramStatic);
     loadShader(ANIMATED_VERT, FRAGMENT_LIGHT, shaderProgramAnimated);
+    loadShader("vertex_sky.glsl", "fragment_sky.glsl", shaderProgramSkybox);
 
     // 모델 로드
     loadModels();
@@ -47,6 +48,8 @@ void game_mode::Init() {
     /*camPos = glm::vec3(start_x_pos, 5.0f, start_z_pos - 5.0f);
     camTarget = glm::vec3(start_x_pos, 0.0f, start_z_pos+5.0f);*/
     glm::vec3 targetPos = silverWolf.pos;
+
+    skybox = new Skybox("skybox/sun.png", "skybox/moon.png");
 
 
     glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
@@ -149,6 +152,8 @@ void game_mode::update_chunk(int y, int x, int size) {
 
 // 3. 그리기 (기존 drawScene 함수 내용)
 void game_mode::Draw() {
+
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -213,6 +218,11 @@ void game_mode::Draw() {
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
     silverWolf.Draw(shaderProgramAnimated,deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
+
+    // --- 3. 스카이박스 ---
+    glUseProgram(shaderProgramSkybox);
+    setCommonUniforms(shaderProgramSkybox, view, proj);
+    skybox->Draw(view, proj, shaderProgramSkybox);
 
     // --- 3. 오브젝트들 OBB ---
     if (collision_on) {
@@ -329,6 +339,7 @@ void game_mode::Finish() {
     // 셰이더 프로그램 삭제
     glDeleteProgram(shaderProgramStatic);
     glDeleteProgram(shaderProgramAnimated);
+    glDeleteProgram(shaderProgramSkybox);
 }
 
 void game_mode::Reshape(int w, int h) {

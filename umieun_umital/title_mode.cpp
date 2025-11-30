@@ -6,6 +6,8 @@
 // 생성자: 변수 초기값 설정
 title_mode::title_mode() {
 
+	
+
 
     lightPos = glm::vec3(0.0f, 2000.0f, 0.0f);
     lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -38,6 +40,7 @@ void title_mode::Finish() {
     // 셰이더 프로그램 삭제
     glDeleteProgram(shaderProgramStatic);
     glDeleteProgram(shaderProgramAnimated);
+	glDeleteProgram(shaderProgramSkybox);
 }
 
 void title_mode::loadModels() {
@@ -48,24 +51,7 @@ void title_mode::loadModels() {
     //은랑
     silverWolf.Init();
 
-    silverWolf.silverWolfModel[0] = new NewModel("silver_wolf/Idle.fbx");
-    silverWolf.silverWolfModel[0]->state = "idle";
-    silverWolf.silverWolfModel[1] = new NewModel("silver_wolf/Walk.fbx");
-    silverWolf.silverWolfModel[1]->state = "walk";
-    silverWolf.silverWolfModel[2] = new NewModel("silver_wolf/Running.fbx");
-    silverWolf.silverWolfModel[2]->state = "run";
-    silverWolf.silverWolfModel[3] = new NewModel("silver_wolf/Throw.fbx");
-    silverWolf.silverWolfModel[3]->state = "throw";
-    silverWolf.silverWolfModel[4] = new NewModel("silver_wolf/Jump Over.fbx");
-    silverWolf.silverWolfModel[4]->state = "roll";
-    silverWolf.silverWolfModel[5] = new NewModel("silver_wolf/Jump.fbx");
-    silverWolf.silverWolfModel[5]->state = "jump";
-    silverWolf.silverWolfModel[6] = new NewModel("silver_wolf/Running Jump.fbx");
-    silverWolf.silverWolfModel[6]->state = "jump_run";
-    silverWolf.silverWolfModel[7] = new NewModel("silver_wolf/Run To Stop.fbx");
-    silverWolf.silverWolfModel[7]->state = "stop_run";
-    silverWolf.silverWolfModel[8] = new NewModel("silver_wolf/Backflip.fbx");
-    silverWolf.silverWolfModel[8]->state = "jump_idle";
+
 
 
 }
@@ -79,9 +65,11 @@ void title_mode::Init() {
 
     cout << "[TitleMode] Initializing..." << endl;
 
+
     // 셰이더 로드
     loadShader(STATIC_VERT, FRAGMENT_LIGHT, shaderProgramStatic);
     loadShader(ANIMATED_VERT, FRAGMENT_LIGHT, shaderProgramAnimated);
+    loadShader("vertex_sky.glsl", "fragment_sky.glsl", shaderProgramSkybox);
 
     // 모델 로드
     loadModels();
@@ -91,6 +79,7 @@ void title_mode::Init() {
     camTarget = glm::vec3(start_x_pos, 0.0f, start_z_pos+5.0f);*/
     glm::vec3 targetPos = silverWolf.pos + glm::vec3(0.0f,10.0f,-10.0f);
 
+    skybox = new Skybox("skybox/sun.png", "skybox/moon.png");
 
     glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
     gameCamera.Init(targetPos);
@@ -143,6 +132,11 @@ void title_mode::Draw() {
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
     silverWolf.Draw(shaderProgramAnimated, title_deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
+
+	// --- 3. 스카이박스 ---
+    glUseProgram(shaderProgramSkybox);
+    //setCommonUniforms(shaderProgramSkybox, view, proj);
+	skybox->Draw(view, proj, shaderProgramSkybox);
 }
 
 void title_mode::Keyboard(unsigned char key, int x, int y) {
@@ -194,7 +188,7 @@ void title_mode::OnPause() {
 
 void title_mode::OnResume() {
     // 옵션 창 닫고 돌아왔을 때 복구할 로직
-    glEnable(GL_DEPTH_TEST); // 혹시 다른 씬에서 껐을까봐 다시 켬
+    glEnable(GL_DEPTH_TEST); // 혹시 다른 씬에서 껐을까봐 다시 켬 벅유
 }
 
 void title_mode::Reshape(int w, int h) {

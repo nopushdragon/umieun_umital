@@ -180,6 +180,7 @@
     <ClInclude Include="scene_manager.h" />
     <ClInclude Include="silver_wolf.h" />
     <ClInclude Include="silver_wolf_state.h" />
+    <ClInclude Include="skybox.h" />
     <ClInclude Include="state_machine.h" />
     <ClInclude Include="static_model.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -226,6 +227,7 @@
     <ClCompile Include="resource.cpp" />
     <ClCompile Include="scene_manager.cpp" />
     <ClCompile Include="silver_wolf.cpp" />
+    <ClCompile Include="skybox.cpp" />
     <ClCompile Include="static_model.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -254,6 +256,8 @@
     <None Include="fragment.glsl" />
     <None Include="fragment_image.glsl" />
     <None Include="fragment_text.glsl" />
+    <None Include="fragment_sky.glsl" />
+    <None Include="vertex_sky.glsl" />
     <None Include="static_vertex.glsl" />
     <None Include="vertex_image.glsl" />
     <None Include="vertex_text.glsl" />

@@ -4,14 +4,17 @@
 #include "maze.h"
 #include "silver_wolf.h"
 #include "camera.h"
+#include "skybox.h"
 
 class title_mode : public Scene
 {
 public:
 	silver_wolf silverWolf;
+
 private:
 	GLuint shaderProgramStatic;
 	GLuint shaderProgramAnimated;
+	GLuint shaderProgramSkybox;
 
 	// 모델 데이터
 	std::vector<StaticModel*> roads;
@@ -30,6 +33,9 @@ private:
 	glm::vec3 materialSpecular;
 	float ambientStrength;
 	int shininess;
+
+	//스벅
+	Skybox* skybox = nullptr;
 
 	// --- 내부 헬퍼 함수 (셰이더 로딩용) ---
 	char* filetobuf(const char* file);
