@@ -72,6 +72,12 @@ void game_mode::Update(float deltaTime) {
     //과녁
     target.update();
 
+    for(auto & b : balls) {
+        if (b.is_in_chunk) {
+            b.Update(deltaTime);
+        }
+	}
+
     deltatime = deltaTime;
 }
 
@@ -132,6 +138,14 @@ void game_mode::silverwolf_chunk_collision() {
             }
         }
     }
+
+    for (auto& b : balls) {
+        if (!b.is_in_chunk) continue;
+        b.is_nearby = false;
+        if(check_collision(silverWolf.silverwolf_world_obb, b.ball_obb)) {
+			b.is_nearby = true;
+		}
+    }
 }
 
 void game_mode::update_chunk(int y, int x, int size) {
@@ -149,7 +163,7 @@ void game_mode::update_chunk(int y, int x, int size) {
     for (auto& t : target.targetBlocks) {
         t.is_in_chunk = false;
         if (t.modelMatrix[3].x > (min_x * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && t.modelMatrix[3].x < ((max_x + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
-            t.modelMatrix[3].y >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && t.modelMatrix[3].y < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
+            t.modelMatrix[3].z >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && t.modelMatrix[3].z < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
             t.is_in_chunk = true;
         }
     }
@@ -157,8 +171,16 @@ void game_mode::update_chunk(int y, int x, int size) {
     for (auto& c : chest.chestBlocks) {
         c.is_in_chunk = false;
         if (c.modelMatrix[3].x > (min_x * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && c.modelMatrix[3].x < ((max_x + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
-            c.modelMatrix[3].y >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && c.modelMatrix[3].y < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
+            c.modelMatrix[3].z >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && c.modelMatrix[3].z < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
             c.is_in_chunk = true;
+        }
+    }
+
+    for (auto& b : balls) {
+        b.is_in_chunk = false;
+        if (b.current_pos.x > (min_x * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && b.current_pos.x < ((max_x + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
+            b.current_pos.z >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && b.current_pos.z < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
+            b.is_in_chunk = true;
         }
     }
 }
@@ -219,6 +241,11 @@ void game_mode::Draw() {
         }
     }
 
+    for (auto& b : balls) {   // 몬스터볼 
+        if (!b.is_in_chunk) continue;
+		b.Draw(shaderProgramStatic);
+    }
+
 
     silverWolf.Ball_Draw(shaderProgramStatic, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
 
@@ -261,12 +288,16 @@ void game_mode::Draw() {
             drawDebugOBB(shaderProgramStatic, c.chest_nearby_obb, view, proj, glm::vec3(1.0f, 0.5f, 0.0f)); // 주황색
         }
 
+        for (auto& b : balls) {   // 몬스터볼 obb
+            if (!b.is_in_chunk) continue;
+            drawDebugOBB(shaderProgramStatic, b.ball_obb, view, proj, glm::vec3(1.0f, 0.5f, 0.0f)); // 주황색
+        }
 
         // 은랑 obb
         silverWolf.DebugOBB_Ball(shaderProgramStatic, view, proj, glm::vec3(1.0f, 0.0f, 1.0f)); // 보라색
         silverWolf.DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
 
-
+        
     }
 }
 
@@ -308,6 +339,12 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
     case 'e':
     case 'E':
         chest.open_chest();
+        for (int i = 0; i < balls.size(); i++) {
+            if (balls[i].is_nearby) {
+				balls.erase(balls.begin() + i);
+                break;
+            }
+        }
         break;
     }
 }
@@ -385,7 +422,7 @@ void game_mode::loadModels() {
 
     //과녁
     target.init(target_count);
-    set_taret_in_maze();    //미로에 과녁 배치
+    set_target_in_maze();    //미로에 과녁 배치
 
     //보물
     chest.init(maze.mazeBlocks[maze_x + 1].reset);
@@ -394,7 +431,12 @@ void game_mode::loadModels() {
     silverWolf.Init();
 
     //몬스터볼 ㅇㅅㅇ;
-
+    for (int i = 0; i < ball_cnt; i++) {
+		Ball new_ball = Ball(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), true);
+        new_ball.Init();
+		set_ball_in_maze(new_ball);
+        balls.push_back(new_ball);
+    }
 }
 
 void game_mode::setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj) {
@@ -472,7 +514,7 @@ void game_mode::loadShader(const char* vertPath, const char* fragPath, GLuint& s
     glDeleteShader(fragShader);
 }
 
-void game_mode::set_taret_in_maze() {  // 과녁에서 미로 객체를 가져올 수 없어서 여기서 배치해줌
+void game_mode::set_target_in_maze() {  // 과녁에서 미로 객체를 가져올 수 없어서 여기서 배치해줌
     uniform_int_distribution<int> rd_x(1, maze_x - 2);
     uniform_int_distribution<int> rd_y(1, maze_y - 2);
 
@@ -492,9 +534,37 @@ void game_mode::set_taret_in_maze() {  // 과녁에서 미로 객체를 가져�
 
             target.targetBlocks[i].modelMatrix = maze.mazeBlocks[(rand_y * maze_x) + rand_x].modelMatrix;
             target.targetBlocks[i].reset = glm::vec3(target.targetBlocks[i].modelMatrix[3][0], ROAD_SIZE / 7, target.targetBlocks[i].modelMatrix[3][2]); // 위치 저장
-            cout << rand_y << "," << rand_x << endl;
+            //cout << rand_y << "," << rand_x << endl;
             break;
         }
     }
+
+}
+
+void game_mode::set_ball_in_maze(Ball& b) {  // 과녁에서 미로 객체를 가져올 수 없어서 여기서 배치해줌
+    uniform_int_distribution<int> rd_x(1, maze_x - 2);
+    uniform_int_distribution<int> rd_y(1, maze_y - 2);
+
+    uniform_real_distribution<float> rd_in_road(-10.0f, 10.0f);
+    bool rd_flag = false;
+
+    do{
+        rd_flag = false;
+        int rand_x = rd_x(mt), rand_y = rd_y(mt);
+        if (maze.maze[rand_y][rand_x].path_wall == WALL || maze.maze[rand_y][rand_x].type == 15 || (rand_y == 1 && rand_x == 1)) {
+            rd_flag = true;
+            continue;
+        }
+
+        glm::vec3 maze_matrix = maze.mazeBlocks[(rand_y * maze_x) + rand_x].modelMatrix[3];
+        b.current_pos = glm::vec3(maze_matrix.x + rd_in_road(mt), 0.05f, maze_matrix.z + rd_in_road(mt));
+        b.update_world_obb();
+        for (auto& o : maze.mazeBlocks[(rand_y * maze_x) + rand_x].obstacle_world_obb) {
+            if (check_collision(b.ball_obb, o)) {
+                rd_flag = true;
+                break;
+            }
+        }
+    } while (rd_flag);
 
 }

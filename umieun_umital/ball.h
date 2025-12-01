@@ -14,7 +14,6 @@ private:
 	glm::vec3 p1;
 	glm::vec3 p2;
 
-	glm::vec3 current_pos;
 
 
 
@@ -27,10 +26,13 @@ private:
 	float angle = 0.0f;
 
 public:
+	glm::vec3 current_pos;
 	//p2에 도착했을경우
 	bool end_pos = false;
 	
 	OBB ball_obb;
+	bool is_in_chunk = false;
+	bool is_nearby = false;
 
 	float t = 0;
 

@@ -29,6 +29,7 @@ private:
 	bool collision_on = false;  // obb 선 그리기용
 
     vector<Ball> balls;
+	int ball_cnt = 30;
 
     // 카메라 및 화면 설정
 	camera gameCamera;
@@ -60,7 +61,8 @@ public:
 	void silverwolf_chunk_collision();
     void update_chunk(int y, int x, int size);  // size: 중앙서부터 몇칸만큼의 범위로 할거냐
 
-    void set_taret_in_maze();
+    void set_target_in_maze();
+    void set_ball_in_maze(Ball& b);
 
 	void OnPause() override;
 	void OnResume() override;

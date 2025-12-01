@@ -87,4 +87,3 @@ void Ball::update_world_obb() {
 void Ball::DebugOBB(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
 	drawDebugOBB(shaderID, ball_obb, view, proj, color);
 }
-
