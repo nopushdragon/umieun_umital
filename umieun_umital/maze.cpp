@@ -79,12 +79,12 @@ void MAZE::generatetype() {
     }
 }
 
-void MAZE::initmaze(std::vector<StaticModel*>* roads) {
+void MAZE::initmaze() {
     // road 인스턴스를 씬 중앙에 배치
     for (int i = 0; i < maze_y; i++) {
         for (int j = 0; j < maze_x; j++) {
             MazeBlockInstance roadInstance;
-			roadInstance.modelPtr = roads->at(maze[i][j].type);
+			roadInstance.modelPtr = roads.at(maze[i][j].type);
             float x_pos = ROAD_SIZE / 2 + (ROAD_SIZE * j) - ((ROAD_SIZE * (float)maze_x) / 2);
             float z_pos = ROAD_SIZE / 2 + (ROAD_SIZE * i) - ((ROAD_SIZE * (float)maze_y) / 2);
             roadInstance.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x_pos, 0.0f, z_pos));

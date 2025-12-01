@@ -20,16 +20,15 @@ private:
 	GLuint shaderProgramSkybox;
 
     // 모델 데이터
-    std::vector<StaticModel*> roads;
     MAZE maze;
 
-	StaticModel* target_model;
 	int target_count = 5;
 	TARGET target;
 
-    StaticModel* chest_model;
     CHEST chest;
 	bool collision_on = false;  // obb 선 그리기용
+
+    vector<Ball> balls;
 
     // 카메라 및 화면 설정
 	camera gameCamera;

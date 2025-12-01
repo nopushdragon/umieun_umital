@@ -597,7 +597,6 @@ void State_Throw::Update(silver_wolf* wolf, float detlatime) {
 		wolf->ball.emplace_back(Ball(wolf->p0, wolf->p1, wolf->p2, false));
 		wolf->ball.back().Init();
 		wolf->throw_start = true;
-		cout << wolf->ball.size() << endl;;
 	}
 
 }

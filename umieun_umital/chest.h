@@ -1,6 +1,7 @@
 #pragma once
 #include "headers.h"
 #include "static_model.h"
+#include "resource.h"
 
 struct chestInstance {
     StaticModel* modelPtr;
@@ -8,6 +9,7 @@ struct chestInstance {
     glm::vec3 reset;
 
     OBB chest_obb;
+    OBB chest_nearby_obb;
     bool is_nearby = false; //플레이어가 상자에 닿았는가
     bool is_in_chunk = false; // 청크 내에 있는가
 
@@ -24,7 +26,7 @@ class CHEST
 private:
 public:
     vector<chestInstance> chestBlocks;
-    void init(StaticModel* chest_model,glm::vec3 reset_matrix);
+    void init(glm::vec3 reset_matrix);
 
     void update();
 

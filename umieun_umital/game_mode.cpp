@@ -114,8 +114,10 @@ void game_mode::silverwolf_chunk_collision() {
         c.is_nearby = false;
         if (check_collision(silverWolf.silverwolf_world_obb, c.chest_obb)) {
             silverWolf.pos = silverWolf.old_pos;
-            c.is_nearby = true;
             silverWolf.update_world_obb();
+        }
+        if (check_collision(silverWolf.silverwolf_world_obb, c.chest_nearby_obb)) {
+            c.is_nearby = true;
         }
     }
 
@@ -256,6 +258,7 @@ void game_mode::Draw() {
         for (auto& c : chest.chestBlocks) {   // 보물 obb
             if (!c.is_in_chunk) continue;
             drawDebugOBB(shaderProgramStatic, c.chest_obb, view, proj, glm::vec3(1.0f, 0.5f, 0.0f)); // 주황색
+            drawDebugOBB(shaderProgramStatic, c.chest_nearby_obb, view, proj, glm::vec3(1.0f, 0.5f, 0.0f)); // 주황색
         }
 
 
@@ -281,8 +284,9 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
         camera_fixed = true;
         glutSetCursor(GLUT_CURSOR_INHERIT);
         break;
-    case 'o':
-        chest.open_chest();
+    case 'e':
+    case 'E':
+        // ui바꾸기
         break;
     }
 
@@ -300,6 +304,10 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
     case'G':
         camera_fixed = false;
         //glutSetCursor(GLUT_CURSOR_NONE);
+        break;
+    case 'e':
+    case 'E':
+        chest.open_chest();
         break;
     }
 }
@@ -371,45 +379,21 @@ void game_mode::OnResume() {
 // ==========================================================
 
 void game_mode::loadModels() {
-    // 미로
-    roads.push_back(new StaticModel("road/road0.obj"));   // 0동
-    roads.push_back(new StaticModel("road/road1.obj"));   // 1서 
-    roads.push_back(new StaticModel("road/road2.obj"));   // 2남 
-    roads.push_back(new StaticModel("road/road3.obj"));   // 3북
-    roads.push_back(new StaticModel("road/road4.obj"));   // 4ㅡ
-    roads.push_back(new StaticModel("road/road5.obj"));   // 5ㅣ
-    roads.push_back(new StaticModel("road/road6.obj"));   // 6┌
-    roads.push_back(new StaticModel("road/road7.obj"));   // 7┐
-    roads.push_back(new StaticModel("road/road8.obj"));   // 8└
-    roads.push_back(new StaticModel("road/road9.obj"));   // 9┘
-    roads.push_back(new StaticModel("road/road10.obj"));  // 10ㅏ
-    roads.push_back(new StaticModel("road/road11.obj"));  // 11ㅓ
-    roads.push_back(new StaticModel("road/road12.obj"));  // 12ㅜ
-    roads.push_back(new StaticModel("road/road13.obj"));  // 13ㅗ
-    roads.push_back(new StaticModel("road/road14.obj"));  // 14+
-    roads.push_back(new StaticModel("road/road15.obj"));  // 15x
-    for (int i = 0; i < roads.size(); i++) {
-        roads[i]->set_maze_obb(i);
-    }
+    //미로
     maze.setMaze();
-    maze.initmaze(&roads);
+    maze.initmaze();
 
     //과녁
-    target_model = new StaticModel("target/baudrive.obj");
-    target_model->set_target_obb();
-    target.init(target_model, target_count);
+    target.init(target_count);
     set_taret_in_maze();    //미로에 과녁 배치
 
     //보물
-    chest_model = new StaticModel("chest/chest.obj");
-    chest_model->set_chest_obb();
-    chest.init(chest_model, maze.mazeBlocks[maze_x + 1].reset);
+    chest.init(maze.mazeBlocks[maze_x + 1].reset);
 
     //은랑
     silverWolf.Init();
 
     //몬스터볼 ㅇㅅㅇ;
-
 
 }
 

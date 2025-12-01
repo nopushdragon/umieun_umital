@@ -1,6 +1,6 @@
 ﻿#include "target.h"
 
-void TARGET::init(StaticModel* target_model, int target_cnt) {
+void TARGET::init(int target_cnt) {
 	for (int i = 0; i < target_cnt; i++) {
 		targetInstance new_target;
 		new_target.modelPtr = target_model;

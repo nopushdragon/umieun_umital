@@ -1,6 +1,8 @@
 #pragma once
 #include "headers.h"
 #include "static_model.h"
+#include "resource.h"
+
 
 struct targetInstance {
     StaticModel* modelPtr;
@@ -24,7 +26,7 @@ class TARGET
 private:
 public:
 	vector<targetInstance> targetBlocks;
-    void init(StaticModel* target_model,int target_cnt);
+    void init(int target_cnt);
 
     void update();
 

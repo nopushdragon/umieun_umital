@@ -1,6 +1,7 @@
 #pragma once
 #include "headers.h"
 #include "static_model.h"
+#include "resource.h"
 
 enum PATH_WALL {
     PATH = 0,
@@ -33,7 +34,7 @@ public:
     void printMaze();
     void generateMaze(int cx, int cy);
     void generatetype();
-    void initmaze(std::vector<StaticModel*>*);
+    void initmaze();
     void setMaze();
     void title_maze(std::vector<StaticModel*>* roads);
 };

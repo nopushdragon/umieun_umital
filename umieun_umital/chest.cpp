@@ -1,6 +1,6 @@
 #include "chest.h"
 
-void CHEST::init(StaticModel* chest_model, glm::vec3 reset_matrix) {
+void CHEST::init(glm::vec3 reset_matrix) {
 	chestInstance new_chest;
 	new_chest.modelPtr = chest_model;
 	new_chest.reset = reset_matrix + glm::vec3(0.0f,0.0f,-2.5f);	//미로의 1,1칸 위치에서 조금 뒤로 초기 설정
@@ -31,13 +31,16 @@ void CHEST::update_world_obb() {
 		glm::vec4 chest_local_center_h = glm::vec4(chest_local_obb.center, 1.0f);
 		glm::vec3 world_center = glm::vec3(modelMat * chest_local_center_h);
 		chest.chest_obb.center = world_center;
+		chest.chest_nearby_obb.center = world_center;
 		for (int i = 0; i < 3; i++) {
 			glm::vec3 world_axis = rotation_scale_mat * chest_local_obb.u[i];
 			if (glm::length(world_axis) > 1e-6) {
 				chest.chest_obb.u[i] = glm::normalize(world_axis);
+				chest.chest_nearby_obb.u[i] = glm::normalize(world_axis);
 			}
 			else {
 				chest.chest_obb.u[i] = chest_local_obb.u[i];
+				chest.chest_nearby_obb.u[i] = chest_local_obb.u[i];
 			}
 		}
 		glm::vec3 chest_scale_factors = glm::vec3(
@@ -46,6 +49,7 @@ void CHEST::update_world_obb() {
 			glm::length(rotation_scale_mat[2])
 		);
 		chest.chest_obb.half_length = chest_local_obb.half_length * chest_scale_factors;
+		chest.chest_nearby_obb.half_length = (chest_local_obb.half_length + 1.0f) * chest_scale_factors;
 	}
 }
 

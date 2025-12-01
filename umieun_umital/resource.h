@@ -4,6 +4,9 @@
 
 extern NewModel* s[7];
 
+extern std::vector<StaticModel*> roads;
+extern StaticModel* target_model;
+extern StaticModel* chest_model;
 extern StaticModel* ball_model;
 
 
