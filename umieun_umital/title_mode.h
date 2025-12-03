@@ -27,10 +27,10 @@ private:
 	Image* title = nullptr;
 	vector<Image*> main;
 	int main_idx = 0;
-	Image* set_maze = nullptr;
+
+	Image* set_maze[4];
 	bool draw_set_maze = false;
-	int set_maze_y = 0;
-	int set_maze_x = 0;
+	int set_maze_idx = 0;
 
 	// 카메라 및 화면 설정
 	camera gameCamera;

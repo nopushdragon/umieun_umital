@@ -36,15 +36,45 @@ void title_mode::Finish() {
             delete silverWolf.silverWolfModel[i];
     }
 
-    delete white_background;
-    delete title;
-    delete set_maze;
+    // 이미지 삭제
+    if (white_background) {
+        delete white_background;
+        white_background = nullptr;
+    }
+    if (title) {
+        delete title;
+        title = nullptr;
+    }
+
+    // main 이미지들 삭제
+    for (auto& m : main) {
+        if (m) {
+            delete m;
+            m = nullptr;
+        }
+    }
+    main.clear();
+
+    // set_maze 이미지들 삭제
+    for (int i = 0; i < 4; ++i) {
+        if (set_maze[i]) {
+            delete set_maze[i];
+            set_maze[i] = nullptr;
+        }
+    }
+
+    // 스카이박스 삭제
+    if (skybox) {
+        delete skybox;
+        skybox = nullptr;
+    }
 
     // 셰이더 프로그램 삭제
-    glDeleteProgram(shaderProgramStatic);
-    glDeleteProgram(shaderProgramAnimated);
-    glDeleteProgram(shaderProgramImage);
-    glDeleteProgram(shaderProgramSkybox);
+    if (shaderProgramStatic) glDeleteProgram(shaderProgramStatic);
+    if (shaderProgramAnimated) glDeleteProgram(shaderProgramAnimated);
+    if (shaderProgramImage) glDeleteProgram(shaderProgramImage);
+    if (shaderProgramSkybox) glDeleteProgram(shaderProgramSkybox);
+
     stbi_set_flip_vertically_on_load(false);
 }
 
@@ -76,7 +106,11 @@ void title_mode::loadImages() {
     for (auto& m : main)m->color.w = 1.0f;
     main_idx = 0;
 
-    set_maze = new Image(LoadTexture("title/set_maze.png"), pos1, size1);
+    set_maze[0] = new Image(LoadTexture("title/set_maze.png"), pos1, size1);
+    set_maze[1] = new Image(LoadTexture("title/set_maze_5x5.png"), pos1, size1);
+    set_maze[2] = new Image(LoadTexture("title/set_maze_10x10.png"), pos1, size1);
+    set_maze[3] = new Image(LoadTexture("title/set_maze_15x15.png"), pos1, size1);
+   
     draw_set_maze = false;
 
     stbi_set_flip_vertically_on_load(false);
@@ -178,7 +212,7 @@ void title_mode::Draw() {
         main[main_idx]->Draw(shaderProgramImage, uiProj);
         if (draw_set_maze) {
             white_background->Draw(shaderProgramImage, uiProj);
-            set_maze->Draw(shaderProgramImage, uiProj);
+            set_maze[set_maze_idx]->Draw(shaderProgramImage, uiProj);
         }
     }
 
@@ -189,19 +223,14 @@ void title_mode::Draw() {
 void title_mode::Keyboard(unsigned char key, int x, int y) {
     switch (key)
     {
-    case 'p':
-        if (g_Framework && g_Framework->sceneManager) {
-            g_Framework->sceneManager->Change_Mode(new game_mode());
-        }
-        break;
-    case '1':
+	case 13:    // enter
         if (!gameCamera.moving && gameCamera.now_pos_idx == 0) {
             start_pos_idx = 0;
             end_pos_idx = 1;
             gameCamera.moving = true;
         }
         break;
-    case 27:
+	case 27:    // esc
         if (!gameCamera.moving && gameCamera.now_pos_idx == 0) {
             exit(0);
         }
@@ -242,24 +271,60 @@ void title_mode::Mouse(int button, int state, int x, int y) {
             }
         }
         else {
-
+            if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
+                maze_x = 5;
+				maze_y = 5;
+                if (g_Framework && g_Framework->sceneManager) {
+                    g_Framework->sceneManager->Change_Mode(new game_mode());
+                }
+            }
+            else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
+                maze_x = 10;
+                maze_y = 10;
+                if (g_Framework && g_Framework->sceneManager) {
+                    g_Framework->sceneManager->Change_Mode(new game_mode());
+                }
+            }
+            else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
+                maze_x = 15;
+                maze_y = 15;
+                if (g_Framework && g_Framework->sceneManager) {
+                    g_Framework->sceneManager->Change_Mode(new game_mode());
+                }
+            }
         }
     }
 }
 
 void title_mode::PassiveMotion(int x, int y) {
-    if (!draw_set_maze && gameCamera.now_pos_idx == 1) {
-        if (x >= 30 && x <= 450 && y >= 160 && y <= 240) { //start
-            main_idx = 1;
-        }
-        else if (x >= 30 && x <= 450 && y >= 360 && y <= 440) { //option
-            main_idx = 2;
-        }
-        else if (x >= 30 && x <= 450 && y >= 560 && y <= 640) {  //exit
-            main_idx = 3;
+    if (gameCamera.now_pos_idx == 1) {
+        if (!draw_set_maze) {
+            if (x >= 30 && x <= 450 && y >= 160 && y <= 240) { //start
+                main_idx = 1;
+            }
+            else if (x >= 30 && x <= 450 && y >= 360 && y <= 440) { //option
+                main_idx = 2;
+            }
+            else if (x >= 30 && x <= 450 && y >= 560 && y <= 640) {  //exit
+                main_idx = 3;
+            }
+            else {
+                main_idx = 0;
+            }
         }
         else {
-            main_idx = 0;
+            if (x >= 110 && x <= 360 && y >= 175 && y <= 625) { 
+                set_maze_idx = 1;
+            }
+            else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
+                set_maze_idx = 2;
+            }
+            else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
+                set_maze_idx = 3;
+            }
+            else {
+                set_maze_idx = 0;
+            }
         }
     }
 }
