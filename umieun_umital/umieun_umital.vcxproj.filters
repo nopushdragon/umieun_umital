@@ -70,6 +70,9 @@
     <Filter Include="스벅%28스카이 벅스라는 뜻 ㅋㅋㅋ fuck you%29">
       <UniqueIdentifier>{b8752916-d7f3-406e-b82d-bca2dbecf0a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="눈 마주치면 포켓몬 승부">
+      <UniqueIdentifier>{43779d6b-12a8-4988-9845-3f3cf2f7bb45}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -150,6 +153,15 @@
     <ClInclude Include="skybox.h">
       <Filter>스벅%28스카이 벅스라는 뜻 ㅋㅋㅋ fuck you%29</Filter>
     </ClInclude>
+    <ClInclude Include="trainer.h">
+      <Filter>눈 마주치면 포켓몬 승부</Filter>
+    </ClInclude>
+    <ClInclude Include="trainer_state.h">
+      <Filter>눈 마주치면 포켓몬 승부</Filter>
+    </ClInclude>
+    <ClInclude Include="trainer_state_machine.h">
+      <Filter>눈 마주치면 포켓몬 승부</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animated_model.cpp">
@@ -223,6 +235,9 @@
     </ClCompile>
     <ClCompile Include="skybox.cpp">
       <Filter>스벅%28스카이 벅스라는 뜻 ㅋㅋㅋ fuck you%29</Filter>
+    </ClCompile>
+    <ClCompile Include="trainer.cpp">
+      <Filter>눈 마주치면 포켓몬 승부</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

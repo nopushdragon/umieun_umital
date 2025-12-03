@@ -31,17 +31,29 @@ Mesh::Mesh(vector<ModelVertex> vertices, vector<unsigned int> indices, vector<Te
 }
 
 void Mesh::Draw(GLuint shaderID) {
+    glActiveTexture(GL_TEXTURE0); // 0번 슬롯 활성화
+
     if (!textures.empty()) {
-        glActiveTexture(GL_TEXTURE0);
+        // 텍스처가 있으면: 켜고(true), 바인딩한다.
+        glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), 1); // true
         glUniform1i(glGetUniformLocation(shaderID, "texture_diffuse1"), 0);
-		glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), true);
         glBindTexture(GL_TEXTURE_2D, textures[0].id);
     }
+    else {
+        // ★ [핵심 수정] 텍스처가 없으면: 끄고(false), 0번 텍스처(없음)를 바인딩한다.
+        // 이걸 안 하면 직전에 그린 은랑이나 Mei의 텍스처가 그대로 묻어 나옵니다.
+        glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), 0); // false
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
+    // 그리기
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+
+    // [안전 장치] 다 그렸으면 텍스처 바인딩 해제 (습관화)
     glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Mesh::setupMesh() {
@@ -89,14 +101,14 @@ NewModel::NewModel(string const& path, bool gamma) : gammaCorrection(gamma) {
     loadModel(path);
 }
 void NewModel::ResetAnimation() {
-    m_AnimationTime = 0.0f;
+    //m_AnimationTime = 0.0f;
     //throw_end = false; // 필요하다면 애니메이션 종료 플래그도 리셋
 }
 
 void NewModel::Draw(GLuint shaderID, float deltaTime) {
 
     // 1. 델타 타임 누적
-    m_AnimationTime += deltaTime;
+    //m_AnimationTime += deltaTime;
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, pos);
@@ -109,7 +121,7 @@ void NewModel::Draw(GLuint shaderID, float deltaTime) {
     vector<glm::mat4> transforms;
 
     // 2. 누적된 시간(m_AnimationTime)을 사용하여 뼈 변환 계산
-    BoneTransform(m_AnimationTime, transforms);
+    BoneTransform(deltaTime, transforms);
 
     for (unsigned int i = 0; i < transforms.size(); ++i) {
         string name = "uFinalBoneMatrices[" + to_string(i) + "]";
@@ -271,11 +283,7 @@ void NewModel::loadModel(string const& path) {
     // 2. 바이너리 파일 경로 생성
     string binPath = path.substr(0, path.find_last_of('.')) + ".bin";
 
-    // ==========================================================
-    // ★ [핵심 전략] 캐릭터("silver_wolf")는 바이너리를 쓰지 않음!
-    // ==========================================================
-    // 파일 경로에 "silver_wolf"라는 단어가 포함되어 있다면? -> 애니메이션 모델임
-    bool isFbxFile = (path.find(".fbx") != string::npos) || (path.find(".FBX") != string::npos);
+     bool isFbxFile = (path.find(".fbx") != string::npos) || (path.find(".FBX") != string::npos);
 
     if (!isFbxFile) {
         // 캐릭터가 아닐 때만(도로 등) 바이너리 로딩 시도
@@ -284,11 +292,7 @@ void NewModel::loadModel(string const& path) {
         }
     }
 
-    // ==========================================================
-    // 3. Assimp로 로딩 (캐릭터이거나, 바이너리 파일이 없을 때)
-    // ==========================================================
-    // 캐릭터는 여기서 로딩되어야 애니메이션 데이터(m_Scene)가 생성됨
-    m_Scene = m_Importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights | aiProcess_FlipUVs);
+   m_Scene = m_Importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights | aiProcess_FlipUVs);
 
     if (!m_Scene || m_Scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !m_Scene->mRootNode) {
         cout << "ERROR::ASSIMP:: " << m_Importer.GetErrorString() << endl;
@@ -314,6 +318,7 @@ void NewModel::loadModel(string const& path) {
     }
     else {
         cout << "Warning: 이 파일에는 애니메이션이 없습니다!" << endl;
+        cout << binPath << endl;
     }
 
     // 노드 처리
@@ -321,10 +326,7 @@ void NewModel::loadModel(string const& path) {
 
 
 
-    // ==========================================================
-    // 4. 저장 (캐릭터가 아닐 때만 저장)
-    // ==========================================================
-    if (!isFbxFile) {
+  if (!isFbxFile) {
         SaveToBinary(binPath);
     }
 }
@@ -383,9 +385,16 @@ Mesh NewModel::processMesh(aiMesh* mesh, const aiScene* scene) {
 vector<Texture_fbx> NewModel::loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName) {
     vector<Texture_fbx> textures;
 
+    // 텍스처가 없는 재질이면 바로 빈 벡터 리턴 (억지로 만들지 않음)
+    if (mat->GetTextureCount(type) == 0) {
+        return textures;
+    }
+
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
+
+        // 1. 이미 로딩된 텍스처인지 확인 (캐싱)
         bool skip = false;
         for (unsigned int j = 0; j < textures_loaded.size(); j++) {
             if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0) {
@@ -394,29 +403,60 @@ vector<Texture_fbx> NewModel::loadMaterialTextures(aiMaterial* mat, aiTextureTyp
                 break;
             }
         }
+
         if (!skip) {
             Texture_fbx texture;
-            string filename = to_string(currentTextureNum) + ".png";
-            string fullPath = directory + '/' + filename;
-            texture.id = TextureFromFile(fullPath.c_str());
+            texture.id = 0;
+            string fullPath;
 
-            if (texture.id == 0) texture.id = TextureFromFile(filename.c_str());
+            if (directory.find("silver_wolf") != string::npos) {
+                // [CASE 1] 은랑: 무조건 1.png, 2.png 순서로 강제 로딩
+                string filename = to_string(currentTextureNum) + ".png";
+                fullPath = directory + '/' + filename;
+                texture.id = TextureFromFile(fullPath.c_str());
+            }
+            else {
+                // [CASE 2] 트레이너 등 일반 모델: FBX 정보대로 로딩
+                string originalPath = string(str.C_Str());
 
+                // 경로에서 파일명만 추출 (C:\User\...\abc.png -> abc.png)
+                string simpleFileName = originalPath.substr(originalPath.find_last_of("/\\") + 1);
+
+                // 시도 1: 모델 폴더 안에 해당 파일명이 있는지?
+                fullPath = directory + '/' + simpleFileName;
+                texture.id = TextureFromFile(fullPath.c_str());
+
+                // 시도 2: 혹시 원본 경로(절대경로)에 파일이 있는지?
+                if (texture.id == 0) {
+                    texture.id = TextureFromFile(originalPath.c_str());
+                }
+
+                // ★ 중요: 여기서 실패하면 그냥 실패하게 둠. (억지로 1.png 등을 넣지 않음)
+            }
+
+            // 로드에 성공한 경우에만 벡터에 추가
             if (texture.id != 0) {
                 texture.type = typeName;
-                texture.path = filename;
+                texture.path = str.C_Str();
                 textures.push_back(texture);
                 textures_loaded.push_back(texture);
-                //cout << "[Success] Loaded: " << filename << endl;
             }
         }
     }
-    if (currentTextureNum < 6) currentTextureNum++;
+
+    // 은랑일 때만 번호 증가 (트레이너는 번호 안 씀)
+    if (directory.find("silver_wolf") != string::npos) {
+        if (currentTextureNum < 6) currentTextureNum++;
+    }
+
     return textures;
 }
 
 
 unsigned int NewModel::TextureFromFile(const char* path) {
+    //stbi_set_flip_vertically_on_load(true); // true면 y축 flip, false면 원본대로
+
+
     string filename = string(path);
     unsigned int textureID;
     glGenTextures(1, &textureID);
@@ -697,32 +737,16 @@ void NewModel::BoneTransform(float timeInSeconds, vector<glm::mat4>& Transforms)
         }
     }
 }
-//NewModel::NewModel(const NewModel& other)
-//{
-//    this->directory = other.directory;
-//    this->gammaCorrection = other.gammaCorrection;
-//    this->pos = other.pos;
-//    this->scale = other.scale;
-//    this->angle = other.angle;
-//    this->state = other.state;
-//
-//
-//    this->m_BoneInfoMap = other.m_BoneInfoMap;
-//    this->m_BoneCounter = other.m_BoneCounter;
-//    this->m_GlobalInverseTransform = other.m_GlobalInverseTransform;
-//
-//
-//    this->textures_loaded = other.textures_loaded;
-//    this->currentTextureNum = other.currentTextureNum;
-//
-//
-//    this->meshes = other.meshes;
-//
-//
-//    /*if (!directory.empty()) {
-//        loadModel(directory);
-//    }*/
-//}
+
+
+float NewModel::GetDuration() {
+    if (!m_Scene || m_Scene->mNumAnimations == 0) return 0.0f;
+
+    aiAnimation* anim = m_Scene->mAnimations[0];
+    float ticksPerSecond = (float)(anim->mTicksPerSecond != 0 ? anim->mTicksPerSecond : 25.0f);
+    return (float)anim->mDuration / ticksPerSecond;
+}
+
 NewModel::~NewModel() {
 	// Assimp Importer will automatically clean up
 }

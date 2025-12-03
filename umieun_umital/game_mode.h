@@ -8,6 +8,8 @@
 #include "camera.h"
 #include "collision.h"
 #include "skybox.h"
+#include "ball.h"
+#include "trainer.h"
 
 
 class game_mode : public Scene
@@ -31,6 +33,12 @@ private:
     vector<Ball> balls;
 	int ball_cnt = 30;
 
+	vector<Trainer*> trainers;
+  
+    
+
+   
+
     // 카메라 및 화면 설정
 	camera gameCamera;
     int WINDOW_WIDTH = winWidth;
@@ -48,6 +56,10 @@ private:
     //스벅
 	Skybox* skybox = nullptr;
 
+    //적 나오는 시간
+	float trainer_spawn_timer = 0.0f;
+	float trainer_spawn_time = 5.0f;
+
     // --- 내부 헬퍼 함수 (셰이더 로딩용) ---
     char* filetobuf(const char* file);
     void loadShader(const char* vertPath, const char* fragPath, GLuint& shaderID);
@@ -59,10 +71,16 @@ public:
 	void Init() override;
 	void Update(float deltaTime) override;
 	void silverwolf_chunk_collision();
+
+    void trainer_chunk_collision();
     void update_chunk(int y, int x, int size);  // size: 중앙서부터 몇칸만큼의 범위로 할거냐
+
+    void Update_Trainer_Spawn();
 
     void set_target_in_maze();
     void set_ball_in_maze(Ball& b);
+
+    void set_trainer_in_maze(Trainer& t);
 
 	void OnPause() override;
 	void OnResume() override;

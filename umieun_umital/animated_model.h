@@ -89,8 +89,9 @@ public:
     bool run_end = false;
     bool roll_end = false;
     bool jump_end = false;
+    bool die_end = false;
 
-    float m_AnimationTime = 0.0f;
+    //float m_AnimationTime = 0.0f;
 
     NewModel(string const& path, bool gamma = false);
     void Draw(GLuint shaderID, float deltaTime);
@@ -99,6 +100,8 @@ public:
 
     // 외부 호출용 뼈 변형 함수
     void BoneTransform(float timeInSeconds, vector<glm::mat4>& Transforms);
+
+    float GetDuration(); //애니메이션 시간 반환
 
     NewModel(const NewModel& other);
     ~NewModel();

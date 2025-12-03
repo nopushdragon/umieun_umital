@@ -24,7 +24,7 @@ void Ball::Update(float deltatime) {
 	
 	if (!maze) {
 		t += speed * deltatime;
-		float t_normalized = t / 500.0f;
+		float t_normalized = t / 300.0f;
 		this->current_pos = (1 - t_normalized) * (1 - t_normalized) * p0 + 2 * (1 - t_normalized) * t_normalized * p1 + t_normalized * t_normalized * p2;
 		if (t >= 500) {
 			end_pos = true;

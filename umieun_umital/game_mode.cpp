@@ -67,8 +67,14 @@ void game_mode::Update(float deltaTime) {
     //카메라 고정
     if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
-    silverwolf_chunk_collision();   //청크  
+    //트레이너
+    Update_Trainer_Spawn();
+	for (int i = 0;i < trainers.size();++i) {
+		trainers[i]->Update(deltaTime, gameCamera.right_mouth,silverWolf.pos);
+	}
 
+    silverwolf_chunk_collision();   //청크  
+    trainer_chunk_collision();
     //과녁
     target.update();
 
@@ -146,6 +152,70 @@ void game_mode::silverwolf_chunk_collision() {
 			b.is_nearby = true;
 		}
     }
+
+
+}
+
+void game_mode::trainer_chunk_collision() {
+    for (int i = trainers.size() - 1; i >= 0; --i) {
+        Trainer* trainer = trainers[i];
+		if (trainer->die) {
+			delete trainer;
+			trainers.erase(trainers.begin() + i);
+			continue;
+		}
+        for (auto& block : maze.mazeBlocks) {
+            block.is_colliding = false;
+            if (check_collision(trainer->trainer_world_obb, block.road_world_obb)) {
+                block.is_colliding = true;
+            }
+        }
+        // 청크 단위 충돌
+        bool stop = false;
+        for (int y = 1; y < maze_y - 1; y++) {
+            for (int x = 1; x < maze_x - 1; x++) {
+                if (maze.mazeBlocks[(y * maze_x) + x].is_colliding == true) {
+                    update_chunk(y, x, 2);
+                    stop = true;
+                    break;
+                }
+            }
+            if (stop) break;
+        }
+        // 청크 기준으로 장애물 충돌 검사
+        for (auto& block : maze.mazeBlocks) {
+            if (block.is_colliding == true) {
+                for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
+                    if (check_collision(trainer->trainer_world_obb, block.obstacle_world_obb[j])) {
+                        trainer->pos = trainer->old_pos;
+                        trainer->angle += 45.0f;
+                        trainer->update_world_obb();
+                    }
+                }
+            }
+        }
+
+        // obb2번을 플레이어와 충돌할때
+        if (check_collision(silverWolf.silverwolf_world_obb, trainer->trainer_world_obb2)&& !trainer->die_change) {
+            trainer->aggravation = true;
+        }
+        else {
+            trainer->aggravation = false;
+        }
+
+        // obb1번을 플레이어와 충돌할때
+        if (check_collision(silverWolf.silverwolf_world_obb, trainer->trainer_world_obb) && !trainer->die_change) {
+            if (silverWolf.state != "roll") {
+                silverWolf.pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
+                silverWolf.old_pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
+                delete trainer;
+                trainers.erase(trainers.begin() + i);
+            }
+            else {
+                trainer->die_change = true;
+            }
+        }
+    }
 }
 
 void game_mode::update_chunk(int y, int x, int size) {
@@ -183,6 +253,17 @@ void game_mode::update_chunk(int y, int x, int size) {
             b.is_in_chunk = true;
         }
     }
+}
+void game_mode::Update_Trainer_Spawn() {
+	trainer_spawn_timer += deltatime;
+	if (trainer_spawn_timer >= trainer_spawn_time) {
+		trainer_spawn_timer = 0.0f;
+        cout << "소환됨 ㅇㅅㅇ!!" << endl;
+        Trainer* new_trainer = new Trainer(0.0f,0.0f);
+        new_trainer->Init();
+        set_trainer_in_maze(*new_trainer);
+        trainers.push_back(new_trainer);
+	}
 }
 
 // 3. 그리기 (기존 drawScene 함수 내용)
@@ -257,6 +338,10 @@ void game_mode::Draw() {
     silverWolf.Draw(shaderProgramAnimated, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
 
+    for (int i = 0;i < trainers.size();++i) {
+        trainers[i]->Draw(shaderProgramAnimated, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
+    }
+
     // --- 3. 스카이박스 ---
     glUseProgram(shaderProgramSkybox);
     setCommonUniforms(shaderProgramSkybox, view, proj);
@@ -296,6 +381,12 @@ void game_mode::Draw() {
         // 은랑 obb
         silverWolf.DebugOBB_Ball(shaderProgramStatic, view, proj, glm::vec3(1.0f, 0.0f, 1.0f)); // 보라색
         silverWolf.DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(1.0f, 0.0f, 0.0f)); // 빨간색
+
+
+        //트레이너
+		for (int i = 0;i < trainers.size();++i) {
+			trainers[i]->DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
+		}
 
         
     }
@@ -427,6 +518,11 @@ void game_mode::loadModels() {
     //보물
     chest.init(maze.mazeBlocks[maze_x + 1].reset);
 
+    //트레이너
+    /*Trainer* newTrainer = new Trainer();
+    newTrainer->Init();
+    trainers.push_back(newTrainer);*/
+    
     //은랑
     silverWolf.Init();
 
@@ -437,6 +533,7 @@ void game_mode::loadModels() {
 		set_ball_in_maze(new_ball);
         balls.push_back(new_ball);
     }
+
 }
 
 void game_mode::setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj) {
@@ -561,6 +658,33 @@ void game_mode::set_ball_in_maze(Ball& b) {  // 과녁에서 미로 객체를 �
         b.update_world_obb();
         for (auto& o : maze.mazeBlocks[(rand_y * maze_x) + rand_x].obstacle_world_obb) {
             if (check_collision(b.ball_obb, o)) {
+                rd_flag = true;
+                break;
+            }
+        }
+    } while (rd_flag);
+
+}
+void game_mode::set_trainer_in_maze(Trainer& t) {  // 과녁에서 미로 객체를 가져올 수 없어서 여기서 배치해줌
+    uniform_int_distribution<int> rd_x(1, maze_x - 2);
+    uniform_int_distribution<int> rd_y(1, maze_y - 2);
+
+    uniform_real_distribution<float> rd_in_road(-10.0f, 10.0f);
+    bool rd_flag = false;
+
+    do {
+        rd_flag = false;
+        int rand_x = rd_x(mt), rand_y = rd_y(mt);
+        if (maze.maze[rand_y][rand_x].path_wall == WALL || maze.maze[rand_y][rand_x].type == 15 || (rand_y == 1 && rand_x == 1)) {
+            rd_flag = true;
+            continue;
+        }
+
+        glm::vec3 maze_matrix = maze.mazeBlocks[(rand_y * maze_x) + rand_x].modelMatrix[3];
+        t.pos = glm::vec3(maze_matrix.x + rd_in_road(mt), 0.05f, maze_matrix.z + rd_in_road(mt));
+        t.update_world_obb();
+        for (auto& o : maze.mazeBlocks[(rand_y * maze_x) + rand_x].obstacle_world_obb) {
+            if (check_collision(t.trainer_world_obb, o)) {
                 rd_flag = true;
                 break;
             }

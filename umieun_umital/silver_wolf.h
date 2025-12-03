@@ -19,6 +19,8 @@ private:
 
 	glm::vec3 rock_end_pos = glm::vec3(0.0f, 0.0f, 0.0f);
 
+
+	
 	array<glm::vec3, 500> rock_path;
 
 	
@@ -49,7 +51,7 @@ public:
 
 	//여기서부터는 속도 관련된거
 	float walkSpeed = 1.0f; // 걷기 속도
-	float runSpeed = 2.0f; // 걷기 속도
+	float runSpeed = 3.0f; // 걷기 속도
 
 
 	//여기서부터는 키 관련되게
@@ -91,6 +93,8 @@ public:
 
 	//은랑 각도
 	float silver_angle = 0.0f;
+
+	float local_anim_time = 0.0f;
 
 	
 

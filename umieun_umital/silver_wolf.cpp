@@ -44,6 +44,8 @@ void silver_wolf::Update(float deltatime, const float& camera_x_angle, const flo
 	camera_angle = camera_x_angle;
 	camera_right_mouth = right_mouth;
 
+	local_anim_time += deltatime;
+
 	if (currentState) currentState->Update(this, deltatime);
 
 
@@ -136,7 +138,7 @@ void silver_wolf::Draw(GLuint shaderID, float currentTime, const glm::mat4& view
 		silverWolfModel[i]->angle = angle;
 	}
 	
-	currentState->Draw(this, shaderID, currentTime);
+	currentState->Draw(this, shaderID, local_anim_time);
 
 	if (camera_right_mouth) {
 		Rock_path_draw(shaderID, view,proj, color);
@@ -436,6 +438,8 @@ void State_Idle::Enter(silver_wolf* wolf) {
 	if (wolf->silverWolfModel[0]) {
 		wolf->silverWolfModel[0]->ResetAnimation();
 		wolf->current_animation_index = 0;
+		wolf->state = "idle";
+		wolf->local_anim_time = 0.0f;
 	}
 }
 void State_Idle::Update(silver_wolf* wolf, float detatime) {
@@ -463,6 +467,8 @@ void State_Walk::Enter(silver_wolf* wolf) {
 	if (wolf->silverWolfModel[1]) {
 		wolf->silverWolfModel[1]->ResetAnimation();
 		wolf->current_animation_index = 1;
+		wolf->state = "walk";
+		wolf->local_anim_time = 0.0f;
 	}
 }
 void State_Walk::Update(silver_wolf* wolf, float detlatime) {
@@ -521,6 +527,8 @@ void State_Run::Enter(silver_wolf* wolf) {
 		wolf->silverWolfModel[2]->ResetAnimation();
 		wolf->run_timer = 0.0f;
 		wolf->current_animation_index = 2;
+		wolf->state = "run";
+		wolf->local_anim_time = 0.0f;
 	}
 }
 void State_Run::Update(silver_wolf* wolf, float detlatime) {
@@ -584,6 +592,8 @@ void State_Throw::Enter(silver_wolf* wolf) {
 		wolf->silverWolfModel[3]->ResetAnimation();
 		wolf->silverWolfModel[3]->throw_end = false;
 		wolf->current_animation_index = 3;
+		wolf->state = "throw";
+		wolf->local_anim_time = 0.0f;
 	}
 	wolf->throw_timer = 0.0f;
 	wolf->throw_start = false;
@@ -613,6 +623,8 @@ void State_Roll::Enter(silver_wolf* wolf) {
 		wolf->silverWolfModel[4]->ResetAnimation();
 		wolf->silverWolfModel[4]->roll_end = false;
 		wolf->current_animation_index = 4;
+		wolf->state = "roll";
+		wolf->local_anim_time = 0.0f;
 	}
 }
 void State_Roll::Update(silver_wolf* wolf, float detlatime) {
@@ -621,7 +633,7 @@ void State_Roll::Update(silver_wolf* wolf, float detlatime) {
 	glm::mat4 m(1.0f);
 	m = glm::rotate(m, glm::radians(wolf->angle), glm::vec3(0.0f, 1.0f, 0.0f));
 	v = glm::vec3(m * glm::vec4(v, 0.0f));
-	wolf->pos += v * wolf->runSpeed * detlatime;
+	wolf->pos += v * 4.0f * detlatime;
 
 
 	if (wolf->silverWolfModel[4]->roll_end)
@@ -639,6 +651,8 @@ void State_Jump::Enter(silver_wolf* wolf) {
 		wolf->silverWolfModel[5]->ResetAnimation();
 		wolf->current_animation_index = 5;
 		wolf->silverWolfModel[5]->jump_end = false;
+		wolf->state = "jump";
+		wolf->local_anim_time = 0.0f;
 	}
 }
 void State_Jump::Update(silver_wolf* wolf, float detlatime) {
@@ -664,6 +678,7 @@ void State_Jump_Run::Enter(silver_wolf* wolf) {
 		wolf->silverWolfModel[6]->ResetAnimation();
 		wolf->current_animation_index = 6;
 		wolf->silverWolfModel[6]->jump_end = false;
+		wolf->local_anim_time = 0.0f;
 	}
 }
 void State_Jump_Run::Update(silver_wolf* wolf, float detlatime) {
@@ -689,6 +704,7 @@ void State_Stop_Run::Enter(silver_wolf* wolf) {
 		wolf->silverWolfModel[7]->ResetAnimation();
 		wolf->silverWolfModel[7]->run_end = false;
 		wolf->current_animation_index = 7;
+		wolf->local_anim_time = 0.0f;
 	}
 }
 void State_Stop_Run::Update(silver_wolf* wolf, float detlatime) {
@@ -707,6 +723,7 @@ void State_Jump_Idle::Enter(silver_wolf* wolf) {
 		wolf->silverWolfModel[8]->ResetAnimation();
 		wolf->current_animation_index = 8;
 		wolf->silverWolfModel[8]->jump_end = false;
+		wolf->local_anim_time = 0.0f;
 	}
 }
 void State_Jump_Idle::Update(silver_wolf* wolf, float detlatime) {

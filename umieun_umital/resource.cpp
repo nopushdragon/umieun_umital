@@ -5,22 +5,13 @@ std::vector<StaticModel*> roads;
 StaticModel* target_model;
 StaticModel* chest_model;
 StaticModel* ball_model;
-void Resource_Init() {
-   /* s[0] = new NewModel("silver_wolf/Idle.fbx");
-    s[0]->state = "idle";
-    s[1] = new NewModel("silver_wolf/Walk.fbx");
-    s[1]->state = "walk";
-    s[2] = new NewModel("silver_wolf/Stop Walking.fbx");
-    s[2]->state = "stop_walking";
-    s[3] = new NewModel("silver_wolf/Running.fbx");
-    s[3]->state = "running";
-    s[4] = new NewModel("silver_wolf/Run To Stop.fbx");
-    s[4]->state = "run_to_stop";
-    s[5] = new NewModel("silver_wolf/Throw.fbx");
-    s[5]->state = "throw";
-    s[6] = new NewModel("silver_wolf/Stand To Roll.fbx");
-    s[6]->state = "stand_to_roll";*/
+NewModel* mei_model[3];
+NewModel* press_model[3];
+NewModel* archie_model[3];
+NewModel* serena_model[3];
 
+
+void Resource_Init() {
     // 미로
     roads.push_back(new StaticModel("road/road0.obj"));   // 0동
     roads.push_back(new StaticModel("road/road1.obj"));   // 1서 
@@ -53,4 +44,32 @@ void Resource_Init() {
 	//볼
 	ball_model = new StaticModel("ball/Pokeball.obj");
     ball_model->set_ball_obb();
+
+	//캐릭터 모델들
+	press_model[0] = new NewModel("press/Standing Walk Forward.fbx");
+	press_model[0]->state = "walk";
+    press_model[1] = new NewModel("press/Head Spinning.fbx");
+    press_model[1]->state = "tracking";
+    press_model[2] = new NewModel("press/Run To Dive.fbx");
+	press_model[2]->state = "die";
+	mei_model[0] = new NewModel("mei/Jogging.fbx");
+	mei_model[0]->state = "walk";
+    mei_model[1] = new NewModel("mei/Breakdance 1990.fbx");
+	mei_model[1]->state = "tracking";
+    mei_model[2] = new NewModel("mei/Knocked Out.fbx");
+    mei_model[2]->state = "die";
+	archie_model[0] = new NewModel("Archie/Walking.fbx");
+	archie_model[0]->state = "walk";
+    archie_model[1] = new NewModel("Archie/Flair.fbx");
+	archie_model[1]->state = "tracking";
+    archie_model[2] = new NewModel("Archie/Falling Down.fbx");
+	archie_model[2]->state = "die";
+	serena_model[0] = new NewModel("Serena/Walking.fbx");
+	serena_model[0]->state = "walk";
+    serena_model[1] = new NewModel("Serena/Treadmill Running.fbx");
+	serena_model[1]->state = "tracking";
+    serena_model[2] = new NewModel("Serena/Turn To Knocked Unconscious.fbx");
+	serena_model[2]->state = "die";
+
+       
 }
