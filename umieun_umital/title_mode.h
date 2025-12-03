@@ -17,6 +17,7 @@ private:
 	GLuint shaderProgramAnimated;
 	GLuint shaderProgramImage;
 	GLuint shaderProgramSkybox;
+	GLuint shaderProgramText;
 
 	// ∏µ® µ•¿Ã≈Õ
 	std::vector<StaticModel*> roads;
@@ -27,6 +28,7 @@ private:
 	Image* title = nullptr;
 	vector<Image*> main;
 	int main_idx = 0;
+	Text textUI;
 
 	Image* set_maze[4];
 	bool draw_set_maze = false;
@@ -56,12 +58,16 @@ private:
 	void setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj);
 	void loadModels();
 	void loadImages();
+	void loadTexts();
 
 	const char* STATIC_VERT = "static_vertex.glsl";
 	const char* ANIMATED_VERT = "animated_vertex.glsl";
 	const char* FRAGMENT_LIGHT = "fragment.glsl";
 	const char* IMAGE_VERT = "vertex_image.glsl";
 	const char* IMAGE_FRAG = "fragment_image.glsl";
+	const char* TEXT_VERT = "vertex_text.glsl";
+	const char* TEXT_FRAG = "fragment_text.glsl";
+
 public:
 	title_mode();
 	~title_mode();

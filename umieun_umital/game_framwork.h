@@ -6,6 +6,9 @@
 #include "GameTimer.h" // 기존 타이머 헤더 사용
 #include "headers.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 // 전역 포인터 (GLUT 콜백이 정적 함수여야 해서 필요함)
 class GameFramework;
@@ -33,6 +36,18 @@ public:
         glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
         glutInitWindowSize(winWidth, winHeight);
         glutCreateWindow("ㅇㅅㅇ");
+
+        // 윈도우 크기 조절 비활성화 (Windows 전용)
+#ifdef _WIN32
+        HWND hwnd = FindWindow(NULL, L"ㅇㅅㅇ");
+        if (hwnd) {
+            LONG style = GetWindowLong(hwnd, GWL_STYLE);
+            style &= ~(WS_SIZEBOX | WS_MAXIMIZEBOX); // 크기 조절 및 최대화 버튼 비활성화
+            SetWindowLong(hwnd, GWL_STYLE, style);
+            SetWindowPos(hwnd, NULL, 0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        }
+#endif
 
         glewExperimental = GL_TRUE;
         if (glewInit() != GLEW_OK) {

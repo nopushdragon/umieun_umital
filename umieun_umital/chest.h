@@ -32,7 +32,7 @@ public:
 
     void update_world_obb();
 
-	void open_chest();
+	bool open_chest(int kill, int target);
 
 };
 

@@ -89,6 +89,8 @@ void Text::Draw(const std::string& text, float x, float y, float scale, glm::vec
     glUniform3f(glGetUniformLocation(shader, "textColor"), color.x, color.y, color.z);
     glUniformMatrix4fv(glGetUniformLocation(shader, "projection"), 1, GL_FALSE, &projection[0][0]);
 
+    glUniform1i(glGetUniformLocation(shader, "text"), 0);
+
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(VAO);
 

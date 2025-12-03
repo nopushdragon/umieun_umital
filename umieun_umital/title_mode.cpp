@@ -1,6 +1,8 @@
 #include "title_mode.h"
 #include "game_mode.h"
+#include "option_mode.h"
 #include "game_framwork.h"
+#include "account.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -74,7 +76,7 @@ void title_mode::Finish() {
     if (shaderProgramAnimated) glDeleteProgram(shaderProgramAnimated);
     if (shaderProgramImage) glDeleteProgram(shaderProgramImage);
     if (shaderProgramSkybox) glDeleteProgram(shaderProgramSkybox);
-
+    if (shaderProgramText) glDeleteProgram(shaderProgramText);
     stbi_set_flip_vertically_on_load(false);
 }
 
@@ -108,20 +110,21 @@ void title_mode::loadImages() {
 
     set_maze[0] = new Image(LoadTexture("title/set_maze.png"), pos1, size1);
     set_maze[1] = new Image(LoadTexture("title/set_maze_5x5.png"), pos1, size1);
-    set_maze[2] = new Image(LoadTexture("title/set_maze_10x10.png"), pos1, size1);
-    set_maze[3] = new Image(LoadTexture("title/set_maze_15x15.png"), pos1, size1);
+    set_maze[2] = new Image(LoadTexture("title/set_maze_15x15.png"), pos1, size1);
+    set_maze[3] = new Image(LoadTexture("title/set_maze_25x25.png"), pos1, size1);
    
     draw_set_maze = false;
 
     stbi_set_flip_vertically_on_load(false);
 }
+void title_mode::loadTexts() {
+    glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f);
+
+    textUI.Init("font/neodgm.ttf", shaderProgramText, proj);
+}
 
 // 1. 초기화 (기존 init 함수 내용)
 void title_mode::Init() {
-    //========== 이미지 로드 설정 ==========
-    loadImages();
-    //========================================
-
     cout << "[TitleMode] Initializing..." << endl;
 
     // 셰이더 로드
@@ -129,9 +132,12 @@ void title_mode::Init() {
     loadShader(ANIMATED_VERT, FRAGMENT_LIGHT, shaderProgramAnimated);
     shaderProgramImage = LoadShader(IMAGE_VERT, IMAGE_FRAG);
     loadShader("vertex_sky.glsl", "fragment_sky.glsl", shaderProgramSkybox);
+    shaderProgramText = LoadShader(TEXT_VERT, TEXT_FRAG);
 
     // 모델 로드
     loadModels();
+    loadImages();
+    loadTexts();
 
     // 스카이박스
     skybox = new Skybox("skybox/sun.png", "skybox/moon.png");
@@ -213,6 +219,14 @@ void title_mode::Draw() {
         if (draw_set_maze) {
             white_background->Draw(shaderProgramImage, uiProj);
             set_maze[set_maze_idx]->Draw(shaderProgramImage, uiProj);
+
+            string score;
+            score = account.best_score(0);
+            textUI.Draw(score, 205.0f, 200.0f, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
+            score = account.best_score(1);
+            textUI.Draw(score, 600.0f, 200.0f, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
+            score = account.best_score(2);
+            textUI.Draw(score, 985.0f, 200.0f, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
         }
     }
 
@@ -258,38 +272,41 @@ void title_mode::SpecialUpKeyboard(int key, int x, int y) {
 }
 
 void title_mode::Mouse(int button, int state, int x, int y) {
-    if (gameCamera.now_pos_idx == 1) {
-        if (!draw_set_maze) {
-            if (x >= 30 && x <= 450 && y >= 160 && y <= 240) { //start
-                draw_set_maze = true;
-                main_idx = 0;
-            }
-            else if (x >= 30 && x <= 450 && y >= 360 && y <= 440) { //option
-            }
-            else if (x >= 30 && x <= 450 && y >= 560 && y <= 640) {  //exit
-                exit(0);
-            }
-        }
-        else {
-            if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
-                maze_x = 5;
-				maze_y = 5;
-                if (g_Framework && g_Framework->sceneManager) {
-                    g_Framework->sceneManager->Change_Mode(new game_mode());
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        if (gameCamera.now_pos_idx == 1) {
+            if (!draw_set_maze) {
+                if (x >= 30 && x <= 450 && y >= 160 && y <= 240) { //start
+                    draw_set_maze = true;
+                    main_idx = 0;
+                }
+                else if (x >= 30 && x <= 450 && y >= 360 && y <= 440) { //option
+                    g_Framework->sceneManager->Push_Mode(new option_mode());
+                }
+                else if (x >= 30 && x <= 450 && y >= 560 && y <= 640) {  //exit
+                    exit(0);
                 }
             }
-            else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
-                maze_x = 10;
-                maze_y = 10;
-                if (g_Framework && g_Framework->sceneManager) {
-                    g_Framework->sceneManager->Change_Mode(new game_mode());
+            else {
+                if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
+                    maze_x = 5;
+                    maze_y = 5;
+                    if (g_Framework && g_Framework->sceneManager) {
+                        g_Framework->sceneManager->Change_Mode(new game_mode());
+                    }
                 }
-            }
-            else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
-                maze_x = 15;
-                maze_y = 15;
-                if (g_Framework && g_Framework->sceneManager) {
-                    g_Framework->sceneManager->Change_Mode(new game_mode());
+                else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
+                    maze_x = 15;
+                    maze_y = 15;
+                    if (g_Framework && g_Framework->sceneManager) {
+                        g_Framework->sceneManager->Change_Mode(new game_mode());
+                    }
+                }
+                else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
+                    maze_x = 25;
+                    maze_y = 25;
+                    if (g_Framework && g_Framework->sceneManager) {
+                        g_Framework->sceneManager->Change_Mode(new game_mode());
+                    }
                 }
             }
         }
@@ -338,6 +355,7 @@ void title_mode::OnPause() {
 
 void title_mode::OnResume() {
     // 옵션 창 닫고 돌아왔을 때 복구할 로직
+
     glEnable(GL_DEPTH_TEST); // 혹시 다른 씬에서 껐을까봐 다시 켬
 }
 

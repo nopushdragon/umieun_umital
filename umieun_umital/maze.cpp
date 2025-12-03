@@ -89,12 +89,15 @@ void MAZE::initmaze() {
             float z_pos = ROAD_SIZE / 2 + (ROAD_SIZE * i) - ((ROAD_SIZE * (float)maze_y) / 2);
             roadInstance.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x_pos, 0.0f, z_pos));
             roadInstance.reset = glm::vec3(x_pos, 0.0f, z_pos);
+            roadInstance.was_colliding = false;
             mazeBlocks.push_back(roadInstance);
         }
 	}
     start_x_pos = ROAD_SIZE / 2 + (ROAD_SIZE)-((ROAD_SIZE * (float)maze_x) / 2);
     start_z_pos = ROAD_SIZE / 2 + (ROAD_SIZE)-((ROAD_SIZE * (float)maze_y) / 2);
     update_world_obb();
+
+
 }
 
 void MAZE::setMaze() {

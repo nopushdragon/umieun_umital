@@ -22,6 +22,7 @@ struct MazeBlockInstance {
     OBB road_world_obb;
     std::vector<OBB> obstacle_world_obb;
     bool is_colliding = false;  // 캐릭터와 충돌해 있는가. but, 청크 구분용으로도 쓰임
+	bool was_colliding = false; // 이전 프레임에 충돌해 있었는가
 };
 
 class MAZE {

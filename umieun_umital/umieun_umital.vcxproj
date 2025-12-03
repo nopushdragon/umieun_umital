@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="account.h" />
     <ClInclude Include="animated_model.h" />
     <ClInclude Include="ball.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -203,6 +204,7 @@
     <ClInclude Include="trainer_state.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="account.cpp" />
     <ClCompile Include="animated_model.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>

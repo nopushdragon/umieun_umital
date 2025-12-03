@@ -12,6 +12,8 @@ void TARGET::init(int target_cnt) {
 		uniform_real_distribution<float> rd_rotate(0.0f, 360.0f);
 		new_target.rotation_angle = rd_rotate(mt);
 
+		uniform_int_distribution<int> rd_timer(0, 120);
+		new_target.timer = rd_timer(mt);
 
 		targetBlocks.push_back(new_target);
 	}
@@ -31,7 +33,7 @@ void TARGET::update() {
 
 		if (target.move_t == 0.0f) {
 			uniform_real_distribution<float> rd_goal_x(target.reset.x - 5.0f, target.reset.x + 5.0f);
-			uniform_real_distribution<float> rd_goal_y(target.reset.y - 1.2f, target.reset.y + 1.2f);
+			uniform_real_distribution<float> rd_goal_y(target.reset.y - 1.2f, target.reset.y + 0.5f);
 			uniform_real_distribution<float> rd_goal_z(target.reset.z - 5.0f, target.reset.z + 5.0f);
 
 			target.origin_pos = target.modelMatrix[3];

@@ -1,10 +1,17 @@
 ﻿#define STB_IMAGE_IMPLEMENTATION
 #include "game_mode.h"
+#include "account.h"
+#include "game_framwork.h"
+#include "title_mode.h"
 
 // 셰이더 파일 경로 상수
 const char* STATIC_VERT = "static_vertex.glsl";
 const char* ANIMATED_VERT = "animated_vertex.glsl";
 const char* FRAGMENT_LIGHT = "fragment.glsl";
+const char* IMAGE_VERT = "vertex_image.glsl";
+const char* IMAGE_FRAG = "fragment_image.glsl";
+const char* TEXT_VERT = "vertex_text.glsl";
+const char* TEXT_FRAG = "fragment_text.glsl";
 
 using namespace std;
 
@@ -29,28 +36,27 @@ game_mode::~game_mode() {
 
 // 1. 초기화 (기존 init 함수 내용)
 void game_mode::Init() {
-
-
-    // GLEW 초기화는 보통 Framework나 Main에서 한 번 하지만, 
-    // 여기서 셰이더 컴파일을 수행합니다.
-
     cout << "[GameMode] Initializing..." << endl;
 
     // 셰이더 로드
     loadShader(STATIC_VERT, FRAGMENT_LIGHT, shaderProgramStatic);
     loadShader(ANIMATED_VERT, FRAGMENT_LIGHT, shaderProgramAnimated);
     loadShader("vertex_sky.glsl", "fragment_sky.glsl", shaderProgramSkybox);
+    shaderProgramImage = LoadShader(IMAGE_VERT, IMAGE_FRAG);
+    shaderProgramText = LoadShader(TEXT_VERT, TEXT_FRAG);
 
     // 모델 로드
     loadModels();
 
-    // 카메라 위치
-    /*camPos = glm::vec3(start_x_pos, 5.0f, start_z_pos - 5.0f);
-    camTarget = glm::vec3(start_x_pos, 0.0f, start_z_pos+5.0f);*/
-    glm::vec3 targetPos = silverWolf.pos;
+    // ui 및 텍스트 로드
+    loadImages();
+    loadTexts();
 
+    // 스카이박스
     skybox = new Skybox("skybox/sun.png", "skybox/moon.png");
 
+    // 카메라 위치
+    glm::vec3 targetPos = silverWolf.pos;
 
     glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
     gameCamera.Init(targetPos);
@@ -84,29 +90,35 @@ void game_mode::Update(float deltaTime) {
         }
 	}
 
+    record_time += deltaTime;
     deltatime = deltaTime;
 }
 
 void game_mode::silverwolf_chunk_collision() {
 
+    // 먼저 모든 블록의 충돌 상태를 초기화
     for (auto& block : maze.mazeBlocks) {
         block.is_colliding = false;
-        if (check_collision(silverWolf.silverwolf_world_obb, block.road_world_obb)) {
-            block.is_colliding = true;
-        }
     }
 
-    // 청크 단위 충돌
-    bool stop = false;
-    for (int i = 1; i < maze_y - 1; i++) {
-        for (int j = 1; j < maze_x - 1; j++) {
-            if (maze.mazeBlocks[(i * maze_x) + j].is_colliding == true) {
-                update_chunk(i, j, 2);
-                stop = true;
+    // 플레이어와 충돌하는 블록 찾기
+    int player_chunk_y = -1;
+    int player_chunk_x = -1;
+
+    for (int i = 0; i < maze_y; i++) {
+        for (int j = 0; j < maze_x; j++) {
+            if (check_collision(silverWolf.silverwolf_world_obb, maze.mazeBlocks[(i * maze_x) + j].road_world_obb)) {
+                player_chunk_y = i;
+                player_chunk_x = j;
                 break;
             }
         }
-        if (stop) break;
+        if (player_chunk_y != -1) break;
+    }
+
+    // 플레이어 주변 청크 업데이트
+    if (player_chunk_y != -1 && player_chunk_x != -1) {
+        update_chunk(player_chunk_y, player_chunk_x, 2);
     }
 
     // 청크 기준으로 장애물 충돌 검사
@@ -148,12 +160,10 @@ void game_mode::silverwolf_chunk_collision() {
     for (auto& b : balls) {
         if (!b.is_in_chunk) continue;
         b.is_nearby = false;
-        if(check_collision(silverWolf.silverwolf_world_obb, b.ball_obb)) {
-			b.is_nearby = true;
-		}
+        if (check_collision(silverWolf.silverwolf_world_obb, b.ball_obb)) {
+            b.is_nearby = true;
+        }
     }
-
-
 }
 
 void game_mode::trainer_chunk_collision() {
@@ -220,40 +230,60 @@ void game_mode::trainer_chunk_collision() {
 
 void game_mode::update_chunk(int y, int x, int size) {
     int min_y = std::max(0, y - size);
-    int max_y = std::min(maze_y, y + size);
+    int max_y = std::min(maze_y - 1, y + size);
     int min_x = std::max(0, x - size);
-    int max_x = std::min(maze_x, x + size);
+    int max_x = std::min(maze_x - 1, x + size);
 
     for (int i = min_y; i <= max_y; i++) {
         for (int j = min_x; j <= max_x; j++) {
             maze.mazeBlocks[(i * maze_x) + j].is_colliding = true;
+            maze.mazeBlocks[(i * maze_x) + j].was_colliding = true;
         }
     }
 
-    for (auto& t : target.targetBlocks) {
-        t.is_in_chunk = false;
-        if (t.modelMatrix[3].x > (min_x * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && t.modelMatrix[3].x < ((max_x + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
-            t.modelMatrix[3].z >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && t.modelMatrix[3].z < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
-            t.is_in_chunk = true;
+    for (int i = 0; i < target.targetBlocks.size(); i++) {
+        target.targetBlocks[i].is_in_chunk = false;
+        for (int j = min_y; j <= max_y; j++) {
+            for (int k = min_x; k <= max_x; k++) {
+                if (target.targetBlocks[i].modelMatrix[3].x > (k * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && target.targetBlocks[i].modelMatrix[3].x < ((k + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
+                    target.targetBlocks[i].modelMatrix[3].z >(j * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && target.targetBlocks[i].modelMatrix[3].z < ((j + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
+                    target.targetBlocks[i].is_in_chunk = true;
+                    break;
+                }
+            }
+            if (target.targetBlocks[i].is_in_chunk) break;
         }
     }
 
-    for (auto& c : chest.chestBlocks) {
-        c.is_in_chunk = false;
-        if (c.modelMatrix[3].x > (min_x * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && c.modelMatrix[3].x < ((max_x + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
-            c.modelMatrix[3].z >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && c.modelMatrix[3].z < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
-            c.is_in_chunk = true;
+    for (int i = 0; i < chest.chestBlocks.size(); i++) {
+        chest.chestBlocks[i].is_in_chunk = false;
+        for (int j = min_y; j <= max_y; j++) {
+            for (int k = min_x; k <= max_x; k++) {
+                if (chest.chestBlocks[i].modelMatrix[3].x > (k * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && chest.chestBlocks[i].modelMatrix[3].x < ((k + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
+                    chest.chestBlocks[i].modelMatrix[3].z >(j * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && chest.chestBlocks[i].modelMatrix[3].z < ((j + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
+                    chest.chestBlocks[i].is_in_chunk = true;
+                    break;
+                }
+            }
+            if (chest.chestBlocks[i].is_in_chunk) break;
         }
     }
 
-    for (auto& b : balls) {
-        b.is_in_chunk = false;
-        if (b.current_pos.x > (min_x * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && b.current_pos.x < ((max_x + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
-            b.current_pos.z >(min_y * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && b.current_pos.z < ((max_y + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
-            b.is_in_chunk = true;
+    for (int i = 0; i < balls.size(); i++) {
+        balls[i].is_in_chunk = false;
+        for (int j = min_y; j <= max_y; j++) {
+            for (int k = min_x; k <= max_x; k++) {
+                if (balls[i].current_pos.x > (k * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && balls[i].current_pos.x < ((k + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
+                    balls[i].current_pos.z >(j * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && balls[i].current_pos.z < ((j + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
+                    balls[i].is_in_chunk = true;
+                    break;
+                }
+            }
+            if (balls[i].is_in_chunk) break;
         }
     }
 }
+
 void game_mode::Update_Trainer_Spawn() {
 	trainer_spawn_timer += deltatime;
 	if (trainer_spawn_timer >= trainer_spawn_time) {
@@ -390,6 +420,185 @@ void game_mode::Draw() {
 
         
     }
+
+    //ui 그리기
+    drawMiniMap(WINDOW_WIDTH, WINDOW_HEIGHT);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glm::mat4 uiProj = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT);
+    string now_time = "Time: " + to_string(record_time);
+    textUI.Draw(now_time, 0, (WINDOW_HEIGHT * 5 / 6) - 100.0f, 0.6f, glm::vec3(0.7f, 0.1f, 0.2f));
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void game_mode::drawMiniMap(int w, int h)
+{
+    // 미니맵 뷰포트 설정 (우측 상단)
+    glViewport(0, h * 5 / 6, w / 6, h / 6);
+
+    // 미니맵 영역만 깊이 버퍼 클리어
+    glScissor(0, h * 5 / 6, w / 6, h / 6);
+    glEnable(GL_SCISSOR_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_SCISSOR_TEST);
+
+    // 셰이더 프로그램 사용
+    glUseProgram(shaderProgramStatic);
+
+    float map_width = ROAD_SIZE * maze_x;
+    float map_height = ROAD_SIZE * maze_y;
+    float maxrange = std::max(map_width, map_height) / 2.0f;
+
+    // 미니맵용 뷰 행렬 (위에서 내려다보기)
+    glm::mat4 view = glm::lookAt(
+        glm::vec3(0.0f, maxrange, 0.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, -1.0f)
+    );
+
+    // 미니맵용 직교 투영 행렬
+    glm::mat4 proj = glm::ortho(-maxrange, maxrange, -maxrange, maxrange, 0.1f, maxrange * 4.0f);
+
+    // 미니맵용 유니폼 설정
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uView"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uProj"), 1, GL_FALSE, glm::value_ptr(proj));
+    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "viewPos"), 1, glm::value_ptr(glm::vec3(0.0f, maxrange, 0.0f)));
+
+    // 조명을 완전히 비활성화
+    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "lightPos"), 1, glm::value_ptr(glm::vec3(0.0f, maxrange * 3.0f, 0.0f)));
+    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "lightColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+    glUniform1f(glGetUniformLocation(shaderProgramStatic, "ambientStrength"), 1.0f); // ambient를 최대로
+    glUniform1i(glGetUniformLocation(shaderProgramStatic, "bUseTexture"), 0);
+    glUniform1i(glGetUniformLocation(shaderProgramStatic, "shininess"), 0);
+    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "materialSpecular"), 1, glm::value_ptr(glm::vec3(0.0f)));
+
+
+    // 미로 렌더링
+    glm::vec3 blockColor;
+    for (int i = 0; i < maze_y; i++) {
+        for (int j = 0; j < maze_x; j++) {
+            if (maze.mazeBlocks[i * maze_x + j].was_colliding) {
+                if (maze.maze[i][j].path_wall == 0) blockColor = glm::vec3(0.8f, 0.8f, 0.8f); // 길: 밝은 회색
+                else blockColor = glm::vec3(0.2f, 0.2f, 0.2f); // 벽: 어두운 회색
+
+                // 각 블록마다 조명 설정 재확인
+                glUniform1f(glGetUniformLocation(shaderProgramStatic, "ambientStrength"), 1.0f);
+                glUniform3fv(glGetUniformLocation(shaderProgramStatic, "lightColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+                glUniform3fv(glGetUniformLocation(shaderProgramStatic, "materialColorDefault"), 1, glm::value_ptr(blockColor));
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(maze.mazeBlocks[i * maze_x + j].modelMatrix));
+
+                drawMiniMapCube(shaderProgramStatic, maze.mazeBlocks[i * maze_x + j].modelMatrix);
+            }
+            else {
+                blockColor = glm::vec3(0.05f, 0.05f, 0.05f); // 비활성 블록: 검은색
+                // 각 블록마다 조명 설정 재확인
+                glUniform1f(glGetUniformLocation(shaderProgramStatic, "ambientStrength"), 1.0f);
+                glUniform3fv(glGetUniformLocation(shaderProgramStatic, "lightColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+                glUniform3fv(glGetUniformLocation(shaderProgramStatic, "materialColorDefault"), 1, glm::value_ptr(blockColor));
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(maze.mazeBlocks[i * maze_x + j].modelMatrix));
+
+                drawMiniMapCube(shaderProgramStatic, maze.mazeBlocks[i * maze_x + j].modelMatrix);
+            }
+        }
+    }
+
+    // 플레이어 위치 표시 (빨간색)
+    glm::vec3 playerColor = glm::vec3(1.0f, 0.0f, 0.0f);
+    glUniform1f(glGetUniformLocation(shaderProgramStatic, "ambientStrength"), 1.0f);
+    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "lightColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "materialColorDefault"), 1, glm::value_ptr(playerColor));
+    glm::mat4 playerModel = glm::mat4(1.0f);
+    playerModel = glm::translate(playerModel, silverWolf.pos);
+    playerModel = glm::scale(playerModel, glm::vec3(0.2f, 2.0f, 0.2f));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(playerModel));
+    drawMiniMapCube(shaderProgramStatic, playerModel);
+
+
+
+    // 메인 뷰포트로 복원
+    glViewport(0, 0, w, h);
+}
+
+void game_mode::drawMiniMapCube(GLuint shaderID, const glm::mat4& modelMatrix) {
+    float halfSize = ROAD_SIZE / 2.0f;
+
+    const float cubeVertices[] = {
+        // 위치 (x,y,z), 법선 (nx,ny,nz)
+        // 뒷면 (Z-) - 법선: (0,0,-1)
+        -halfSize, -halfSize, -halfSize,  0.0f, 0.0f, -1.0f,
+         halfSize, -halfSize, -halfSize,  0.0f, 0.0f, -1.0f,
+         halfSize,  halfSize, -halfSize,  0.0f, 0.0f, -1.0f,
+         halfSize,  halfSize, -halfSize,  0.0f, 0.0f, -1.0f,
+        -halfSize,  halfSize, -halfSize,  0.0f, 0.0f, -1.0f,
+        -halfSize, -halfSize, -halfSize,  0.0f, 0.0f, -1.0f,
+
+        // 앞면 (Z+) - 법선: (0,0,1)
+        -halfSize, -halfSize,  halfSize,  0.0f, 0.0f, 1.0f,
+         halfSize, -halfSize,  halfSize,  0.0f, 0.0f, 1.0f,
+         halfSize,  halfSize,  halfSize,  0.0f, 0.0f, 1.0f,
+         halfSize,  halfSize,  halfSize,  0.0f, 0.0f, 1.0f,
+        -halfSize,  halfSize,  halfSize,  0.0f, 0.0f, 1.0f,
+        -halfSize, -halfSize,  halfSize,  0.0f, 0.0f, 1.0f,
+
+        // 왼쪽 면 (X-) - 법선: (-1,0,0)
+        -halfSize,  halfSize,  halfSize, -1.0f, 0.0f, 0.0f,
+        -halfSize,  halfSize, -halfSize, -1.0f, 0.0f, 0.0f,
+        -halfSize, -halfSize, -halfSize, -1.0f, 0.0f, 0.0f,
+        -halfSize, -halfSize, -halfSize, -1.0f, 0.0f, 0.0f,
+        -halfSize, -halfSize,  halfSize, -1.0f, 0.0f, 0.0f,
+        -halfSize,  halfSize,  halfSize, -1.0f, 0.0f, 0.0f,
+
+        // 오른쪽 면 (X+) - 법선: (1,0,0)
+         halfSize,  halfSize,  halfSize,  1.0f, 0.0f, 0.0f,
+         halfSize,  halfSize, -halfSize,  1.0f, 0.0f, 0.0f,
+         halfSize, -halfSize, -halfSize,  1.0f, 0.0f, 0.0f,
+         halfSize, -halfSize, -halfSize,  1.0f, 0.0f, 0.0f,
+         halfSize, -halfSize,  halfSize,  1.0f, 0.0f, 0.0f,
+         halfSize,  halfSize,  halfSize,  1.0f, 0.0f, 0.0f,
+
+         // 아래 면 (Y-) - 법선: (0,-1,0)
+         -halfSize, -halfSize, -halfSize,  0.0f, -1.0f, 0.0f,
+          halfSize, -halfSize, -halfSize,  0.0f, -1.0f, 0.0f,
+          halfSize, -halfSize,  halfSize,  0.0f, -1.0f, 0.0f,
+          halfSize, -halfSize,  halfSize,  0.0f, -1.0f, 0.0f,
+         -halfSize, -halfSize,  halfSize,  0.0f, -1.0f, 0.0f,
+         -halfSize, -halfSize, -halfSize,  0.0f, -1.0f, 0.0f,
+
+         // 위 면 (Y+) - 법선: (0,1,0)
+         -halfSize,  halfSize, -halfSize,  0.0f, 1.0f, 0.0f,
+          halfSize,  halfSize, -halfSize,  0.0f, 1.0f, 0.0f,
+          halfSize,  halfSize,  halfSize,  0.0f, 1.0f, 0.0f,
+          halfSize,  halfSize,  halfSize,  0.0f, 1.0f, 0.0f,
+         -halfSize,  halfSize,  halfSize,  0.0f, 1.0f, 0.0f,
+         -halfSize,  halfSize, -halfSize,  0.0f, 1.0f, 0.0f
+    };
+
+    GLuint cubeVAO, cubeVBO;
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+
+    glBindVertexArray(cubeVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glDisableVertexAttribArray(2);
+    glUniformMatrix4fv(glGetUniformLocation(shaderID, "uModel"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+    glDeleteBuffers(1, &cubeVBO);
+    glDeleteVertexArrays(1, &cubeVAO);
 }
 
 void game_mode::Keyboard(unsigned char key, int x, int y) {
@@ -429,12 +638,24 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
         break;
     case 'e':
     case 'E':
-        chest.open_chest();
         for (int i = 0; i < balls.size(); i++) {
             if (balls[i].is_nearby) {
-				balls.erase(balls.begin() + i);
+                balls.erase(balls.begin() + i);
                 break;
             }
+        }
+
+        if (chest.open_chest(kill_count, target_count)) {
+            if (account.scores[level] <= 1.0f) {
+                account.update_score(level, record_time);
+            }
+            else {
+                if (account.scores[level] > record_time) {
+                    account.update_score(level, record_time);
+                }
+            }
+
+            g_Framework->sceneManager->Change_Mode(new title_mode());
         }
         break;
     }
@@ -485,6 +706,8 @@ void game_mode::Finish() {
     glDeleteProgram(shaderProgramStatic);
     glDeleteProgram(shaderProgramAnimated);
     glDeleteProgram(shaderProgramSkybox);
+    glDeleteProgram(shaderProgramImage);
+    glDeleteProgram(shaderProgramText);
 }
 
 void game_mode::Reshape(int w, int h) {
@@ -512,8 +735,10 @@ void game_mode::loadModels() {
     maze.initmaze();
 
     //과녁
+    target_count = (maze_x + maze_y) / 2; //과녁 개수 미로 크기에 비례
     target.init(target_count);
     set_target_in_maze();    //미로에 과녁 배치
+    kill_count = 0;
 
     //보물
     chest.init(maze.mazeBlocks[maze_x + 1].reset);
@@ -534,6 +759,27 @@ void game_mode::loadModels() {
         balls.push_back(new_ball);
     }
 
+}
+
+void game_mode::loadImages() {
+    stbi_set_flip_vertically_on_load(true);
+
+    glm::vec2 size1 = glm::vec2((float)winWidth, (float)winHeight);
+    glm::vec2 pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
+
+    stbi_set_flip_vertically_on_load(false);
+}
+
+void game_mode::loadTexts() {
+    glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f);
+
+    textUI.Init("font/경기천년제목_Medium.ttf", shaderProgramText, proj);
+
+    //기록용
+    record_time = 0.0f;
+    if (maze_x == 5) level = 0;
+    else if (maze_x == 15) level = 1;
+    else if (maze_x == 25) level = 2;
 }
 
 void game_mode::setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj) {
@@ -630,7 +876,8 @@ void game_mode::set_target_in_maze() {  // 과녁에서 미로 객체를 가져�
             if (rd_flag) continue;
 
             target.targetBlocks[i].modelMatrix = maze.mazeBlocks[(rand_y * maze_x) + rand_x].modelMatrix;
-            target.targetBlocks[i].reset = glm::vec3(target.targetBlocks[i].modelMatrix[3][0], ROAD_SIZE / 7, target.targetBlocks[i].modelMatrix[3][2]); // 위치 저장
+            target.targetBlocks[i].modelMatrix = glm::translate(target.targetBlocks[i].modelMatrix, glm::vec3(0.0f, ROAD_SIZE / 7, 0.0f));
+            target.targetBlocks[i].reset = glm::vec3(target.targetBlocks[i].modelMatrix[3][0], ROAD_SIZE / 6, target.targetBlocks[i].modelMatrix[3][2]); // 위치 저장
             //cout << rand_y << "," << rand_x << endl;
             break;
         }

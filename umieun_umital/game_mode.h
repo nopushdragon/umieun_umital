@@ -10,7 +10,8 @@
 #include "skybox.h"
 #include "ball.h"
 #include "trainer.h"
-
+#include "image.h"
+#include "text.h"
 
 class game_mode : public Scene
 {
@@ -20,12 +21,15 @@ private:
     GLuint shaderProgramStatic;
     GLuint shaderProgramAnimated;
 	GLuint shaderProgramSkybox;
+    GLuint shaderProgramImage;
+    GLuint shaderProgramText;
 
     // 모델 데이터
     MAZE maze;
 
-	int target_count = 5;
-	TARGET target;
+    int target_count;
+    int kill_count;
+    TARGET target;
 
     CHEST chest;
 	bool collision_on = false;  // obb 선 그리기용
@@ -56,6 +60,13 @@ private:
     //스벅
 	Skybox* skybox = nullptr;
 
+    // UI 및 텍스트 관련
+    Text textUI;
+
+    // 기록
+    float record_time;
+    int level;
+
     //적 나오는 시간
 	float trainer_spawn_timer = 0.0f;
 	float trainer_spawn_time = 5.0f;
@@ -65,6 +76,10 @@ private:
     void loadShader(const char* vertPath, const char* fragPath, GLuint& shaderID);
     void setCommonUniforms(GLuint shaderID, const glm::mat4& view, const glm::mat4& proj);
     void loadModels();
+    void loadImages();
+    void loadTexts();
+    void drawMiniMap(int w, int h);
+    void drawMiniMapCube(GLuint shaderID, const glm::mat4& modelMatrix);
 public:
     game_mode();
     ~game_mode();

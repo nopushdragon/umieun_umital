@@ -53,10 +53,10 @@ void CHEST::update_world_obb() {
 	}
 }
 
-void CHEST::open_chest() {
-	for (auto& chest : chestBlocks) {
-		if (chest.is_nearby) {
-			cout << "상자를 열려고 시도했음" << endl;
-		}
-	}
+bool CHEST::open_chest(int kill ,int target) {
+	chestInstance& chest = chestBlocks[0];
+	if (!chest.is_nearby) return false;
+
+	if(target <= kill) return true;
+	else return false;
 }
