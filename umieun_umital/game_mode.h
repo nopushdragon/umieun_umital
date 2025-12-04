@@ -100,6 +100,11 @@ public:
 
     void set_trainer_in_maze(Trainer& t);
 
+    void start_scene();
+	bool game_start = false;
+    void clear_scene();
+	bool game_clear = false;
+
 	void OnPause() override;
 	void OnResume() override;
 	void Draw() override;

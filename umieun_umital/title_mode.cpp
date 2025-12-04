@@ -16,7 +16,7 @@ title_mode::title_mode() {
     ambientStrength = 0.3f;
     shininess = 32;
 
-
+    loading_start = false;
 }
 
 title_mode::~title_mode() {
@@ -41,18 +41,18 @@ void title_mode::Finish() {
     // 이미지 삭제
     if (white_background) {
         delete white_background;
-        white_background = nullptr;
     }
     if (title) {
         delete title;
-        title = nullptr;
     }
+    if(loading_image) {
+        delete loading_image;
+	}
 
     // main 이미지들 삭제
     for (auto& m : main) {
         if (m) {
             delete m;
-            m = nullptr;
         }
     }
     main.clear();
@@ -61,14 +61,12 @@ void title_mode::Finish() {
     for (int i = 0; i < 4; ++i) {
         if (set_maze[i]) {
             delete set_maze[i];
-            set_maze[i] = nullptr;
         }
     }
 
     // 스카이박스 삭제
     if (skybox) {
         delete skybox;
-        skybox = nullptr;
     }
 
     // 셰이더 프로그램 삭제
@@ -100,6 +98,9 @@ void title_mode::loadImages() {
 
     title = new Image(LoadTexture("title/title.png"), pos1, size1);
     title->color.w = 1.0f;
+
+	loading_image = new Image(LoadTexture("title/loading.png"), pos1, size1);
+	loading_image->color.w = 1.0f;
 
     main.push_back(new Image(LoadTexture("title/main.png"), pos1, size1));
     main.push_back(new Image(LoadTexture("title/main_start.png"), pos1, size1));
@@ -231,6 +232,8 @@ void title_mode::Draw() {
             textUI.Draw(score, 600.0f, 200.0f, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
             score = account.best_score(2);
             textUI.Draw(score, 985.0f, 200.0f, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
+
+			if (loading_start) loading_image->Draw(shaderProgramImage, uiProj);
         }
     }
 
@@ -278,7 +281,45 @@ void title_mode::SpecialUpKeyboard(int key, int x, int y) {
 void title_mode::Mouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         if (gameCamera.now_pos_idx == 1) {
-            if (!draw_set_maze) {
+            if (draw_set_maze) {
+                if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
+                    maze_x = 5;
+                    maze_y = 5;
+                    loading_start = true;
+                }
+                else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
+                    maze_x = 15;
+                    maze_y = 15;
+                    loading_start = true;
+                }
+                else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
+                    maze_x = 25;
+                    maze_y = 25;
+                    loading_start = true;
+                }
+            }
+        }
+    }
+    else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+        if (gameCamera.now_pos_idx == 1) {
+            if (draw_set_maze) {
+                if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
+                    if (g_Framework && g_Framework->sceneManager) {
+                        g_Framework->sceneManager->Change_Mode(new game_mode());
+                    }
+                }
+                else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
+                    if (g_Framework && g_Framework->sceneManager) {
+                        g_Framework->sceneManager->Change_Mode(new game_mode());
+                    }
+                }
+                else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
+                    if (g_Framework && g_Framework->sceneManager) {
+                        g_Framework->sceneManager->Change_Mode(new game_mode());
+                    }
+                }
+            }
+            else {
                 if (x >= 30 && x <= 450 && y >= 160 && y <= 240) { //start
                     draw_set_maze = true;
                     main_idx = 0;
@@ -288,29 +329,6 @@ void title_mode::Mouse(int button, int state, int x, int y) {
                 }
                 else if (x >= 30 && x <= 450 && y >= 560 && y <= 640) {  //exit
                     exit(0);
-                }
-            }
-            else {
-                if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
-                    maze_x = 5;
-                    maze_y = 5;
-                    if (g_Framework && g_Framework->sceneManager) {
-                        g_Framework->sceneManager->Change_Mode(new game_mode());
-                    }
-                }
-                else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
-                    maze_x = 15;
-                    maze_y = 15;
-                    if (g_Framework && g_Framework->sceneManager) {
-                        g_Framework->sceneManager->Change_Mode(new game_mode());
-                    }
-                }
-                else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
-                    maze_x = 25;
-                    maze_y = 25;
-                    if (g_Framework && g_Framework->sceneManager) {
-                        g_Framework->sceneManager->Change_Mode(new game_mode());
-                    }
                 }
             }
         }

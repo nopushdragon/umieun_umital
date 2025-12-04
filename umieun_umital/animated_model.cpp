@@ -43,6 +43,10 @@ void Mesh::Draw(GLuint shaderID) {
         // ★ [핵심 수정] 텍스처가 없으면: 끄고(false), 0번 텍스처(없음)를 바인딩한다.
         // 이걸 안 하면 직전에 그린 은랑이나 Mei의 텍스처가 그대로 묻어 나옵니다.
         glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), 0); // false
+
+        glm::vec3 diffuseColorToUse = glm::vec3(0.5f, 0.5f, 0.5f); // 중간 회색으로 강제 변경
+        glUniform3fv(glGetUniformLocation(shaderID, "materialColorDefault"), 1, glm::value_ptr(diffuseColorToUse));
+
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
