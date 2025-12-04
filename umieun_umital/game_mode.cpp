@@ -32,11 +32,7 @@ game_mode::game_mode() {
     bgmChannel = soundManager.Play("main" + to_string(random_bgm(mt)), glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
 
     game_start = true;
-<<<<<<< HEAD
     game_clear = false;
-=======
-	game_clear = false;
->>>>>>> 63dc65ddb9a44e05b29dcb6d5cf854209df22f53
 }
 
 game_mode::~game_mode() {
@@ -104,7 +100,6 @@ void game_mode::Update(float deltaTime) {
             }
         }
 
-<<<<<<< HEAD
         bool isPlaying = false;
         bgmChannel->isPlaying(&isPlaying);
 
@@ -119,9 +114,6 @@ void game_mode::Update(float deltaTime) {
         glm::vec3 forward = glm::normalize(dir);
         soundManager.SetListenerAttributes(silverWolf.pos + glm::vec3(0.0f, 2.0f, 0.0f), forward, gameCamera.camUp, glm::vec3(0.0f, 0.0f, 0.0f));
         soundManager.Update();
-=======
-        if (!game_start)record_time += deltaTime;
->>>>>>> 63dc65ddb9a44e05b29dcb6d5cf854209df22f53
     }
     deltatime = deltaTime;
 }
@@ -198,17 +190,12 @@ void game_mode::silverwolf_chunk_collision() {
         }
     }
 
-<<<<<<< HEAD
 
-=======
-   
->>>>>>> 63dc65ddb9a44e05b29dcb6d5cf854209df22f53
 }
 
 void game_mode::trainer_chunk_collision() {
     for (int i = trainers.size() - 1; i >= 0; --i) {
         Trainer* trainer = trainers[i];
-<<<<<<< HEAD
         if (trainer->die) {
             delete trainer;
             trainers.erase(trainers.begin() + i);
@@ -216,15 +203,6 @@ void game_mode::trainer_chunk_collision() {
         }
 
         if (trainer->is_in_chunk == false) continue;
-=======
-		if (trainer->die) {
-			delete trainer;
-			trainers.erase(trainers.begin() + i);
-			continue;
-		}
-
-		if (trainer->is_in_chunk == false) continue;
->>>>>>> 63dc65ddb9a44e05b29dcb6d5cf854209df22f53
 
         // 장애물 충돌 검사
         for (auto& block : maze.mazeBlocks) {
@@ -476,20 +454,12 @@ void game_mode::Draw() {
 
 
         //트레이너
-<<<<<<< HEAD
         for (int i = 0;i < trainers.size();++i) {
             cout << "트레이너 " << i << " is_in_chunk: " << trainers[i]->is_in_chunk << endl;
             if (!trainers[i]->is_in_chunk) continue;
             trainers[i]->DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
         }
 
-=======
-		for (int i = 0;i < trainers.size();++i) {
-			cout << "트레이너 " << i << " is_in_chunk: " << trainers[i]->is_in_chunk << endl;
-			if (!trainers[i]->is_in_chunk) continue;
-			trainers[i]->DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
-		}
->>>>>>> 63dc65ddb9a44e05b29dcb6d5cf854209df22f53
 
     }
 
@@ -679,11 +649,7 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
 
     switch (key)
     {
-<<<<<<< HEAD
     case 13: // Enter key
-=======
-	case 13: // Enter key
->>>>>>> 63dc65ddb9a44e05b29dcb6d5cf854209df22f53
         if (game_start) game_start = false;
         break;
     case 9:

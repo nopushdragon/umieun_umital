@@ -52,9 +52,6 @@ private:
 	float ambientStrength;
 	int shininess;
 
-	Image* loading_image = nullptr;
-	bool loading_start = false;
-
 	Skybox* skybox = nullptr;
 
 	// --- 내부 헬퍼 함수 (셰이더 로딩용) ---

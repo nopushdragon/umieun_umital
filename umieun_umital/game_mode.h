@@ -39,10 +39,7 @@ private:
 
 	vector<Trainer*> trainers;
   
-    void start_scene();
-    bool game_start = false;
-    void clear_scene();
-    bool game_clear = false;
+ 
 
    
 
