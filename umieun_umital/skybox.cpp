@@ -107,15 +107,8 @@ GLuint Skybox::LoadCubemapFromSingleImage(const std::string& path)
         }
 
 
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-            0,
-            internalFormat,
-            faceW,
-            faceH,
-            0,
-            externalFormat,
-            GL_UNSIGNED_BYTE,
-            faceBuf.data());
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,0,internalFormat,faceW,faceH,
+            0,externalFormat,GL_UNSIGNED_BYTE,faceBuf.data());
 
         
     }

@@ -10,6 +10,8 @@ NewModel* press_model[3];
 NewModel* archie_model[3];
 NewModel* serena_model[3];
 
+Sound_Manager soundManager;
+
 
 void Resource_Init() {
     // ¹Ì·Î
@@ -70,6 +72,8 @@ void Resource_Init() {
 	serena_model[1]->state = "tracking";
     serena_model[2] = new NewModel("Serena/Turn To Knocked Unconscious.fbx");
 	serena_model[2]->state = "die";
+
+
 
        
 }
