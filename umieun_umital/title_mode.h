@@ -29,6 +29,8 @@ private:
 	vector<Image*> main;
 	int main_idx = 0;
 	Text textUI;
+	Image* loading_image = nullptr;
+	bool loading_start = false;
 
 	Image* set_maze[4];
 	bool draw_set_maze = false;

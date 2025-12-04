@@ -27,6 +27,8 @@ game_mode::game_mode() {
     ambientStrength = 0.3f;
     shininess = 32;
 
+    game_start = true;
+	game_clear = false;
 }
 
 game_mode::~game_mode() {
@@ -68,29 +70,34 @@ void game_mode::Init() {
 float deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
-    silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
-    gameCamera.Update(deltaTime, silverWolf.pos);
-    //카메라 고정
-    if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+    if (game_clear) {
 
-    //트레이너
-    Update_Trainer_Spawn();
-	for (int i = 0;i < trainers.size();++i) {
-		trainers[i]->Update(deltaTime, gameCamera.right_mouth,silverWolf.pos);
-	}
+    }
+    else {
+        silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
+        gameCamera.Update(deltaTime, silverWolf.pos);
+        //카메라 고정
+        if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
-    silverwolf_chunk_collision();   //청크  
-    trainer_chunk_collision();
-    //과녁
-    target.update();
-
-    for(auto & b : balls) {
-        if (b.is_in_chunk) {
-            b.Update(deltaTime);
+        //트레이너
+        Update_Trainer_Spawn();
+        for (int i = 0;i < trainers.size();++i) {
+            trainers[i]->Update(deltaTime, gameCamera.right_mouth, silverWolf.pos);
         }
-	}
 
-    record_time += deltaTime;
+        silverwolf_chunk_collision();   //청크  
+        trainer_chunk_collision();
+        //과녁
+        target.update();
+
+        for (auto& b : balls) {
+            if (b.is_in_chunk) {
+                b.Update(deltaTime);
+            }
+        }
+
+        if (!game_start)record_time += deltaTime;
+    }
     deltatime = deltaTime;
 }
 
@@ -164,6 +171,8 @@ void game_mode::silverwolf_chunk_collision() {
             b.is_nearby = true;
         }
     }
+
+   
 }
 
 void game_mode::trainer_chunk_collision() {
@@ -174,33 +183,16 @@ void game_mode::trainer_chunk_collision() {
 			trainers.erase(trainers.begin() + i);
 			continue;
 		}
+
+		if (trainer->is_in_chunk == false) continue;
+
+        // 장애물 충돌 검사
         for (auto& block : maze.mazeBlocks) {
-            block.is_colliding = false;
-            if (check_collision(trainer->trainer_world_obb, block.road_world_obb)) {
-                block.is_colliding = true;
-            }
-        }
-        // 청크 단위 충돌
-        bool stop = false;
-        for (int y = 1; y < maze_y - 1; y++) {
-            for (int x = 1; x < maze_x - 1; x++) {
-                if (maze.mazeBlocks[(y * maze_x) + x].is_colliding == true) {
-                    update_chunk(y, x, 2);
-                    stop = true;
-                    break;
-                }
-            }
-            if (stop) break;
-        }
-        // 청크 기준으로 장애물 충돌 검사
-        for (auto& block : maze.mazeBlocks) {
-            if (block.is_colliding == true) {
-                for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
-                    if (check_collision(trainer->trainer_world_obb, block.obstacle_world_obb[j])) {
-                        trainer->pos = trainer->old_pos;
-                        trainer->angle += 45.0f;
-                        trainer->update_world_obb();
-                    }
+            for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
+                if (check_collision(trainer->trainer_world_obb, block.obstacle_world_obb[j])) {
+                    trainer->pos = trainer->old_pos;
+                    trainer->angle += 45.0f;
+                    trainer->update_world_obb();
                 }
             }
         }
@@ -280,6 +272,24 @@ void game_mode::update_chunk(int y, int x, int size) {
                 }
             }
             if (balls[i].is_in_chunk) break;
+        }
+    }
+
+    for (int i = 0; i < trainers.size(); i++) {
+        trainers[i]->is_in_chunk = false;
+        for (int j = min_y; j <= max_y; j++) {
+            for (int k = min_x; k <= max_x; k++) {
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, trainers[i]->pos);
+                model = glm::scale(model, trainers[i]->scale);
+                model = glm::rotate(model, glm::radians(trainers[i]->angle), glm::vec3(0.0f, 1.0f, 0.0f));
+                if (model[3].x > (k * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && model[3].x < ((k + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
+                    model[3].z >(j * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && model[3].z < ((j + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
+                    trainers[i]->is_in_chunk = true;
+                    break;
+                }
+            }
+            if (trainers[i]->is_in_chunk) break;
         }
     }
 }
@@ -369,6 +379,7 @@ void game_mode::Draw() {
     if (!silverWolf.init_success) silverWolf.init_success = true;
 
     for (int i = 0;i < trainers.size();++i) {
+        if (!trainers[i]->is_in_chunk) continue;
         trainers[i]->Draw(shaderProgramAnimated, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     }
 
@@ -415,6 +426,8 @@ void game_mode::Draw() {
 
         //트레이너
 		for (int i = 0;i < trainers.size();++i) {
+			cout << "트레이너 " << i << " is_in_chunk: " << trainers[i]->is_in_chunk << endl;
+			if (!trainers[i]->is_in_chunk) continue;
 			trainers[i]->DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
 		}
 
@@ -607,6 +620,9 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
 
     switch (key)
     {
+	case 13: // Enter key
+        if (game_start) game_start = false;
+        break;
     case 9:
         collision_on = !collision_on;
         break;

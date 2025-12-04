@@ -37,7 +37,7 @@ public:
 
 	float time = 0.0f;
 	
-
+	bool is_in_chunk = false;
 
 
 	void set_obb();
