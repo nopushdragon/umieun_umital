@@ -16,9 +16,6 @@
     <Filter Include="headers">
       <UniqueIdentifier>{81ddb4dd-7de6-4254-975f-115e5ad44946}</UniqueIdentifier>
     </Filter>
-    <Filter Include="우미은우미탈 주인공">
-      <UniqueIdentifier>{ab730e21-d70d-4946-ac4c-d05bca36646c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="시간의방">
       <UniqueIdentifier>{caaae31c-9028-41af-862d-a04767e0ace3}</UniqueIdentifier>
     </Filter>
@@ -73,6 +70,12 @@
     <Filter Include="눈 마주치면 포켓몬 승부">
       <UniqueIdentifier>{43779d6b-12a8-4988-9845-3f3cf2f7bb45}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소리가 나는 새는%3f 소리새 ㅋㅋㅋㅋㅋㅋㅋㅋㅋ 웃어 ㅋㅋㅋ 웃으라고">
+      <UniqueIdentifier>{4f51e7ad-5d10-40b7-90f6-fa2122cad623}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="우미은우미탈 아이도루">
+      <UniqueIdentifier>{ab730e21-d70d-4946-ac4c-d05bca36646c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -85,7 +88,7 @@
       <Filter>텍스쳐들\static_model</Filter>
     </ClInclude>
     <ClInclude Include="silver_wolf.h">
-      <Filter>우미은우미탈 주인공</Filter>
+      <Filter>우미은우미탈 아이도루</Filter>
     </ClInclude>
     <ClInclude Include="GameTimer.h">
       <Filter>시간의방</Filter>
@@ -127,10 +130,10 @@
       <Filter>양현빈의 장난감박스</Filter>
     </ClInclude>
     <ClInclude Include="state_machine.h">
-      <Filter>우미은우미탈 주인공</Filter>
+      <Filter>우미은우미탈 아이도루</Filter>
     </ClInclude>
     <ClInclude Include="silver_wolf_state.h">
-      <Filter>우미은우미탈 주인공</Filter>
+      <Filter>우미은우미탈 아이도루</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>지금부터는 카메라 타임</Filter>
@@ -162,6 +165,12 @@
     <ClInclude Include="trainer_state_machine.h">
       <Filter>눈 마주치면 포켓몬 승부</Filter>
     </ClInclude>
+    <ClInclude Include="account.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="sound_manager.h">
+      <Filter>소리가 나는 새는%3f 소리새 ㅋㅋㅋㅋㅋㅋㅋㅋㅋ 웃어 ㅋㅋㅋ 웃으라고</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animated_model.cpp">
@@ -174,7 +183,7 @@
       <Filter>headers</Filter>
     </ClCompile>
     <ClCompile Include="silver_wolf.cpp">
-      <Filter>우미은우미탈 주인공</Filter>
+      <Filter>우미은우미탈 아이도루</Filter>
     </ClCompile>
     <ClCompile Include="GameTimer.cpp">
       <Filter>시간의방</Filter>
@@ -238,6 +247,12 @@
     </ClCompile>
     <ClCompile Include="trainer.cpp">
       <Filter>눈 마주치면 포켓몬 승부</Filter>
+    </ClCompile>
+    <ClCompile Include="account.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="sound_manager.cpp">
+      <Filter>소리가 나는 새는%3f 소리새 ㅋㅋㅋㅋㅋㅋㅋㅋㅋ 웃어 ㅋㅋㅋ 웃으라고</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
