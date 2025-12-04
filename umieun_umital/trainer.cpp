@@ -62,6 +62,8 @@ void Trainer::Update(float deltatime, const bool& right_mouth,const glm::vec3& s
 
 	}
 
+	soundManager.UpdateChannelPosition(thisChannel, pos);
+
 
 
 	update_world_obb();

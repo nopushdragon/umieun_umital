@@ -21,7 +21,10 @@ public:
 	bool die = false;
 	bool camera_right_mouth = false;
 	bool aggravation = false;
+	bool voice = false;
 	float local_anim_time = 0.0f;
+	bool is_in_chunk = false;
+	Channel* thisChannel = nullptr;
 
 	glm::vec3 pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
 	glm::vec3 old_pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);

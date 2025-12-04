@@ -142,6 +142,10 @@ void title_mode::Init() {
     // 스카이박스
     skybox = new Skybox("skybox/sun.png", "skybox/moon.png");
 
+    // 배경음악 재생
+    bgmChannel->stop();
+    bgmChannel = soundManager.Play("title", glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
+
     // 카메라 위치
     glm::vec3 targetPos = silverWolf.pos + glm::vec3(0.0f, 10.0f, -10.0f);
 

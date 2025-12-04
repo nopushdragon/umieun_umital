@@ -10,15 +10,16 @@ class Sound_Manager
 {
 private:
 	System* system = nullptr;
-	map<string, Sound*> soundMap;
 public:
+	map<string, Sound*> soundMap;
 	Sound_Manager();
 	~Sound_Manager();
 	void Init();
 	void Update();
 
 	void LoadSound(const string& name, const string& path,bool is3D=true, bool loop = false);
-	Channel* Play(const string& name, glm::vec3 pos = glm::vec3(0.0f));
+	Channel* Play(const string& name, glm::vec3 pos,float volume);
+
 
 	void SetListenerAttributes(const glm::vec3& pos,  const glm::vec3& forward, const glm::vec3& up,  glm::vec3 vel= glm::vec3(0.0f));
 

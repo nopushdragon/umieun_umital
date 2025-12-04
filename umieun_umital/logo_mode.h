@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "game_framwork.h"
 #include "title_mode.h"
+#include "resource.h"
 class logo_mode : public Scene
 {
 private:
@@ -19,8 +20,6 @@ private:
 
 	float logo_time = 0.1f;
 	float logo_timer = 0.0f;
-
-
 
 public:
 	GLuint uiShaderProgram;

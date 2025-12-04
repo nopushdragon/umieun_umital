@@ -39,7 +39,10 @@ private:
 
 	vector<Trainer*> trainers;
   
-    
+    void start_scene();
+    bool game_start = false;
+    void clear_scene();
+    bool game_clear = false;
 
    
 
@@ -69,7 +72,7 @@ private:
 
     //적 나오는 시간
 	float trainer_spawn_timer = 0.0f;
-	float trainer_spawn_time = 5.0f;
+	float trainer_spawn_time = 10.0f;
 
     // --- 내부 헬퍼 함수 (셰이더 로딩용) ---
     char* filetobuf(const char* file);

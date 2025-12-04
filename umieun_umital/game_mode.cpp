@@ -14,7 +14,9 @@ const char* TEXT_VERT = "vertex_text.glsl";
 const char* TEXT_FRAG = "fragment_text.glsl";
 
 using namespace std;
-
+uniform_int_distribution<int> random_bgm(0, 4);
+uniform_int_distribution<int> random_player(0, 2);
+uniform_int_distribution<int> random_trainer(0, 2);
 
 
 // 생성자: 변수 초기값 설정
@@ -26,7 +28,11 @@ game_mode::game_mode() {
     materialSpecular = glm::vec3(0.0f, 0.0f, 0.0f);
     ambientStrength = 0.3f;
     shininess = 32;
+    bgmChannel->stop();
+    bgmChannel = soundManager.Play("main" + to_string(random_bgm(mt)), glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
 
+    game_start = true;
+    game_clear = false;
 }
 
 game_mode::~game_mode() {
@@ -68,29 +74,47 @@ void game_mode::Init() {
 float deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
-    silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
-    gameCamera.Update(deltaTime, silverWolf.pos);
-    //카메라 고정
-    if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+    if (game_clear) {
 
-    //트레이너
-    Update_Trainer_Spawn();
-	for (int i = 0;i < trainers.size();++i) {
-		trainers[i]->Update(deltaTime, gameCamera.right_mouth,silverWolf.pos);
-	}
+    }
+    else {
+        silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
+        gameCamera.Update(deltaTime, silverWolf.pos);
+        //카메라 고정
+        if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
-    silverwolf_chunk_collision();   //청크  
-    trainer_chunk_collision();
-    //과녁
-    target.update();
-
-    for(auto & b : balls) {
-        if (b.is_in_chunk) {
-            b.Update(deltaTime);
+        //트레이너
+        Update_Trainer_Spawn();
+        for (int i = 0;i < trainers.size();++i) {
+            trainers[i]->Update(deltaTime, gameCamera.right_mouth, silverWolf.pos);
         }
-	}
 
-    record_time += deltaTime;
+        silverwolf_chunk_collision();   //청크  
+        trainer_chunk_collision();
+        //과녁
+        target.update();
+
+        for (auto& b : balls) {
+            if (b.is_in_chunk) {
+                b.Update(deltaTime);
+            }
+        }
+
+        bool isPlaying = false;
+        bgmChannel->isPlaying(&isPlaying);
+
+        if (!isPlaying) {
+            bgmChannel = soundManager.Play("main" + to_string(random_bgm(mt)), glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
+        }
+
+        if (!game_start)record_time += deltaTime;
+
+        glm::vec3 dir = gameCamera.camTarget - gameCamera.camPos;
+        dir.y = 0.0f;
+        glm::vec3 forward = glm::normalize(dir);
+        soundManager.SetListenerAttributes(silverWolf.pos + glm::vec3(0.0f, 2.0f, 0.0f), forward, gameCamera.camUp, glm::vec3(0.0f, 0.0f, 0.0f));
+        soundManager.Update();
+    }
     deltatime = deltaTime;
 }
 
@@ -152,6 +176,7 @@ void game_mode::silverwolf_chunk_collision() {
                 if (check_collision(b.ball_obb, t.target_obb)) {
                     t.is_break = true;
                     b.end_pos = true;
+                    playerChannel = soundManager.Play("silverwolf" + to_string(random_player(mt)), glm::vec3(0.0f, 0.0f, 0.0f), effect_volume);
                 }
             }
         }
@@ -164,53 +189,49 @@ void game_mode::silverwolf_chunk_collision() {
             b.is_nearby = true;
         }
     }
+
+
 }
 
 void game_mode::trainer_chunk_collision() {
     for (int i = trainers.size() - 1; i >= 0; --i) {
         Trainer* trainer = trainers[i];
-		if (trainer->die) {
-			delete trainer;
-			trainers.erase(trainers.begin() + i);
-			continue;
-		}
-        for (auto& block : maze.mazeBlocks) {
-            block.is_colliding = false;
-            if (check_collision(trainer->trainer_world_obb, block.road_world_obb)) {
-                block.is_colliding = true;
-            }
+        if (trainer->die) {
+            delete trainer;
+            trainers.erase(trainers.begin() + i);
+            continue;
         }
-        // 청크 단위 충돌
-        bool stop = false;
-        for (int y = 1; y < maze_y - 1; y++) {
-            for (int x = 1; x < maze_x - 1; x++) {
-                if (maze.mazeBlocks[(y * maze_x) + x].is_colliding == true) {
-                    update_chunk(y, x, 2);
-                    stop = true;
-                    break;
-                }
-            }
-            if (stop) break;
-        }
-        // 청크 기준으로 장애물 충돌 검사
+
+        if (trainer->is_in_chunk == false) continue;
+
+        // 장애물 충돌 검사
         for (auto& block : maze.mazeBlocks) {
-            if (block.is_colliding == true) {
-                for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
-                    if (check_collision(trainer->trainer_world_obb, block.obstacle_world_obb[j])) {
-                        trainer->pos = trainer->old_pos;
-                        trainer->angle += 45.0f;
-                        trainer->update_world_obb();
-                    }
+            for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
+                if (check_collision(trainer->trainer_world_obb, block.obstacle_world_obb[j])) {
+                    trainer->pos = trainer->old_pos;
+                    trainer->angle += 45.0f;
+                    trainer->update_world_obb();
                 }
             }
         }
 
         // obb2번을 플레이어와 충돌할때
-        if (check_collision(silverWolf.silverwolf_world_obb, trainer->trainer_world_obb2)&& !trainer->die_change) {
+        if (check_collision(silverWolf.silverwolf_world_obb, trainer->trainer_world_obb2) && !trainer->die_change) {
             trainer->aggravation = true;
+            if (!trainer->voice) {
+                trainer->voice = true;
+                bool playing = false;
+                trainer->thisChannel->isPlaying(&playing);
+                if (!playing)
+                    trainer->thisChannel = soundManager.Play(to_string(trainer->radom_index) + to_string(random_trainer(mt)), trainer->pos, effect_volume);
+
+            }
         }
         else {
             trainer->aggravation = false;
+            trainer->voice = false;
+
+
         }
 
         // obb1번을 플레이어와 충돌할때
@@ -282,18 +303,36 @@ void game_mode::update_chunk(int y, int x, int size) {
             if (balls[i].is_in_chunk) break;
         }
     }
+
+    for (int i = 0; i < trainers.size(); i++) {
+        trainers[i]->is_in_chunk = false;
+        for (int j = min_y; j <= max_y; j++) {
+            for (int k = min_x; k <= max_x; k++) {
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, trainers[i]->pos);
+                model = glm::scale(model, trainers[i]->scale);
+                model = glm::rotate(model, glm::radians(trainers[i]->angle), glm::vec3(0.0f, 1.0f, 0.0f));
+                if (model[3].x > (k * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) && model[3].x < ((k + 1) * ROAD_SIZE - (ROAD_SIZE * maze_x) / 2) &&
+                    model[3].z >(j * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2) && model[3].z < ((j + 1) * ROAD_SIZE - (ROAD_SIZE * maze_y) / 2)) {
+                    trainers[i]->is_in_chunk = true;
+                    break;
+                }
+            }
+            if (trainers[i]->is_in_chunk) break;
+        }
+    }
 }
 
 void game_mode::Update_Trainer_Spawn() {
-	trainer_spawn_timer += deltatime;
-	if (trainer_spawn_timer >= trainer_spawn_time) {
-		trainer_spawn_timer = 0.0f;
+    trainer_spawn_timer += deltatime;
+    if (trainer_spawn_timer >= trainer_spawn_time) {
+        trainer_spawn_timer = 0.0f;
         cout << "소환됨 ㅇㅅㅇ!!" << endl;
-        Trainer* new_trainer = new Trainer(0.0f,0.0f);
+        Trainer* new_trainer = new Trainer(0.0f, 0.0f);
         new_trainer->Init();
         set_trainer_in_maze(*new_trainer);
         trainers.push_back(new_trainer);
-	}
+    }
 }
 
 // 3. 그리기 (기존 drawScene 함수 내용)
@@ -354,7 +393,7 @@ void game_mode::Draw() {
 
     for (auto& b : balls) {   // 몬스터볼 
         if (!b.is_in_chunk) continue;
-		b.Draw(shaderProgramStatic);
+        b.Draw(shaderProgramStatic);
     }
 
 
@@ -369,6 +408,7 @@ void game_mode::Draw() {
     if (!silverWolf.init_success) silverWolf.init_success = true;
 
     for (int i = 0;i < trainers.size();++i) {
+        if (!trainers[i]->is_in_chunk) continue;
         trainers[i]->Draw(shaderProgramAnimated, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     }
 
@@ -414,11 +454,13 @@ void game_mode::Draw() {
 
 
         //트레이너
-		for (int i = 0;i < trainers.size();++i) {
-			trainers[i]->DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
-		}
+        for (int i = 0;i < trainers.size();++i) {
+            cout << "트레이너 " << i << " is_in_chunk: " << trainers[i]->is_in_chunk << endl;
+            if (!trainers[i]->is_in_chunk) continue;
+            trainers[i]->DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
+        }
 
-        
+
     }
 
     //ui 그리기
@@ -607,6 +649,9 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
 
     switch (key)
     {
+    case 13: // Enter key
+        if (game_start) game_start = false;
+        break;
     case 9:
         collision_on = !collision_on;
         break;
@@ -747,15 +792,15 @@ void game_mode::loadModels() {
     /*Trainer* newTrainer = new Trainer();
     newTrainer->Init();
     trainers.push_back(newTrainer);*/
-    
+
     //은랑
     silverWolf.Init();
 
     //몬스터볼 ㅇㅅㅇ;
     for (int i = 0; i < ball_cnt; i++) {
-		Ball new_ball = Ball(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), true);
+        Ball new_ball = Ball(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), true);
         new_ball.Init();
-		set_ball_in_maze(new_ball);
+        set_ball_in_maze(new_ball);
         balls.push_back(new_ball);
     }
 
@@ -892,7 +937,7 @@ void game_mode::set_ball_in_maze(Ball& b) {  // 과녁에서 미로 객체를 �
     uniform_real_distribution<float> rd_in_road(-10.0f, 10.0f);
     bool rd_flag = false;
 
-    do{
+    do {
         rd_flag = false;
         int rand_x = rd_x(mt), rand_y = rd_y(mt);
         if (maze.maze[rand_y][rand_x].path_wall == WALL || maze.maze[rand_y][rand_x].type == 15 || (rand_y == 1 && rand_x == 1)) {

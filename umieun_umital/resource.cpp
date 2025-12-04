@@ -12,6 +12,15 @@ NewModel* serena_model[3];
 
 Sound_Manager soundManager;
 
+FMOD::Channel* bgmChannel = nullptr;
+FMOD::Channel* playerChannel = nullptr;
+FMOD::Channel* meiChannel = nullptr;
+FMOD::Channel* ArchieChannel = nullptr;
+FMOD::Channel* SerenaChannel = nullptr;
+FMOD::Channel* pressChannel = nullptr;
+float bgm_volume = 0.4f;
+float effect_volume = 0.3f;
+
 
 void Resource_Init() {
     // 미로
@@ -72,6 +81,32 @@ void Resource_Init() {
 	serena_model[1]->state = "tracking";
     serena_model[2] = new NewModel("Serena/Turn To Knocked Unconscious.fbx");
 	serena_model[2]->state = "die";
+
+
+    //브금들 입니다
+	soundManager.LoadSound("logo", "sound/bgm/logo.mp3",false,false);
+    soundManager.LoadSound("title", "sound/bgm/title.mp3", false, true);
+    soundManager.LoadSound("main0", "sound/bgm/main0.mp3", false, false);
+    soundManager.LoadSound("main1", "sound/bgm/main1.mp3", false, false);
+    soundManager.LoadSound("main2", "sound/bgm/main2.mp3", false, false);
+    soundManager.LoadSound("main3", "sound/bgm/main3.mp3", false, false);
+    soundManager.LoadSound("main4", "sound/bgm/main4.mp3", false, false);
+    soundManager.LoadSound("silverwolf0", "sound/silver wolf/silverwolf0.wav", false, false);
+    soundManager.LoadSound("silverwolf1", "sound/silver wolf/silverwolf1.wav", false, false);
+    soundManager.LoadSound("silverwolf2", "sound/silver wolf/silverwolf2.wav", false, false);
+    soundManager.LoadSound("00", "sound/mei/mei0.ogg", true, false);
+    soundManager.LoadSound("01", "sound/mei/mei1.ogg", true, false);
+    soundManager.LoadSound("02", "sound/mei/mei2.ogg", true, false);
+    soundManager.LoadSound("20", "sound/Archie/Archie0.ogg", true, false);
+    soundManager.LoadSound("21", "sound/Archie/Archie1.ogg", true, false);
+    soundManager.LoadSound("22", "sound/Archie/Archie2.ogg", true, false);
+    soundManager.LoadSound("10", "sound/Serena/Serena0.ogg", true, false);
+    soundManager.LoadSound("11", "sound/Serena/Serena1.ogg", true, false);
+    soundManager.LoadSound("12", "sound/Serena/Serena2.ogg", true, false);
+    soundManager.LoadSound("30", "sound/press/press0.wav", true, false);
+    soundManager.LoadSound("31", "sound/press/press1.wav", true, false);
+    soundManager.LoadSound("32", "sound/press/press2.wav", true, false);
+
 
 
 

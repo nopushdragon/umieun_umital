@@ -32,6 +32,7 @@ void logo_mode::Update(float deltaTime) {
 		tuk_image->color.w += deltaTime / 8.0f;
 		if (tuk_image->color.w >= 1.0f) {
 			turn_image = true;
+			bgmChannel = soundManager.Play("logo", glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
 		}
 	}
 	else if (turn_image&& logo_timer < logo_time) {
@@ -41,6 +42,7 @@ void logo_mode::Update(float deltaTime) {
 		stbi_set_flip_vertically_on_load(false);
 		g_Framework->sceneManager->Change_Mode(new title_mode());
 	}
+	soundManager.Update();
 }
 
 void logo_mode::Draw() {
@@ -72,10 +74,16 @@ void logo_mode::Reshape(int w, int h) {
 
 void logo_mode::Mouse(int button, int state, int x, int y) {
 	// 로고 모드 마우스 이벤트 처리 코드 작성
-	turn_image = true;
+	if (!turn_image) {
+		turn_image = true;
+		bgmChannel = soundManager.Play("logo", glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
+	}
 }
 
 void logo_mode::Keyboard(unsigned char key, int x, int y) {
 	// 로고 모드 키보드 이벤트 처리 코드 작성
-	turn_image = true;
+	if (!turn_image) {
+		turn_image = true;
+		bgmChannel = soundManager.Play("logo", glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
+	}
 }

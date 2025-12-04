@@ -14,6 +14,12 @@ extern NewModel* press_model[3];
 extern NewModel* archie_model[3];
 extern NewModel* serena_model[3];
 extern Sound_Manager soundManager;
-
-
+extern FMOD::Channel* bgmChannel;
+extern FMOD::Channel* playerChannel;
+extern FMOD::Channel* meiChannel;
+extern FMOD::Channel* ArchieChannel;
+extern FMOD::Channel* SerenaChannel;
+extern FMOD::Channel* pressChannel;
+extern float bgm_volume;
+extern float effect_volume;
 void Resource_Init();

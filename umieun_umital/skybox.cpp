@@ -82,8 +82,8 @@ GLuint Skybox::LoadCubemapFromSingleImage(const std::string& path)
         {0,1}, // -X (left)
         {1,0}, // +Y (top)
         {1,2}, // -Y (bottom)
-        {3,1}, // +Z (back)
-        {1,1}  // -Z (front)
+        {1,1}, // +Z (back)
+        {3,1}  // -Z (front)
     };
 
 

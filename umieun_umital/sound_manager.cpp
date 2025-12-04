@@ -8,7 +8,7 @@ Sound_Manager::Sound_Manager()
 void Sound_Manager::Init()
 {
 	FMOD::System_Create(&system);
-	system->init(512, FMOD_INIT_3D_RIGHTHANDED, 0);
+	system->init(256, FMOD_INIT_3D_RIGHTHANDED | FMOD_INIT_3D_RIGHTHANDED, 0);
 	system->set3DSettings(1.0f, 1.0f, 1.0f);
 }
 
@@ -36,7 +36,7 @@ void Sound_Manager::LoadSound(const string& name, const string& path, bool is3D,
 	}
 }
 
-Channel* Sound_Manager::Play(const string& name, glm::vec3 pos)
+Channel* Sound_Manager::Play(const string& name, glm::vec3 pos, float volume)
 {
 	Channel* channel = nullptr;
 	system->playSound(soundMap[name], 0, false, &channel);
@@ -44,10 +44,13 @@ Channel* Sound_Manager::Play(const string& name, glm::vec3 pos)
 		FMOD_VECTOR fmodPos = ToFmod(pos);
 		FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
 		channel->set3DAttributes(&fmodPos, &vel);
+		channel->setVolume(volume);
 	}
 	return channel;
 	
 }
+
+
 
 void Sound_Manager::SetListenerAttributes(const glm::vec3& pos, const glm::vec3& forward, const glm::vec3& up, glm::vec3 vel)
 {
