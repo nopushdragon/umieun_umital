@@ -150,16 +150,16 @@ void game_mode::silverwolf_chunk_collision() {
     }
 
     // 청크 기준으로 장애물 충돌 검사
-    for (auto& block : maze.mazeBlocks) {
-        if (block.is_colliding == true) {
-            for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
-                if (check_collision(silverWolf.silverwolf_world_obb, block.obstacle_world_obb[j])) {
-                    silverWolf.pos = silverWolf.old_pos;
-                    silverWolf.update_world_obb();
-                }
-            }
-        }
-    }
+    //for (auto& block : maze.mazeBlocks) {
+    //    if (block.is_colliding == true) {
+    //        for (int j = 0; j < block.obstacle_world_obb.size(); j++) {
+    //            if (check_collision(silverWolf.silverwolf_world_obb, block.obstacle_world_obb[j])) {
+    //                silverWolf.pos = silverWolf.old_pos;
+    //                silverWolf.update_world_obb();
+    //            }
+    //        }
+    //    }
+    //}
 
     for (auto& c : chest.chestBlocks) {
         if (!c.is_in_chunk) continue;

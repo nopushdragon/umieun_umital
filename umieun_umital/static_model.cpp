@@ -31,38 +31,34 @@ void StaticMesh::setupMesh() {
 void StaticMesh::Draw(GLuint shaderID) const {
     const Texture& meshTexture = textures[0];
 
-    // 1. 텍스처/Diffuse 색상 설정
     if (!textures.empty() && meshTexture.id != 0) {
-        // ... (기존 텍스처 로직 유지)
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, meshTexture.id);
         glUniform1i(glGetUniformLocation(shaderID, "texture_diffuse1"), 0);
         glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), true);
     }
     else {
-        // 텍스처 로드 실패 또는 텍스처가 없는 경우:
         glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), false);
-
-        // MTL의 Kd를 사용하되, 너무 어두우면 중간 회색을 기본값으로 사용 (선택적)
         glm::vec3 diffuseColorToUse = meshTexture.diffuseColor;
 
-        // Kd가 너무 어두워서 흑백으로 보인다면, 기본 회색으로 대체 (디버그용 안전 장치)
-        if (glm::length(diffuseColorToUse) < 0.1f) { // 흑색 Kd (0,0,0)에 가까운 경우
-            diffuseColorToUse = glm::vec3(0.5f, 0.5f, 0.5f); // 중간 회색으로 강제 변경
+        if (glm::length(diffuseColorToUse) < 0.1f) {
+            diffuseColorToUse = glm::vec3(0.5f, 0.5f, 0.5f);
         }
 
         glUniform3fv(glGetUniformLocation(shaderID, "materialColorDefault"), 1, glm::value_ptr(diffuseColorToUse));
     }
 
+    // textures가 비어있어도 무조건 설정 (전역값 덮어쓰기)
     if (!textures.empty()) {
         glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(meshTexture.specularColor));
         glUniform1i(glGetUniformLocation(shaderID, "shininess"), meshTexture.shininess);
     }
-
-    //glm::vec3 exampleSpecular = glm::vec3(0.35f, 0.35f, 0.35f); // Ks 
-    //int exampleShininess = 32;                                   // Ns 
-    //glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(exampleSpecular));
-    //glUniform1i(glGetUniformLocation(shaderID, "shininess"), exampleShininess);
+    else {
+        // textures가 비어있으면 specular를 0으로 강제 설정
+        glm::vec3 zeroSpecular(0.0f, 0.0f, 0.0f);
+        glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(zeroSpecular));
+        glUniform1i(glGetUniformLocation(shaderID, "shininess"), 1);
+    }
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -80,13 +76,14 @@ StaticModel::StaticModel(const std::string& objPath) {
     // 2. 바이너리 파일 확인 및 로딩 시도
     std::string binPath = objPath.substr(0, objPath.find_last_of('.')) + ".bin";
 
-    if (LoadFromBinary(binPath)) {
-        return; // 성공 시 Assimp 스킵
-    }
+    // 디버깅용 바이너리 파일 삭제 강제
+    //std::remove(binPath.c_str());
 
-    // =========================================================
-    // 3. 실패 시 Assimp로 로딩 (느림)
-    // =========================================================
+    //if (LoadFromBinary(binPath)) {
+    //    return; // 성공 시 Assimp 스킵
+    //}
+
+    // 3. 실패 시 Assimp로 로딩
     Assimp::Importer importer;
     // Tangent가 필요 없다면 CalcTangentSpace 옵션 빼도 됨 (속도 향상)
     const aiScene* scene = importer.ReadFile(objPath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace| aiProcess_GenSmoothNormals);
@@ -125,18 +122,15 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<StaticVertex> vertices;
     std::vector<unsigned int> indices;
-    std::vector<Texture> textures; // 텍스처 로딩 구현 필요
+    std::vector<Texture> textures;
 
     // 1. 정점 데이터 추출
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
         StaticVertex vertex;
-        // 위치 (Position)
         vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-        // 법선 (Normal)
         if (mesh->mNormals)
             vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-        // 텍스처 좌표 (TexCoords)
         if (mesh->mTextureCoords[0])
             vertex.TexCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
         else
@@ -145,7 +139,7 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
         vertices.push_back(vertex);
     }
 
-    // 2. 인덱스 데이터 (Faces) 추출
+    // 2. 인덱스 데이터 추출
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];
@@ -153,61 +147,60 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
             indices.push_back(face.mIndices[j]);
     }
 
-    // 3. 재질/텍스처 처리 (구현)
+    // 3. 재질/텍스처 처리
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
         Texture matInfo;
 
-        // 👇 Diffuse Color (Kd) 추출 코드 추가/복구!
-        aiColor4D color_d(1.f, 1.f, 1.f, 1.f); // 기본값 설정 (흰색)
+        // Diffuse Color (Kd) 추출
+        aiColor4D color_d(1.f, 1.f, 1.f, 1.f);
         if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &color_d)) {
             matInfo.diffuseColor = glm::vec3(color_d.r, color_d.g, color_d.b);
+
+            // ✅ 모든 road의 밝기를 0.18로 균일하게 강제 (MTL 기본값과 동일)
+            if (this->directory.find("road") != std::string::npos) {
+                matInfo.diffuseColor = glm::vec3(0.1808f, 0.1808f, 0.1808f);
+            }
         }
 
-        // 3-1. Specular Color (Ks) 추출 및 저장
+        // Specular Color (Ks) 추출
         aiColor4D color_s(0.f, 0.f, 0.f, 1.f);
         if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &color_s)) {
             matInfo.specularColor = glm::vec3(color_s.r, color_s.g, color_s.b);
         }
+
         float shininess_val = 1.0f;
         if (AI_SUCCESS == aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shininess_val)) {
             matInfo.shininess = (int)shininess_val;
         }
-        // 👇 Ks 값 강제 조정 (하이라이트 강도 줄이기)
-        if (glm::length(matInfo.specularColor) > 1.0f) { // Ks가 너무 강하면 (예: 1.0, 1.0, 1.0)
-            matInfo.specularColor *= 0.05f; // Specular 강도를 35%로 조정 (이전 사용자 설정 기반)
+
+        if (glm::length(matInfo.specularColor) > 1.0f) {
+            matInfo.specularColor *= 0.05f;
         }
 
-        // 3-2. 텍스처 파일 경로 추출 및 로딩
+        // 텍스처 파일 경로 추출
         aiString str;
-        // AI_MATKEY_TEXTURE_DIFFUSE: MTL 파일의 map_Kd (확산 텍스처) 경로를 찾습니다.
         if (AI_SUCCESS == material->GetTexture(aiTextureType_DIFFUSE, 0, &str))
         {
-            // 경로가 있다면 텍스처 로딩 시도
             matInfo.path = str.C_Str();
-            // 텍스처 로드 함수 호출 (현재 파일 경로를 기준으로 로드)
-            // OBJ 파일이 있는 "현재 디렉토리"를 가정하고 경로 전달
             matInfo.id = loadTextureFromFile(matInfo.path.c_str(), this->directory);
             matInfo.type = "texture_diffuse";
         }
         else {
-            // 텍스처 경로가 없는 경우, ID를 0으로 설정하여 텍스처를 사용하지 않도록 표시
             matInfo.id = 0;
             matInfo.type = "color_diffuse";
         }
 
-        // 재질 정보를 메시의 첫 번째 텍스처 항목에 저장
         textures.push_back(matInfo);
     }
 
-    // 메시 객체 생성 및 설정
     StaticMesh staticMesh;
     staticMesh.vertices = vertices;
     staticMesh.indices = indices;
     staticMesh.textures = textures;
-    staticMesh.setupMesh(); // VAO/VBO/EBO 설정 호출
+    staticMesh.setupMesh();
 
     return staticMesh;
 }

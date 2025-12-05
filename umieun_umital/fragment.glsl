@@ -27,13 +27,13 @@ void main()
         materialDiffuse = materialColorDefault;
     }
 
-    // ✅ 법선 길이 체크 및 안전 정규화
+    // 법선 정규화
     vec3 norm = Normal;
     float normLength = length(norm);
     if (normLength > 0.0001) {
         norm = norm / normLength;
     } else {
-        norm = vec3(0.0, 1.0, 0.0);  // 기본값
+        norm = vec3(0.0, 1.0, 0.0);
     }
     
     vec3 lightDir = normalize(lightPos - FragPos);
@@ -44,6 +44,10 @@ void main()
     // Diffuse
     float NdotL = dot(norm, lightDir);
     float diffuseFactor = max(NdotL, 0.0);
+    
+    // 너무 밝아지는 것 방지
+    diffuseFactor = min(diffuseFactor, 0.8);  // 최대 0.8
+    
     vec3 diffuse = diffuseFactor * lightColor * materialDiffuse;
     
     // Specular
@@ -59,5 +63,9 @@ void main()
 
     // 최종 결과
     vec3 result = ambient + diffuse + specular;
+    
+    // 최종 밝기도 제한 (추가 안전장치)
+    result = min(result, vec3(1.0));
+    
     FragColor = vec4(result, 1.0);
 }

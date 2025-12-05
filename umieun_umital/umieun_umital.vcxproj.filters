@@ -76,6 +76,9 @@
     <Filter Include="우미은우미탈 아이도루">
       <UniqueIdentifier>{ab730e21-d70d-4946-ac4c-d05bca36646c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="귀속">
+      <UniqueIdentifier>{4e9277db-ca23-4f4e-b069-aff3317be01c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
@@ -165,11 +168,11 @@
     <ClInclude Include="trainer_state_machine.h">
       <Filter>눈 마주치면 포켓몬 승부</Filter>
     </ClInclude>
-    <ClInclude Include="account.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="sound_manager.h">
       <Filter>소리가 나는 새는%3f 소리새 ㅋㅋㅋㅋㅋㅋㅋㅋㅋ 웃어 ㅋㅋㅋ 웃으라고</Filter>
+    </ClInclude>
+    <ClInclude Include="account.h">
+      <Filter>귀속</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -248,11 +251,11 @@
     <ClCompile Include="trainer.cpp">
       <Filter>눈 마주치면 포켓몬 승부</Filter>
     </ClCompile>
-    <ClCompile Include="account.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="sound_manager.cpp">
       <Filter>소리가 나는 새는%3f 소리새 ㅋㅋㅋㅋㅋㅋㅋㅋㅋ 웃어 ㅋㅋㅋ 웃으라고</Filter>
+    </ClCompile>
+    <ClCompile Include="account.cpp">
+      <Filter>귀속</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
