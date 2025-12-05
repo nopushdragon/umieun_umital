@@ -267,17 +267,17 @@ void game_mode::trainer_chunk_collision() {
         // obb1번을 플레이어와 충돌할때
         if (check_collision(silverWolf.silverwolf_world_obb, trainer->trainer_world_obb) && !trainer->die_change) {
             if (silverWolf.state != "roll") {
-                silverWolf.pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
-                silverWolf.old_pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
-                delete trainer;
-                trainers.erase(trainers.begin() + i);
-                playerChannel = soundManager.Play("game_over", silverWolf.pos, effect_volume);
+                if (is_f1) {
+                    silverWolf.pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
+                    silverWolf.old_pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
+                    delete trainer;
+                    trainers.erase(trainers.begin() + i);
+                    playerChannel = soundManager.Play("game_over", silverWolf.pos, effect_volume);
+                }
             }
             else {
-                if (is_f1) {
-                    trainer->die_change = true;
-                    playerChannel = soundManager.Play("attack", silverWolf.pos, effect_volume);
-                }
+                trainer->die_change = true;
+                playerChannel = soundManager.Play("attack", silverWolf.pos, effect_volume);
             }
         }
     }
@@ -930,7 +930,7 @@ void game_mode::loadModels() {
     maze.initmaze();
 
     //과녁
-    target_count = maze_x * 5; //과녁 개수 미로 크기에 비례
+    target_count = (maze_x+ maze_y) / 2; //과녁 개수 미로 크기에 비례
     target.init(target_count);
     set_target_in_maze();    //미로에 과녁 배치
     kill_count = 0;
@@ -948,7 +948,7 @@ void game_mode::loadModels() {
 
     //몬스터볼 ㅇㅅㅇ;
     silverWolf.ball_cnt = 5;
-    ball_cnt = maze_x + maze_y;
+    ball_cnt = maze_x * 5;
     for (int i = 0; i < ball_cnt; i++) {
         Ball new_ball = Ball(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), true);
         new_ball.Init();

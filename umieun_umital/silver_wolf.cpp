@@ -342,8 +342,11 @@ void silver_wolf::Keyupboard(unsigned char key, int x, int y) {
 
 void silver_wolf::Mouse(int button, int state, int x, int yh) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN&&!throw_press&& camera_right_mouth) {
-		ChangeState(new State_Throw());
-		throw_press = true;
+		if (ball_cnt > 0) {
+			ball_cnt--;
+			ChangeState(new State_Throw());
+			throw_press = true;
+		}
 	}
 
 }
