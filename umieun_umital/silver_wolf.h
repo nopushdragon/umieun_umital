@@ -66,9 +66,13 @@ public:
 
 	//구르기 얜 안씀
 	bool f_press = false;
+	float roll_timer = 0.0f;
+	float roll_time = 0.5f;
+	float roll_on = false;
 
 	//던지기
 	bool throw_press = false;
+
 
 	//공 던지는 타이머
 	bool throw_start = false;
@@ -95,6 +99,8 @@ public:
 	float silver_angle = 0.0f;
 
 	float local_anim_time = 0.0f;
+
+	Channel* thisChannel;
 
 	
 

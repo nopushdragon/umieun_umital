@@ -94,6 +94,11 @@ void Resource_Init() {
     soundManager.LoadSound("silverwolf0", "sound/silver wolf/silverwolf0.wav", false, false);
     soundManager.LoadSound("silverwolf1", "sound/silver wolf/silverwolf1.wav", false, false);
     soundManager.LoadSound("silverwolf2", "sound/silver wolf/silverwolf2.wav", false, false);
+    soundManager.LoadSound("attack", "sound/silver wolf/attack.mp3", false, false);
+    soundManager.LoadSound("roll", "sound/silver wolf/dash.mp3", false, false);
+    soundManager.LoadSound("walk", "sound/silver wolf/walk.wav", false, false);
+    soundManager.LoadSound("run", "sound/silver wolf/run.wav", false, false);
+    soundManager.LoadSound("game_over", "sound/silver wolf/game_over.mp3", false, false);
     soundManager.LoadSound("00", "sound/mei/mei0.ogg", true, false);
     soundManager.LoadSound("01", "sound/mei/mei1.ogg", true, false);
     soundManager.LoadSound("02", "sound/mei/mei2.ogg", true, false);
@@ -106,6 +111,10 @@ void Resource_Init() {
     soundManager.LoadSound("30", "sound/press/press0.wav", true, false);
     soundManager.LoadSound("31", "sound/press/press1.wav", true, false);
     soundManager.LoadSound("32", "sound/press/press2.wav", true, false);
+    soundManager.LoadSound("catch", "sound/ball/catch.mp3", true, false);
+    soundManager.LoadSound("throw", "sound/ball/throw.mp3", true, false);
+    soundManager.LoadSound("cry", "sound/pokemon/drifloon.mp3", true, false);
+ 
 
 
 

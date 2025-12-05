@@ -177,6 +177,7 @@ void game_mode::silverwolf_chunk_collision() {
                     t.is_break = true;
                     b.end_pos = true;
                     playerChannel = soundManager.Play("silverwolf" + to_string(random_player(mt)), glm::vec3(0.0f, 0.0f, 0.0f), effect_volume);
+					b.thisChannel = soundManager.Play("catch", b.current_pos, effect_volume);
                 }
             }
         }
@@ -241,9 +242,11 @@ void game_mode::trainer_chunk_collision() {
                 silverWolf.old_pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
                 delete trainer;
                 trainers.erase(trainers.begin() + i);
+                playerChannel = soundManager.Play("game_over", silverWolf.pos, effect_volume);
             }
             else {
                 trainer->die_change = true;
+                playerChannel = soundManager.Play("attack", silverWolf.pos, effect_volume);
             }
         }
     }

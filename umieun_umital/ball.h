@@ -3,6 +3,7 @@
 #include "static_model.h"
 #include "resource.h"
 #include "collision.h"
+#include "sound_manager.h"
 
 class Ball
 {
@@ -35,6 +36,8 @@ public:
 	bool is_nearby = false;
 
 	float t = 0;
+
+	Channel* thisChannel = nullptr;
 
 	Ball(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2,bool maze);
 

@@ -153,6 +153,7 @@ Trainer::~Trainer()
 		currentState->Exit(this);
 		delete currentState;
 	}
+	thisChannel = nullptr;
 }
 
 

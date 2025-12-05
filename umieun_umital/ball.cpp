@@ -9,9 +9,6 @@ Ball::Ball(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2,bool maze) {
 	this->p2 = p2;
 
 	this->maze = maze;
-
-
-
 }
 
 void Ball::Init() {
@@ -30,6 +27,8 @@ void Ball::Update(float deltatime) {
 			end_pos = true;
 		}
 		angle += 1.0f;
+
+		soundManager.UpdateChannelPosition(this->thisChannel, this->current_pos,glm::vec3(0.0f));
 
 		//cout << "ball p0: " <<p0.x << ", " << p0.y << ", " << p0.z << endl;
 		//cout << "ball p1: " << p1.x << ", " << p1.y << ", " << p1.z << endl;
