@@ -1,13 +1,13 @@
-#version 330 core
+ï»¿#version 330 core
 
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
 out vec4 FragColor;
 
-uniform sampler2D texture_diffuse1; // <-- fbx¿ë ÅØ½ºÃ³
-uniform vec3 materialColorDefault; // <-- ¾ë mtl
-uniform bool bUseTexture;          // <-- ÅØ½ºÃÄ ÇÒ°ÇÁö mtlÇÒ°ÇÁö
+uniform sampler2D texture_diffuse1;
+uniform vec3 materialColorDefault;
+uniform bool bUseTexture;
 
 uniform vec3 lightPos;
 uniform vec3 lightColor;
@@ -19,35 +19,45 @@ uniform int shininess;
 
 void main()
 {
-    // ÅØ½ºÃ³¿¡¼­ Diffuse »ö»ó »ùÇÃ¸µ 
     vec3 materialDiffuse;
     if (bUseTexture) {
-        // ÅØ½ºÃ³¸¦ »ç¿ëÇÏµµ·Ï ÇÃ·¡±×°¡ ¼³Á¤µÈ °æ¿ì
         materialDiffuse = texture(texture_diffuse1, TexCoords).rgb;
     }
     else {
-        // ÅØ½ºÃ³°¡ ¾ø´Â °æ¿ì, C++¿¡¼­ Àü´ÞÇÑ ±âº» »ö»ó(Kd)À» »ç¿ë
         materialDiffuse = materialColorDefault;
     }
 
-    // 1. ÁÖº¯ Á¶¸í (Ambient)
-    vec3 ambient = ambientStrength * lightColor * materialDiffuse;
-
-    // 2. È®»ê Á¶¸í (Diffuse)
-    vec3 normalVector = normalize(Normal);
+    // âœ… ë²•ì„  ê¸¸ì´ ì²´í¬ ë° ì•ˆì „ ì •ê·œí™”
+    vec3 norm = Normal;
+    float normLength = length(norm);
+    if (normLength > 0.0001) {
+        norm = norm / normLength;
+    } else {
+        norm = vec3(0.0, 1.0, 0.0);  // ê¸°ë³¸ê°’
+    }
+    
     vec3 lightDir = normalize(lightPos - FragPos);
-    float diffuseFactor = max(dot(normalVector, lightDir), 0.0);
+    
+    // Ambient
+    vec3 ambient = ambientStrength * lightColor * materialDiffuse;
+    
+    // Diffuse
+    float NdotL = dot(norm, lightDir);
+    float diffuseFactor = max(NdotL, 0.0);
     vec3 diffuse = diffuseFactor * lightColor * materialDiffuse;
-
-    // 3. °Å¿ï ¹Ý»ç Á¶¸í (Specular)
+    
+    // Specular
     vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, normalVector);
-    float specularFactor = max(dot(viewDir, reflectDir), 0.0);
-    specularFactor = pow(specularFactor, shininess);
-    vec3 specular = specularFactor * lightColor * materialSpecular;
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), float(shininess));
+    
+    if (isnan(spec) || isinf(spec)) {
+        spec = 0.0;
+    }
+    
+    vec3 specular = spec * lightColor * (materialSpecular * 0.05);
 
-    // 4. ÃÖÁ¾ »ö»ó ÇÕ»ê
+    // ìµœì¢… ê²°ê³¼
     vec3 result = ambient + diffuse + specular;
-
     FragColor = vec4(result, 1.0);
 }

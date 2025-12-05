@@ -13,9 +13,11 @@ out vec3 FragPos;
 
 void main()
 {
-    // 정적 모델은 뼈대 변환 없음
     gl_Position = uProj * uView * uModel * vec4(aPos, 1.0);
     FragPos = vec3(uModel * vec4(aPos, 1.0));
-    Normal = mat3(transpose(inverse(uModel))) * aNormal; 
+    
+    // 법선을 월드 공간으로 변환하고 정규화
+    Normal = normalize(mat3(transpose(inverse(uModel))) * aNormal);
+    
     TexCoords = aTexCoords;
 }
