@@ -54,6 +54,8 @@ private:
 
 	Skybox* skybox = nullptr;
 
+	void Fog_Update();
+
 	// --- 내부 헬퍼 함수 (셰이더 로딩용) ---
 	char* filetobuf(const char* file);
 	void loadShader(const char* vertPath, const char* fragPath, GLuint& shaderID);

@@ -100,6 +100,8 @@ void game_mode::Update(float deltaTime) {
     else {
         silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
         gameCamera.Update(deltaTime, silverWolf.pos);
+        glFogf(GL_FOG_START, gameCamera.camPos.z + 5.0f); // <5>
+        glFogf(GL_FOG_END, gameCamera.camPos.z+8.0f); // <6>
         //카메라 고정
         if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
@@ -370,9 +372,9 @@ void game_mode::Update_Trainer_Spawn() {
 
 // 3. 그리기 (기존 drawScene 함수 내용)
 void game_mode::Draw() {
-
+    Fog_Update();
     lightPos = silverWolf.pos + glm::vec3(0.0f, 200.0f, 0.0f);
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // 뷰, 프로젝션 행렬 계산
@@ -498,6 +500,7 @@ void game_mode::Draw() {
     }
 
     //ui 그리기
+
     drawMiniMap(WINDOW_WIDTH, WINDOW_HEIGHT);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -533,8 +536,40 @@ void game_mode::Draw() {
     glEnable(GL_DEPTH_TEST);
 }
 
+void game_mode::Fog_Update() {
+    // 뷰, 프로젝션 행렬 계산
+    glm::mat4 view = glm::lookAt(gameCamera.camPos, gameCamera.camTarget, gameCamera.camUp);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
+
+    // static 모델 그리기
+    glUseProgram(shaderProgramStatic);
+	setCommonUniforms(shaderProgramStatic, view, proj);
+    GLint fogColorLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogColor");
+    GLint fogStartLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogStart");
+    GLint fogEndLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogEnd");
+    GLint fogboolLocStatic = glGetUniformLocation(shaderProgramStatic, "fogEnabled");
+    glUniform3f(fogColorLocStatic, 0.5f, 0.5f, 0.5f);
+    glUniform1f(fogStartLocStatic, 20.0f);
+    glUniform1f(fogEndLocStatic, 25.0f);
+    glUniform1f(fogboolLocStatic,true);
+
+    glUseProgram(shaderProgramAnimated);
+    setCommonUniforms(shaderProgramAnimated, view, proj);
+    GLint fogColorLocAnimated = glGetUniformLocation(shaderProgramAnimated, "u_FogColor");
+    GLint fogStartLocAnimated = glGetUniformLocation(shaderProgramAnimated, "u_FogStart");
+    GLint fogEndLocAnimated = glGetUniformLocation(shaderProgramAnimated, "u_FogEnd");
+    GLint fogboolLocAnimated = glGetUniformLocation(shaderProgramAnimated, "fogEnabled");
+    glUniform3f(fogColorLocAnimated, 0.5f, 0.5f, 0.5f);
+    glUniform1f(fogStartLocAnimated, 20.0f);
+    glUniform1f(fogEndLocAnimated, 25.0f);
+    glUniform1f(fogboolLocAnimated, true);
+
+}
+
 void game_mode::drawMiniMap(int w, int h)
 {
+
+
     // 미니맵 뷰포트 설정 (우측 상단)
     glViewport(0, h * 5 / 6, w / 6, h / 6);
 
@@ -557,7 +592,8 @@ void game_mode::drawMiniMap(int w, int h)
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 0.0f, -1.0f)
     );
-
+    GLint fogboolLocStatic = glGetUniformLocation(shaderProgramAnimated, "fogEnabled");
+    glUniform1f(fogboolLocStatic, false);
     // 미니맵용 직교 투영 행렬
     glm::mat4 proj = glm::ortho(-maxrange, maxrange, -maxrange, maxrange, 0.1f, maxrange * 4.0f);
 
@@ -565,6 +601,7 @@ void game_mode::drawMiniMap(int w, int h)
     glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uView"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uProj"), 1, GL_FALSE, glm::value_ptr(proj));
     glUniform3fv(glGetUniformLocation(shaderProgramStatic, "viewPos"), 1, glm::value_ptr(glm::vec3(0.0f, maxrange, 0.0f)));
+
 
     // 조명을 완전히 끄고 원래 색상만 표시
     glUniform3fv(glGetUniformLocation(shaderProgramStatic, "lightPos"), 1, glm::value_ptr(glm::vec3(0.0f, maxrange * 3.0f, 0.0f)));

@@ -49,13 +49,20 @@ public:
         }
 #endif
 
+
+
         glewExperimental = GL_TRUE;
         if (glewInit() != GLEW_OK) {
             std::cerr << "GLEW Init Failed!" << std::endl;
             exit(-1);
         }
+        GLfloat fogColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+        glEnable(GL_FOG); // <7>
+        glFogi(GL_FOG_MODE, GL_EXP); // <1>
+        glFogfv(GL_FOG_COLOR, fogColor); // <2>
+        glFogf(GL_FOG_DENSITY, 0.3f); // <3>
+        glHint(GL_FOG_HINT, GL_NICEST); // <4>
 
-        // 콜백 함수 등록 (정적 함수 사용)
         glutDisplayFunc(RenderWrapper);
         glutReshapeFunc(ReshapeWrapper);
         glutTimerFunc(16, TimerWrapper, 0); // 약 60fps

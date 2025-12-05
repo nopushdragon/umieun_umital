@@ -173,7 +173,8 @@ void title_mode::Update(float deltaTime) {
 
 // 3. 그리기 (기존 drawScene 함수 내용)
 void title_mode::Draw() {
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    Fog_Update();
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // 뷰, 프로젝션 행렬 계산
@@ -242,6 +243,31 @@ void title_mode::Draw() {
     glEnable(GL_DEPTH_TEST);
 }
 
+void title_mode::Fog_Update(){
+    // 뷰, 프로젝션 행렬 계산
+    glm::mat4 view = glm::lookAt(gameCamera.camPos, gameCamera.camTarget, gameCamera.camUp);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
+
+    // static 모델 그리기
+    glUseProgram(shaderProgramStatic);
+    setCommonUniforms(shaderProgramStatic, view, proj);
+    GLint fogColorLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogColor");
+    GLint fogStartLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogStart");
+    GLint fogEndLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogEnd");
+    glUniform3f(fogColorLocStatic, 0.5f, 0.5f, 0.5f);
+    glUniform1f(fogStartLocStatic, 20.0f);
+    glUniform1f(fogEndLocStatic, 25.0f);
+
+    glUseProgram(shaderProgramAnimated);
+    setCommonUniforms(shaderProgramAnimated, view, proj);
+    GLint fogColorLocAnimated = glGetUniformLocation(shaderProgramAnimated, "u_FogColor");
+    GLint fogStartLocAnimated = glGetUniformLocation(shaderProgramAnimated, "u_FogStart");
+    GLint fogEndLocAnimated = glGetUniformLocation(shaderProgramAnimated, "u_FogEnd");
+    glUniform3f(fogColorLocAnimated, 0.5f, 0.5f, 0.5f);
+    glUniform1f(fogStartLocAnimated, 20.0f);
+    glUniform1f(fogEndLocAnimated, 25.0f);
+}
+
 void title_mode::Keyboard(unsigned char key, int x, int y) {
     switch (key)
     {
@@ -255,6 +281,7 @@ void title_mode::Keyboard(unsigned char key, int x, int y) {
         break;
 	case 27:    // esc
         if (!gameCamera.moving && gameCamera.now_pos_idx == 0) {
+
             exit(0);
         }
         else if (!gameCamera.moving && gameCamera.now_pos_idx == 1) {
@@ -287,17 +314,19 @@ void title_mode::Mouse(int button, int state, int x, int y) {
         if (gameCamera.now_pos_idx == 1) {
             if (draw_set_maze) {
                 if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
-
+                    playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
                     maze_x = 5;
                     maze_y = 5;
                     loading_start = true;
                 }
                 else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
+                    playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
                     maze_x = 15;
                     maze_y = 15;
                     loading_start = true;
                 }
                 else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
+                    playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
                     maze_x = 25;
                     maze_y = 25;
                     loading_start = true;
