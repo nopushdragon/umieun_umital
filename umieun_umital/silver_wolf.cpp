@@ -201,7 +201,9 @@ void silver_wolf::Rock_path_draw(GLuint shaderID, const glm::mat4& view, const g
 	glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), 0); // 텍스처 비활성화 [cite: 2, 5]
 	glUniform3fv(glGetUniformLocation(shaderID, "materialColorDefault"), 1, glm::value_ptr(color)); // 기본 색상으로 디버그 색상 주입 [cite: 2, 7]
 	glUniform1f(glGetUniformLocation(shaderID, "ambientStrength"), 1.0f); // 앰비언트 최대화 (조명 색상 * 기본 색상) [cite: 3, 7]
+	glUniform1f(glGetUniformLocation(shaderID, "fogEnabled"), false);
 	glUniform1i(glGetUniformLocation(shaderID, "shininess"), 1); // pow(..., 1)이 되어 specular가 조명 강도에만 영향을 받게 하거나, 
+
 	// 0으로 설정하여 아예 거울 반사를 없앨 수 있습니다.
 	// 여기서는 1로 두어 스페큘러 항을 최소화하고, materialSpecular를 0으로 설정합니다. [cite: 3, 11]
 	glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(glm::vec3(0.0f))); // 스페큘러 기여도 0으로 설정 [cite: 3, 12]
@@ -245,6 +247,7 @@ void silver_wolf::Rock_path_draw(GLuint shaderID, const glm::mat4& view, const g
 	glUniform3fv(glGetUniformLocation(shaderID, "materialColorDefault"), 1, glm::value_ptr(originalMaterialColorDefault));
 	glUniform1f(glGetUniformLocation(shaderID, "ambientStrength"), originalAmbientStrength);
 	glUniform1i(glGetUniformLocation(shaderID, "shininess"), originalShininess);
+	//glUniform1f(glGetUniformLocation(shaderID, "fogEnabled"), true);
 	glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(originalMaterialSpecular));
 
 }

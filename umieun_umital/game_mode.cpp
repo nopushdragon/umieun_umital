@@ -100,8 +100,6 @@ void game_mode::Update(float deltaTime) {
     else {
         silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
         gameCamera.Update(deltaTime, silverWolf.pos);
-        glFogf(GL_FOG_START, gameCamera.camPos.z + 5.0f); // <5>
-        glFogf(GL_FOG_END, gameCamera.camPos.z+8.0f); // <6>
         //카메라 고정
         if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
@@ -449,6 +447,15 @@ void game_mode::Draw() {
         trainers[i]->Draw(shaderProgramAnimated, deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     }
 
+    glUseProgram(shaderProgramStatic);
+    setCommonUniforms(shaderProgramStatic, view, proj);
+    GLint fogboolLocStatic = glGetUniformLocation(shaderProgramStatic, "fogEnabled");
+    glUniform1f(fogboolLocStatic, false);
+    glUseProgram(shaderProgramAnimated);
+    setCommonUniforms(shaderProgramAnimated, view, proj);
+    GLint fogboolLocAnimated = glGetUniformLocation(shaderProgramAnimated, "fogEnabled");
+    glUniform1f(fogboolLocAnimated, false);
+
     // --- 3. 스카이박스 ---
     glUseProgram(shaderProgramSkybox);
     setCommonUniforms(shaderProgramSkybox, view, proj);
@@ -592,8 +599,7 @@ void game_mode::drawMiniMap(int w, int h)
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 0.0f, -1.0f)
     );
-    GLint fogboolLocStatic = glGetUniformLocation(shaderProgramAnimated, "fogEnabled");
-    glUniform1f(fogboolLocStatic, false);
+ 
     // 미니맵용 직교 투영 행렬
     glm::mat4 proj = glm::ortho(-maxrange, maxrange, -maxrange, maxrange, 0.1f, maxrange * 4.0f);
 

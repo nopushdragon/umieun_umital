@@ -22,7 +22,7 @@ uniform vec3 u_FogColor;
 uniform float u_FogStart;
 uniform float u_FogEnd;
 
-uniform bool fogEnabled;
+uniform float fogEnabled;
 void main()
 {
     vec3 materialDiffuse;
@@ -73,7 +73,7 @@ void main()
     // 최종 밝기도 제한 (추가 안전장치)
     result = min(result, vec3(1.0));
 
-    if (fogEnabled) {
+    if (fogEnabled > 0.5) {
         float dist = distance(viewPos, FragPos);
         float fogFactor = (u_FogEnd - dist) / (u_FogEnd - u_FogStart);
         fogFactor = clamp(fogFactor, 0.0, 1.0);

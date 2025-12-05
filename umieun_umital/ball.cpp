@@ -43,8 +43,8 @@ void Ball::Update(float deltatime) {
 
 void Ball::Draw(GLuint shaderID) {
 	
-
 	glUniformMatrix4fv(glGetUniformLocation(shaderID, "uModel"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
 	for (auto& mesh : modelPtr->meshes)
 	{
 		mesh.Draw(shaderID);
