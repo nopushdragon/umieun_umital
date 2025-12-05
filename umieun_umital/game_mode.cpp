@@ -23,7 +23,7 @@ uniform_int_distribution<int> random_trainer(0, 2);
 game_mode::game_mode() {
 
 
-    lightPos = glm::vec3(0.0f, 2000.0f, 0.0f);
+    lightPos = glm::vec3(0.0f, 200.0f, 0.0f);
     lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     materialSpecular = glm::vec3(0.0f, 0.0f, 0.0f);
     ambientStrength = 0.3f;
@@ -31,8 +31,9 @@ game_mode::game_mode() {
     bgmChannel->stop();
     bgmChannel = soundManager.Play("main" + to_string(random_bgm(mt)), glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
 
+    camera_fixed = true;
     game_start = true;
-    game_clear = false;
+    fade = false;
 }
 
 game_mode::~game_mode() {
@@ -74,8 +75,11 @@ void game_mode::Init() {
 float deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
-    if (game_clear) {
-
+    if (fade) {
+		black_background->color.w += 1.0f * (deltaTime / 2.0f);
+        if (black_background->color.w >= 1.0f) {
+            g_Framework->sceneManager->Change_Mode(new title_mode());
+        }
     }
     else {
         silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
@@ -177,7 +181,7 @@ void game_mode::silverwolf_chunk_collision() {
                     t.is_break = true;
                     b.end_pos = true;
                     playerChannel = soundManager.Play("silverwolf" + to_string(random_player(mt)), glm::vec3(0.0f, 0.0f, 0.0f), effect_volume);
-					b.thisChannel = soundManager.Play("catch", b.current_pos, effect_volume);
+                    b.thisChannel = soundManager.Play("catch", b.current_pos, effect_volume);
                 }
             }
         }
@@ -340,6 +344,8 @@ void game_mode::Update_Trainer_Spawn() {
 
 // 3. 그리기 (기존 drawScene 함수 내용)
 void game_mode::Draw() {
+
+    lightPos = silverWolf.pos + glm::vec3(0.0f, 200.0f, 0.0f);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -458,7 +464,6 @@ void game_mode::Draw() {
 
         //트레이너
         for (int i = 0;i < trainers.size();++i) {
-            cout << "트레이너 " << i << " is_in_chunk: " << trainers[i]->is_in_chunk << endl;
             if (!trainers[i]->is_in_chunk) continue;
             trainers[i]->DebugOBB(shaderProgramAnimated, view, proj, glm::vec3(0.0f, 0.0f, 1.0f)); // 파란색
         }
@@ -472,8 +477,14 @@ void game_mode::Draw() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glm::mat4 uiProj = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT);
+
+	if (game_start || fade) black_background->Draw(shaderProgramImage, uiProj);
+    if(game_start) mission->Draw(shaderProgramImage, uiProj);
+
     string now_time = "Time: " + to_string(record_time);
     textUI.Draw(now_time, 0, (WINDOW_HEIGHT * 5 / 6) - 100.0f, 0.6f, glm::vec3(0.7f, 0.1f, 0.2f));
+
+
 
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
@@ -648,13 +659,18 @@ void game_mode::drawMiniMapCube(GLuint shaderID, const glm::mat4& modelMatrix) {
 
 void game_mode::Keyboard(unsigned char key, int x, int y) {
 
+    if (key == 13) { // Enter key
+        if (game_start) {
+            game_start = false;
+            camera_fixed = false;
+        }
+    }
+	if (game_start || fade) return;
+    
     silverWolf.Keyboard(key, x, y);
 
     switch (key)
     {
-    case 13: // Enter key
-        if (game_start) game_start = false;
-        break;
     case 9:
         collision_on = !collision_on;
         break;
@@ -671,6 +687,8 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
 
 }
 void game_mode::Keyupboard(unsigned char key, int x, int y) {
+
+    if (game_start || fade) return;
 
     silverWolf.Keyupboard(key, x, y);
 
@@ -693,7 +711,7 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
             }
         }
 
-        if (chest.open_chest(kill_count, target_count)) {
+        if (chest.open_chest(kill_count, 0)) {
             if (account.scores[level] <= 1.0f) {
                 account.update_score(level, record_time);
             }
@@ -703,7 +721,9 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
                 }
             }
 
-            g_Framework->sceneManager->Change_Mode(new title_mode());
+            fade = true;
+			camera_fixed = true;
+			black_background->color.w = 0.0f;
         }
         break;
     }
@@ -749,6 +769,10 @@ void game_mode::Finish() {
         if (silverWolf.silverWolfModel[i])
             delete silverWolf.silverWolfModel[i];
     }
+
+	//ui 텍스트 리소스 정리
+    delete mission;
+	delete black_background;
 
     // 셰이더 프로그램 삭제
     glDeleteProgram(shaderProgramStatic);
@@ -814,6 +838,12 @@ void game_mode::loadImages() {
 
     glm::vec2 size1 = glm::vec2((float)winWidth, (float)winHeight);
     glm::vec2 pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
+
+    mission = new Image(LoadTexture("scene_image/mission.png"), pos1, size1);
+	mission->color.w = 1.0f;
+
+	black_background = new Image(LoadTexture("scene_image/black_background.png"), pos1, size1);
+	black_background->color.w = 0.5f;
 
     stbi_set_flip_vertically_on_load(false);
 }

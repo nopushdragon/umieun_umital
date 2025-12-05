@@ -62,6 +62,10 @@ private:
 
     // UI 및 텍스트 관련
     Text textUI;
+	Image* mission = nullptr;
+    bool game_start = false;
+    Image* black_background = nullptr;
+    bool fade = false;
 
     // 기록
     float record_time;
@@ -97,10 +101,6 @@ public:
 
     void set_trainer_in_maze(Trainer& t);
 
-    void start_scene();
-	bool game_start = false;
-    void clear_scene();
-	bool game_clear = false;
 
 	void OnPause() override;
 	void OnResume() override;
