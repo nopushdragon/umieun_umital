@@ -473,12 +473,7 @@ void State_Walk::Enter(silver_wolf* wolf) {
 }
 void State_Walk::Update(silver_wolf* wolf, float detlatime) {
 
-	bool isplaying;
-	wolf->thisChannel->isPlaying(&isplaying);
-	if (!isplaying) {
-
-		wolf->thisChannel = soundManager.Play("walk", wolf->pos, effect_volume);
-	}
+	
 
 	glm::vec3 v(0.0f);
 
@@ -519,10 +514,19 @@ void State_Walk::Update(silver_wolf* wolf, float detlatime) {
 }
 void State_Walk::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	int press_num = wolf->w_press + wolf->a_press + wolf->s_press + wolf->d_press;
-	if(press_num>2||(wolf->w_press&& wolf->s_press)|| (wolf->a_press && wolf->d_press))
+	if (press_num > 2 || (wolf->w_press && wolf->s_press) || (wolf->a_press && wolf->d_press)) {
+		wolf->pos = wolf->old_pos;
 		wolf->silverWolfModel[0]->Draw(shaderID, time);
-	else
+	}
+	else {
 		wolf->silverWolfModel[1]->Draw(shaderID, time);
+		bool isplaying;
+		wolf->thisChannel->isPlaying(&isplaying);
+		if (!isplaying) {
+
+			wolf->thisChannel = soundManager.Play("walk", wolf->pos, effect_volume);
+		}
+	}
 }
 void State_Walk::Exit(silver_wolf* wolf) {
 	wolf->thisChannel->stop();
@@ -540,12 +544,7 @@ void State_Run::Enter(silver_wolf* wolf) {
 }
 void State_Run::Update(silver_wolf* wolf, float detlatime) {
 
-	bool isplaying;
-	wolf->thisChannel->isPlaying(&isplaying);
-	if (!isplaying) {
-
-		wolf->thisChannel = soundManager.Play("run", wolf->pos, effect_volume);
-	}
+	
 
 	wolf->run_timer += detlatime;
 
@@ -592,10 +591,19 @@ void State_Run::Update(silver_wolf* wolf, float detlatime) {
 }
 void State_Run::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	int press_num = wolf->w_press + wolf->a_press + wolf->s_press + wolf->d_press;
-	if (press_num > 2 || (wolf->w_press && wolf->s_press) || (wolf->a_press && wolf->d_press))
+	if (press_num > 2 || (wolf->w_press && wolf->s_press) || (wolf->a_press && wolf->d_press)) {
+		wolf->pos = wolf->old_pos;
 		wolf->silverWolfModel[0]->Draw(shaderID, time);
-	else
+	}
+	else {
 		wolf->silverWolfModel[2]->Draw(shaderID, time);
+		bool isplaying;
+		wolf->thisChannel->isPlaying(&isplaying);
+		if (!isplaying) {
+
+			wolf->thisChannel = soundManager.Play("run", wolf->pos, effect_volume);
+		}
+	}
 }
 void State_Run::Exit(silver_wolf* wolf) {
 	wolf->thisChannel->stop();

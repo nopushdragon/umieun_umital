@@ -68,6 +68,7 @@ void game_mode::Init() {
     glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
     gameCamera.Init(targetPos);
 
+    playerChannel = soundManager.Play("quest", silverWolf.pos, effect_volume);
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -117,8 +118,9 @@ void game_mode::Update(float deltaTime) {
         dir.y = 0.0f;
         glm::vec3 forward = glm::normalize(dir);
         soundManager.SetListenerAttributes(silverWolf.pos + glm::vec3(0.0f, 2.0f, 0.0f), forward, gameCamera.camUp, glm::vec3(0.0f, 0.0f, 0.0f));
-        soundManager.Update();
+       
     }
+    soundManager.Update();
     deltatime = deltaTime;
 }
 
@@ -661,6 +663,8 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
 
     if (key == 13) { // Enter key
         if (game_start) {
+            playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
+
             game_start = false;
             camera_fixed = false;
         }
@@ -706,6 +710,7 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
     case 'E':
         for (int i = 0; i < balls.size(); i++) {
             if (balls[i].is_nearby) {
+				playerChannel = soundManager.Play("get", silverWolf.pos, effect_volume);
                 balls.erase(balls.begin() + i);
                 break;
             }
@@ -721,6 +726,7 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
                 }
             }
 
+            playerChannel = soundManager.Play("open", silverWolf.pos, effect_volume);
             fade = true;
 			camera_fixed = true;
 			black_background->color.w = 0.0f;
@@ -731,6 +737,14 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
 
 void game_mode::SpecialKeyboard(int key, int x, int y) {
     silverWolf.SpecialKeyboard(key, x, y);
+    switch (key)
+    {
+    case GLUT_KEY_F1:
+        if(silverWolf.runSpeed<6.0f)
+		silverWolf.runSpeed = 20.0f;
+        else silverWolf.runSpeed = 3.0f;
+
+    }
 }
 
 void game_mode::SpecialUpKeyboard(int key, int x, int y) {
@@ -738,7 +752,10 @@ void game_mode::SpecialUpKeyboard(int key, int x, int y) {
 }
 
 void game_mode::Mouse(int button, int state, int x, int y) {
-    gameCamera.Mouse(button, state, x, y);
+    if (silverWolf.state != "roll" && silverWolf.state != "jump" && silverWolf.state != "jump_run" && silverWolf.state != "jump_idle") {
+        gameCamera.Mouse(button, state, x, y);
+    }
+    else gameCamera.right_mouth = false;
     silverWolf.Mouse(button, state, x, y);
 }
 

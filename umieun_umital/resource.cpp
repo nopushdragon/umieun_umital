@@ -114,6 +114,11 @@ void Resource_Init() {
     soundManager.LoadSound("catch", "sound/ball/catch.mp3", true, false);
     soundManager.LoadSound("throw", "sound/ball/throw.mp3", true, false);
     soundManager.LoadSound("cry", "sound/pokemon/drifloon.mp3", true, false);
+    soundManager.LoadSound("click", "sound/ui/click.mp3", false, false);
+    soundManager.LoadSound("clear", "sound/ui/clear.mp3", false, false);
+    soundManager.LoadSound("quest", "sound/ui/quest.mp3", false, false);
+    soundManager.LoadSound("get", "sound/ui/get.mp3", false, false);
+    soundManager.LoadSound("open", "sound/ui/open.mp3", false, false);
  
 
 

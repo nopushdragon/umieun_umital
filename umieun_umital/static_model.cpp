@@ -29,36 +29,38 @@ void StaticMesh::setupMesh() {
 }
 
 void StaticMesh::Draw(GLuint shaderID) const {
-    const Texture& meshTexture = textures[0];
+    // 1. 텍스처가 있는지 확인하고 참조 생성
+    bool hasTexture = !textures.empty();
 
-    if (!textures.empty() && meshTexture.id != 0) {
+    // 안전하게 텍스처 정보 가져오기 (없으면 기본값 사용)
+    GLuint textureID = (hasTexture) ? textures[0].id : 0;
+    glm::vec3 diffuseColor = (hasTexture) ? textures[0].diffuseColor : glm::vec3(0.5f, 0.5f, 0.5f);
+    glm::vec3 specularColor = (hasTexture) ? textures[0].specularColor : glm::vec3(0.0f, 0.0f, 0.0f);
+    int shininessVal = (hasTexture) ? textures[0].shininess : 32;
+
+    if (textureID != 0) {
+        // 텍스처 사용 모드
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, meshTexture.id);
+        glBindTexture(GL_TEXTURE_2D, textureID);
         glUniform1i(glGetUniformLocation(shaderID, "texture_diffuse1"), 0);
         glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), true);
     }
     else {
+        // 색상 사용 모드
         glUniform1i(glGetUniformLocation(shaderID, "bUseTexture"), false);
-        glm::vec3 diffuseColorToUse = meshTexture.diffuseColor;
 
-        if (glm::length(diffuseColorToUse) < 0.1f) {
-            diffuseColorToUse = glm::vec3(0.5f, 0.5f, 0.5f);
+        // 너무 어두운 색상 보정 (기존 로직 유지)
+        if (glm::length(diffuseColor) < 0.2f &&glm::length(diffuseColor) > 0.01f) {
+            diffuseColor = glm::vec3(0.5f, 0.5f, 0.5f);
         }
 
-        glUniform3fv(glGetUniformLocation(shaderID, "materialColorDefault"), 1, glm::value_ptr(diffuseColorToUse));
+
+        glUniform3fv(glGetUniformLocation(shaderID, "materialColorDefault"), 1, glm::value_ptr(diffuseColor));
     }
 
-    // textures가 비어있어도 무조건 설정 (전역값 덮어쓰기)
-    if (!textures.empty()) {
-        glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(meshTexture.specularColor));
-        glUniform1i(glGetUniformLocation(shaderID, "shininess"), meshTexture.shininess);
-    }
-    else {
-        // textures가 비어있으면 specular를 0으로 강제 설정
-        glm::vec3 zeroSpecular(0.0f, 0.0f, 0.0f);
-        glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(zeroSpecular));
-        glUniform1i(glGetUniformLocation(shaderID, "shininess"), 1);
-    }
+    // Specular 설정
+    glUniform3fv(glGetUniformLocation(shaderID, "materialSpecular"), 1, glm::value_ptr(specularColor));
+    glUniform1i(glGetUniformLocation(shaderID, "shininess"), shininessVal);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -155,30 +157,54 @@ StaticMesh StaticModel::processMesh(aiMesh* mesh, const aiScene* scene)
         Texture matInfo;
 
         // Diffuse Color (Kd) 추출
-        aiColor4D color_d(1.f, 1.f, 1.f, 1.f);
-        if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &color_d)) {
-            matInfo.diffuseColor = glm::vec3(color_d.r, color_d.g, color_d.b);
+        //aiColor4D color_d(1.f, 1.f, 1.f, 1.f);
+        //if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &color_d)) {
+        //    matInfo.diffuseColor = glm::vec3(color_d.r, color_d.g, color_d.b);
 
-            // ✅ 모든 road의 밝기를 0.18로 균일하게 강제 (MTL 기본값과 동일)
-            if (this->directory.find("road") != std::string::npos) {
-                matInfo.diffuseColor = glm::vec3(0.1808f, 0.1808f, 0.1808f);
-            }
-        }
+        //    // ✅ 모든 road의 밝기를 0.18로 균일하게 강제 (MTL 기본값과 동일)
+        //    if (this->directory.find("road") != std::string::npos) {
+        //        matInfo.diffuseColor = glm::vec3(0.1808f, 0.1808f, 0.1808f);
+        //    }
+        //}
 
-        // Specular Color (Ks) 추출
-        aiColor4D color_s(0.f, 0.f, 0.f, 1.f);
-        if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &color_s)) {
-            matInfo.specularColor = glm::vec3(color_s.r, color_s.g, color_s.b);
-        }
+        //// Specular Color (Ks) 추출
+        //aiColor4D color_s(0.f, 0.f, 0.f, 1.f);
+        //if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &color_s)) {
+        //    matInfo.specularColor = glm::vec3(color_s.r, color_s.g, color_s.b);
+        //}
 
-        float shininess_val = 1.0f;
-        if (AI_SUCCESS == aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shininess_val)) {
-            matInfo.shininess = (int)shininess_val;
-        }
+        //float shininess_val = 1.0f;
+        //if (AI_SUCCESS == aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shininess_val)) {
+        //    matInfo.shininess = (int)shininess_val;
+        //}
 
-        if (glm::length(matInfo.specularColor) > 1.0f) {
-            matInfo.specularColor *= 0.05f;
-        }
+        //if (glm::length(matInfo.specularColor) > 1.0f) {
+        //    matInfo.specularColor *= 0.05f;
+        //}
+
+        // 1. Diffuse Color 안전하게 가져오기
+        aiColor4D color_d(0.18f, 0.18f, 0.18f, 1.f);
+        aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &color_d); // 실패해도 color_d는 흰색 유지
+
+        // ★ 조건문 없이 무조건 대입 (가장 중요)
+        matInfo.diffuseColor = glm::vec3(color_d.r, color_d.g, color_d.b);
+
+        // road 색상 강제 (기존 로직 유지)
+       /* if (this->directory.find("road") != std::string::npos) {
+            matInfo.diffuseColor = glm::vec3(0.1808f, 0.1808f, 0.1808f);
+        }*/
+
+        // 2. Specular Color 안전하게 가져오기
+        aiColor4D color_s(0.f, 0.f, 0.f, 1.f); // 기본값: 검정
+        aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &color_s);
+        matInfo.specularColor = glm::vec3(color_s.r, color_s.g, color_s.b);
+
+        // 3. Shininess 안전하게 가져오기
+        float shininess_val = 32.0f; // 기본값: 32 (적당한 반사광)
+        aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shininess_val);
+        matInfo.shininess = (int)shininess_val;
+        if (matInfo.shininess == 0) matInfo.shininess = 32; // 0이면 빛반사가 이상해지므로 보정
+
 
         // 텍스처 파일 경로 추출
         aiString str;

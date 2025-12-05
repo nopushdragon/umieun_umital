@@ -8,7 +8,7 @@ Sound_Manager::Sound_Manager()
 void Sound_Manager::Init()
 {
 	FMOD::System_Create(&system);
-	system->init(256, FMOD_INIT_3D_RIGHTHANDED | FMOD_INIT_3D_RIGHTHANDED, 0);
+	system->init(64, FMOD_INIT_3D_RIGHTHANDED | FMOD_INIT_3D_RIGHTHANDED, 0);
 	system->set3DSettings(1.0f, 1.0f, 1.0f);
 }
 

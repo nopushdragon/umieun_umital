@@ -164,6 +164,7 @@ void title_mode::Init() {
 float title_deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void title_mode::Update(float deltaTime) {
+    soundManager.Update();
     silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
     if (gameCamera.moving) gameCamera.title_update(deltaTime, silverWolf.pos, start_pos_idx, end_pos_idx);
 
@@ -246,6 +247,7 @@ void title_mode::Keyboard(unsigned char key, int x, int y) {
     {
 	case 13:    // enter
         if (!gameCamera.moving && gameCamera.now_pos_idx == 0) {
+            playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
             start_pos_idx = 0;
             end_pos_idx = 1;
             gameCamera.moving = true;
@@ -257,11 +259,13 @@ void title_mode::Keyboard(unsigned char key, int x, int y) {
         }
         else if (!gameCamera.moving && gameCamera.now_pos_idx == 1) {
             if (!draw_set_maze) {
+                playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
                 start_pos_idx = 1;
                 end_pos_idx = 0;
                 gameCamera.moving = true;
             }
             else {
+                playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
                 draw_set_maze = false;
             }
         }
@@ -283,6 +287,7 @@ void title_mode::Mouse(int button, int state, int x, int y) {
         if (gameCamera.now_pos_idx == 1) {
             if (draw_set_maze) {
                 if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
+
                     maze_x = 5;
                     maze_y = 5;
                     loading_start = true;
@@ -312,16 +317,28 @@ void title_mode::Mouse(int button, int state, int x, int y) {
         if (gameCamera.now_pos_idx == 1) {
             if (draw_set_maze) {
                 if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
+                    playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
+
+
+
                     if (g_Framework && g_Framework->sceneManager) {
                         g_Framework->sceneManager->Change_Mode(new game_mode());
                     }
                 }
                 else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
+                    playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
+
+
+
                     if (g_Framework && g_Framework->sceneManager) {
                         g_Framework->sceneManager->Change_Mode(new game_mode());
                     }
                 }
                 else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
+                    playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
+
+
+
                     if (g_Framework && g_Framework->sceneManager) {
                         g_Framework->sceneManager->Change_Mode(new game_mode());
                     }
@@ -329,10 +346,18 @@ void title_mode::Mouse(int button, int state, int x, int y) {
             }
             else {
                 if (x >= 30 && x <= 450 && y >= 160 && y <= 240) { //start
+                    playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
+
+
+
                     draw_set_maze = true;
                     main_idx = 0;
                 }
                 else if (x >= 30 && x <= 450 && y >= 360 && y <= 440) { //option
+                    playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
+
+
+
                     g_Framework->sceneManager->Push_Mode(new option_mode());
                 }
                 else if (x >= 30 && x <= 450 && y >= 560 && y <= 640) {  //exit
