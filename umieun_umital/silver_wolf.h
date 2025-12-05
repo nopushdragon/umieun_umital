@@ -42,6 +42,7 @@ public:
 	glm::vec3 p2;
 
 	vector<Ball> ball;
+	int ball_cnt;
 
 	// OBB ¹Î¿ë
 	OBB silverwolf_local_obb;

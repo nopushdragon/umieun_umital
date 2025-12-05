@@ -342,8 +342,11 @@ void silver_wolf::Keyupboard(unsigned char key, int x, int y) {
 
 void silver_wolf::Mouse(int button, int state, int x, int yh) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN&&!throw_press&& camera_right_mouth) {
-		ChangeState(new State_Throw());
-		throw_press = true;
+		if (ball_cnt > 0) {
+			ball_cnt--;
+			ChangeState(new State_Throw());
+			throw_press = true;
+		}
 	}
 
 }
@@ -473,8 +476,6 @@ void State_Walk::Enter(silver_wolf* wolf) {
 }
 void State_Walk::Update(silver_wolf* wolf, float detlatime) {
 
-	
-
 	glm::vec3 v(0.0f);
 
 	if (wolf->w_press) v.z += wolf->walkSpeed * detlatime;
@@ -514,22 +515,13 @@ void State_Walk::Update(silver_wolf* wolf, float detlatime) {
 }
 void State_Walk::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	int press_num = wolf->w_press + wolf->a_press + wolf->s_press + wolf->d_press;
-	if (press_num > 2 || (wolf->w_press && wolf->s_press) || (wolf->a_press && wolf->d_press)) {
-		wolf->pos = wolf->old_pos;
+	if(press_num>2||(wolf->w_press&& wolf->s_press)|| (wolf->a_press && wolf->d_press))
 		wolf->silverWolfModel[0]->Draw(shaderID, time);
-	}
-	else {
+	else
 		wolf->silverWolfModel[1]->Draw(shaderID, time);
-		bool isplaying;
-		wolf->thisChannel->isPlaying(&isplaying);
-		if (!isplaying) {
-
-			wolf->thisChannel = soundManager.Play("walk", wolf->pos, effect_volume);
-		}
-	}
 }
 void State_Walk::Exit(silver_wolf* wolf) {
-	wolf->thisChannel->stop();
+
 }
 
 //달리기 런 run
@@ -543,9 +535,6 @@ void State_Run::Enter(silver_wolf* wolf) {
 	}
 }
 void State_Run::Update(silver_wolf* wolf, float detlatime) {
-
-	
-
 	wolf->run_timer += detlatime;
 
 	glm::vec3 v(0.0f);
@@ -591,22 +580,12 @@ void State_Run::Update(silver_wolf* wolf, float detlatime) {
 }
 void State_Run::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	int press_num = wolf->w_press + wolf->a_press + wolf->s_press + wolf->d_press;
-	if (press_num > 2 || (wolf->w_press && wolf->s_press) || (wolf->a_press && wolf->d_press)) {
-		wolf->pos = wolf->old_pos;
+	if (press_num > 2 || (wolf->w_press && wolf->s_press) || (wolf->a_press && wolf->d_press))
 		wolf->silverWolfModel[0]->Draw(shaderID, time);
-	}
-	else {
+	else
 		wolf->silverWolfModel[2]->Draw(shaderID, time);
-		bool isplaying;
-		wolf->thisChannel->isPlaying(&isplaying);
-		if (!isplaying) {
-
-			wolf->thisChannel = soundManager.Play("run", wolf->pos, effect_volume);
-		}
-	}
 }
 void State_Run::Exit(silver_wolf* wolf) {
-	wolf->thisChannel->stop();
 
 }
 
@@ -630,7 +609,6 @@ void State_Throw::Update(silver_wolf* wolf, float detlatime) {
 	if (wolf->throw_timer >= wolf->throw_time && wolf->throw_press&& !wolf->throw_start) {
 		wolf->ball.emplace_back(Ball(wolf->p0, wolf->p1, wolf->p2, false));
 		wolf->ball.back().Init();
-		wolf->ball.back().thisChannel = soundManager.Play("throw", wolf->ball.back().current_pos,effect_volume);
 		wolf->throw_start = true;
 	}
 
@@ -650,24 +628,10 @@ void State_Roll::Enter(silver_wolf* wolf) {
 		wolf->current_animation_index = 4;
 		wolf->state = "roll";
 		wolf->local_anim_time = 0.0f;
-		
 	}
 }
 void State_Roll::Update(silver_wolf* wolf, float detlatime) {
-	bool isplaying;
-	wolf->thisChannel->isPlaying(&isplaying);
-	if (wolf->roll_timer< wolf->roll_time) {
-		if(!isplaying)
-		wolf->thisChannel = soundManager.Play("run", wolf->pos, effect_volume);
-		wolf->roll_timer += detlatime;
-	}
-	else {
-		if (!isplaying && !wolf->roll_on) {
-			wolf->thisChannel = soundManager.Play("roll", wolf->pos, effect_volume);
-			wolf->roll_on = true;
-		}
 
-	}
 	glm::vec3 v = { 0.0f,0.0f,1.0f };
 	glm::mat4 m(1.0f);
 	m = glm::rotate(m, glm::radians(wolf->angle), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -682,9 +646,6 @@ void State_Roll::Draw(silver_wolf* wolf, GLuint shaderID, float time) {
 	wolf->silverWolfModel[4]->Draw(shaderID, time);
 }
 void State_Roll::Exit(silver_wolf* wolf) {
-	wolf->thisChannel->stop();
-	wolf->roll_timer = 0.0f;
-	wolf->roll_on = false;
 }
 
 //점프 뛰기 jump

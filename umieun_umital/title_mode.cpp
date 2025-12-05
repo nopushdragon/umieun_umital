@@ -305,10 +305,13 @@ void title_mode::Mouse(int button, int state, int x, int y) {
             }
             else {
                 if (x >= 600 && x <= 1200 && y >= 0 && y <= 800) {
-                    uniform_int_distribution<int> rd_state(0, 1);
-                    int click_state = rd_state(mt);
-
-                    if (click_state == 0) silverWolf.Keyboard(' ', x, y);
+                    uniform_int_distribution<int> random_player(0, 2);
+					bool isplaying;
+					playerChannel->isPlaying(&isplaying);
+                    if (!isplaying) {
+                        silverWolf.Keyboard(' ', x, y);
+                        playerChannel = soundManager.Play("silverwolf" + to_string(random_player(mt)), glm::vec3(0.0f, 0.0f, 0.0f), effect_volume);
+                    }
                 }
             }
         }

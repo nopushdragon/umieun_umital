@@ -81,9 +81,9 @@ StaticModel::StaticModel(const std::string& objPath) {
     // 디버깅용 바이너리 파일 삭제 강제
     //std::remove(binPath.c_str());
 
-    //if (LoadFromBinary(binPath)) {
-    //    return; // 성공 시 Assimp 스킵
-    //}
+    if (LoadFromBinary(binPath)) {
+        return; // 성공 시 Assimp 스킵
+    }
 
     // 3. 실패 시 Assimp로 로딩
     Assimp::Importer importer;

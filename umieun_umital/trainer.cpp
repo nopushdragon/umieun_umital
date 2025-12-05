@@ -104,7 +104,7 @@ void Trainer::set_obb2() {
 void Trainer::update_world_obb() {
 	glm::mat4 modelMat = glm::mat4(1.0f);
 	modelMat = glm::translate(modelMat, pos);
-	modelMat = glm::rotate(modelMat, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+	//modelMat = glm::rotate(modelMat, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
 	modelMat = glm::scale(modelMat, glm::vec3(0.005f));
 	glm::mat3 rotation_scale_mat = modelMat;
 	const OBB& new_trainer_local_obb = trainer_local_obb;
