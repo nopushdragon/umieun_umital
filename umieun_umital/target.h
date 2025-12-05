@@ -2,6 +2,7 @@
 #include "headers.h"
 #include "static_model.h"
 #include "resource.h"
+#include "sound_manager.h"
 
 
 struct targetInstance {
@@ -19,6 +20,11 @@ struct targetInstance {
     glm::vec3 origin_pos;
     glm::vec3 goal_pos;
     float move_t = 0.0f;
+
+	float cry_timer = 0.0f;
+	float cry_time = 6.0f;
+
+    FMOD::Channel* thisChannel;
 };
 
 class TARGET
@@ -26,9 +32,10 @@ class TARGET
 private:
 public:
 	vector<targetInstance> targetBlocks;
+   
     void init(int target_cnt);
 
-    void update();
+    void update(float deltaTime);
 
     void update_world_obb();
     

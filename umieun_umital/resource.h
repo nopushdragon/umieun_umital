@@ -2,6 +2,8 @@
 #include "animated_model.h"
 #include "static_model.h"
 #include "sound_manager.h"
+#include "image.h"
+#define silverWolfult_count 103
 
 extern NewModel* s[7];
 
@@ -20,6 +22,7 @@ extern FMOD::Channel* meiChannel;
 extern FMOD::Channel* ArchieChannel;
 extern FMOD::Channel* SerenaChannel;
 extern FMOD::Channel* pressChannel;
+extern Image* silverWolfult[silverWolfult_count];
 extern float bgm_volume;
 extern float effect_volume;
 void Resource_Init();

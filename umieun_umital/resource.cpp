@@ -9,7 +9,7 @@ NewModel* mei_model[3];
 NewModel* press_model[3];
 NewModel* archie_model[3];
 NewModel* serena_model[3];
-
+Image* silverWolfult[silverWolfult_count];
 Sound_Manager soundManager;
 
 FMOD::Channel* bgmChannel = nullptr;
@@ -94,6 +94,7 @@ void Resource_Init() {
     soundManager.LoadSound("silverwolf0", "sound/silver wolf/silverwolf0.wav", false, false);
     soundManager.LoadSound("silverwolf1", "sound/silver wolf/silverwolf1.wav", false, false);
     soundManager.LoadSound("silverwolf2", "sound/silver wolf/silverwolf2.wav", false, false);
+    soundManager.LoadSound("silverwolfult", "sound/silver wolf/silverwolfult.wav", false, false);
     soundManager.LoadSound("attack", "sound/silver wolf/attack.mp3", false, false);
     soundManager.LoadSound("roll", "sound/silver wolf/dash.mp3", false, false);
     soundManager.LoadSound("walk", "sound/silver wolf/walk.wav", false, false);
@@ -121,8 +122,15 @@ void Resource_Init() {
     soundManager.LoadSound("open", "sound/ui/open.mp3", false, false);
  
 
-
-
+    glm::vec2 size1 = glm::vec2((float)winWidth, (float)winHeight);
+    glm::vec2 pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
+    stbi_set_flip_vertically_on_load(true);
+    for (int i = 4;i < silverWolfult_count + 4;++i) {
+        string s = "gif/Frame" + to_string(i) + ".png";
+		char* c = s.data();
+		silverWolfult[i - 4] = new Image(LoadTexture(c), pos1, size1);
+    }
+    stbi_set_flip_vertically_on_load(false);
 
        
 }

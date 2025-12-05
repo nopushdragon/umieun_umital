@@ -1,5 +1,7 @@
 ﻿#include "target.h"
 
+uniform_real_distribution<float> random_cry(1.0f, 2.0f);
+
 void TARGET::init(int target_cnt) {
 	for (int i = 0; i < target_cnt; i++) {
 		targetInstance new_target;
@@ -19,7 +21,7 @@ void TARGET::init(int target_cnt) {
 	}
 }
 
-void TARGET::update() {
+void TARGET::update(float deltaTime) {
 	const float AMPLITUDE = 0.5f; // 최대 0.5 상승/하강
 	const float SPEED_FACTOR = 0.05f; // 움직임 속도 조절
 
@@ -39,7 +41,7 @@ void TARGET::update() {
 			target.origin_pos = target.modelMatrix[3];
 			target.goal_pos = glm::vec3(rd_goal_x(mt), rd_goal_y(mt), rd_goal_z(mt));
 		}
-		target.move_t += 0.002f;
+		target.move_t += deltaTime/8;
 		glm::vec3 move_pos;
 		if (target.move_t <= 1.0f) move_pos = (1.0f - target.move_t) * target.origin_pos + target.move_t * target.goal_pos;
 		else move_pos = target.goal_pos;
@@ -62,6 +64,24 @@ void TARGET::update() {
 		target.modelMatrix = glm::translate(target.modelMatrix, move_pos);
 		target.modelMatrix = glm::rotate(target.modelMatrix, glm::radians(target.rotation_angle), glm::vec3(0.0f, 1.0f, 0.0f));
 		target.modelMatrix = glm::scale(target.modelMatrix, glm::vec3(0.3f));
+
+
+
+
+
+
+
+
+		target.cry_timer += deltaTime* random_cry(mt);
+
+		if (target.cry_timer >= target.cry_time) {
+			target.cry_timer = 0.0f;
+			soundManager.Play("cry", target.modelMatrix[3],effect_volume);
+		}
+
+
+		soundManager.UpdateChannelPosition(target.thisChannel, target.modelMatrix[3], glm::vec3(0.0f));
+
 	}
 
 	update_world_obb();

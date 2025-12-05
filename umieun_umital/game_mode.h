@@ -12,6 +12,7 @@
 #include "trainer.h"
 #include "image.h"
 #include "text.h"
+#include "resource.h"
 
 class game_mode : public Scene
 {
@@ -39,7 +40,9 @@ private:
 
 	vector<Trainer*> trainers;
   
- 
+    //초필살기
+	bool ultimate = false;
+    float ultimate_frame = 0.0f;
 
    
 

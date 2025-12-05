@@ -76,6 +76,20 @@ void game_mode::Init() {
 float deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
+    if (ultimate) {
+		ultimate_frame += 0.3f;
+        //ultimate_frame += 0.2f;
+        //cout<< ultimate_frame << endl;
+        if (ultimate_frame >= 103.0f) {
+			ultimate_frame = 0.0f;
+            ultimate = false;
+			for (int i = trainers.size() - 1;i >= 0;--i) {
+				delete trainers[i];
+				trainers.erase(trainers.begin() + i);
+			}
+        }
+        return;
+    }
     if (fade) {
 		black_background->color.w += 1.0f * (deltaTime / 2.0f);
         if (black_background->color.w >= 1.0f) {
@@ -97,7 +111,7 @@ void game_mode::Update(float deltaTime) {
         silverwolf_chunk_collision();   //청크  
         trainer_chunk_collision();
         //과녁
-        target.update();
+        target.update(deltaTime);
 
         for (auto& b : balls) {
             if (b.is_in_chunk) {
@@ -355,6 +369,9 @@ void game_mode::Draw() {
     glm::mat4 view = glm::lookAt(gameCamera.camPos, gameCamera.camTarget, gameCamera.camUp);
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
 
+	
+    
+
     // static 모델 그리기
     glUseProgram(shaderProgramStatic);
     setCommonUniforms(shaderProgramStatic, view, proj);
@@ -480,11 +497,16 @@ void game_mode::Draw() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glm::mat4 uiProj = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT);
 
+
 	if (game_start || fade) black_background->Draw(shaderProgramImage, uiProj);
     if(game_start) mission->Draw(shaderProgramImage, uiProj);
 
     string now_time = "Time: " + to_string(record_time);
     textUI.Draw(now_time, 0, (WINDOW_HEIGHT * 5 / 6) - 100.0f, 0.6f, glm::vec3(0.7f, 0.1f, 0.2f));
+    if (ultimate) {
+        silverWolfult[static_cast<int>(ultimate_frame)]->Draw(shaderProgramImage, uiProj);
+        return;
+    }
 
 
 
@@ -660,7 +682,7 @@ void game_mode::drawMiniMapCube(GLuint shaderID, const glm::mat4& modelMatrix) {
 }
 
 void game_mode::Keyboard(unsigned char key, int x, int y) {
-
+    if (ultimate)return;
     if (key == 13) { // Enter key
         if (game_start) {
             playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
@@ -687,12 +709,22 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
     case 'E':
         // ui바꾸기
         break;
+    case 'q':
+	case 'Q':
+        ultimate = true;
+		silverWolf.w_press = false;
+		silverWolf.a_press = false;
+		silverWolf.s_press = false;
+		silverWolf.d_press = false;
+		silverWolf.thisChannel->stop();
+		playerChannel = soundManager.Play("silverwolfult", silverWolf.pos, effect_volume);
+		break;
     }
 
 }
 void game_mode::Keyupboard(unsigned char key, int x, int y) {
 
-    if (game_start || fade) return;
+    if (game_start || fade|| ultimate) return;
 
     silverWolf.Keyupboard(key, x, y);
 
@@ -736,6 +768,7 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
 }
 
 void game_mode::SpecialKeyboard(int key, int x, int y) {
+    if (ultimate)return;
     silverWolf.SpecialKeyboard(key, x, y);
     switch (key)
     {
@@ -748,10 +781,12 @@ void game_mode::SpecialKeyboard(int key, int x, int y) {
 }
 
 void game_mode::SpecialUpKeyboard(int key, int x, int y) {
+    if (ultimate)return;
     silverWolf.SpecialUpKeyboard(key, x, y);
 }
 
 void game_mode::Mouse(int button, int state, int x, int y) {
+    if (ultimate)return;
     if (silverWolf.state != "roll" && silverWolf.state != "jump" && silverWolf.state != "jump_run" && silverWolf.state != "jump_idle") {
         gameCamera.Mouse(button, state, x, y);
     }
@@ -760,11 +795,13 @@ void game_mode::Mouse(int button, int state, int x, int y) {
 }
 
 void game_mode::PassiveMotion(int x, int y) {
+    if (ultimate)return;
     if (silverWolf.init_success)
         gameCamera.PassiveMotion(x, y, camera_fixed);
 }
 
 void  game_mode::Motion(int x, int y) {
+    if (ultimate)return;
     gameCamera.Motion(x, y, camera_fixed);
 }
 
