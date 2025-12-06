@@ -167,6 +167,7 @@
     </ClInclude>
     <ClInclude Include="camera.h" />
     <ClInclude Include="chest.h" />
+    <ClInclude Include="clear_mode.h" />
     <ClInclude Include="collision.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="game_framwork.h" />
@@ -218,6 +219,7 @@
     </ClCompile>
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="chest.cpp" />
+    <ClCompile Include="clear_mode.cpp" />
     <ClCompile Include="collision.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="game_mode.cpp" />

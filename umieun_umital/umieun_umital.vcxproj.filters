@@ -174,6 +174,9 @@
     <ClInclude Include="account.h">
       <Filter>귀속</Filter>
     </ClInclude>
+    <ClInclude Include="clear_mode.h">
+      <Filter>네 씬입니다 제가</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animated_model.cpp">
@@ -256,6 +259,9 @@
     </ClCompile>
     <ClCompile Include="account.cpp">
       <Filter>귀속</Filter>
+    </ClCompile>
+    <ClCompile Include="clear_mode.cpp">
+      <Filter>네 씬입니다 제가</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

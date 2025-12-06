@@ -4,7 +4,7 @@ Skybox::Skybox(const std::string& cubemapPath1, const std::string& cubemapPath2)
 {
 	InitRenderData();
 	textureID1 = LoadCubemapFromSingleImage(cubemapPath1);
-    //textureID2 = LoadCubemapFromSingleImage(cubemapPath2);
+    textureID2 = LoadCubemapFromSingleImage(cubemapPath2);
 }
 
 Skybox::~Skybox()
@@ -12,7 +12,7 @@ Skybox::~Skybox()
 	glDeleteVertexArrays(1, &skyboxVAO);
 	glDeleteBuffers(1, &skyboxVBO);
 	glDeleteTextures(1, &textureID1);
-    //glDeleteTextures(1, &textureID2);
+    glDeleteTextures(1, &textureID2);
 }
 
 void Skybox::InitRenderData()

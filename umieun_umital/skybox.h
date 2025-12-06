@@ -8,6 +8,7 @@ public:
     void Draw(const glm::mat4& view, const glm::mat4& projection, GLuint shaderID);
 
     bool change = false;
+	float day_timer = 0.0f;
 private:
     GLuint skyboxVAO, skyboxVBO;
     GLuint textureID1;

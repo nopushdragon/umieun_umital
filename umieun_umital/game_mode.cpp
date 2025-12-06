@@ -25,6 +25,7 @@ game_mode::game_mode() {
 
     lightPos = glm::vec3(0.0f, 200.0f, 0.0f);
     lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    //lightColor = glm::vec3(0.2f, 0.2f, 0.35f);
     materialSpecular = glm::vec3(0.0f, 0.0f, 0.0f);
     ambientStrength = 0.3f;
     shininess = 32;
@@ -76,6 +77,19 @@ void game_mode::Init() {
 float deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void game_mode::Update(float deltaTime) {
+
+    // 낮밤 변화
+    if (!game_start) skybox->day_timer += deltaTime;
+    float day_duration = 60.0f; // 하루 주기 (60초)
+    float now_time = pow(skybox->day_timer - 30.0f, 2) / 900.0f;
+    if (skybox->day_timer >= day_duration) {
+        skybox->day_timer = 0.0f;
+        skybox->change = !skybox->change;
+    }
+    if (!skybox->change) lightColor = glm::vec3(1.0f - (0.8f * now_time), 1.0f - (0.8f * now_time), 1.0f - (0.65f * now_time));
+    else lightColor = glm::vec3(0.2f, 0.2f, 0.35f);
+
+    //  궁극기
     if (ultimate) {
         ultimate_frame += 0.3f;
         //ultimate_frame += 0.2f;
@@ -91,6 +105,7 @@ void game_mode::Update(float deltaTime) {
         return;
     }
 
+    // 평시
     if (fade) {
         black_background->color.w += 1.0f * (deltaTime / 2.0f);
         if (black_background->color.w >= 1.0f) {
@@ -267,7 +282,7 @@ void game_mode::trainer_chunk_collision() {
         // obb1번을 플레이어와 충돌할때
         if (check_collision(silverWolf.silverwolf_world_obb, trainer->trainer_world_obb) && !trainer->die_change) {
             if (silverWolf.state != "roll") {
-                if (is_f1) {
+                if (!is_f1) {
                     silverWolf.pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
                     silverWolf.old_pos = glm::vec3(start_x_pos, 0.0f, start_z_pos);
                     delete trainer;
@@ -371,6 +386,7 @@ void game_mode::Update_Trainer_Spawn() {
 // 3. 그리기 (기존 drawScene 함수 내용)
 void game_mode::Draw() {
     Fog_Update();
+
     lightPos = silverWolf.pos + glm::vec3(0.0f, 200.0f, 0.0f);
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -507,7 +523,6 @@ void game_mode::Draw() {
     }
 
     //ui 그리기
-
     drawMiniMap(WINDOW_WIDTH, WINDOW_HEIGHT);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -550,7 +565,7 @@ void game_mode::Fog_Update() {
 
     // static 모델 그리기
     glUseProgram(shaderProgramStatic);
-	setCommonUniforms(shaderProgramStatic, view, proj);
+    setCommonUniforms(shaderProgramStatic, view, proj);
     GLint fogColorLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogColor");
     GLint fogStartLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogStart");
     GLint fogEndLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogEnd");
@@ -558,7 +573,7 @@ void game_mode::Fog_Update() {
     glUniform3f(fogColorLocStatic, 0.5f, 0.5f, 0.5f);
     glUniform1f(fogStartLocStatic, 20.0f);
     glUniform1f(fogEndLocStatic, 25.0f);
-    glUniform1f(fogboolLocStatic,true);
+    glUniform1f(fogboolLocStatic, true);
 
     glUseProgram(shaderProgramAnimated);
     setCommonUniforms(shaderProgramAnimated, view, proj);
@@ -575,8 +590,6 @@ void game_mode::Fog_Update() {
 
 void game_mode::drawMiniMap(int w, int h)
 {
-
-
     // 미니맵 뷰포트 설정 (우측 상단)
     glViewport(0, h * 5 / 6, w / 6, h / 6);
 
@@ -599,7 +612,7 @@ void game_mode::drawMiniMap(int w, int h)
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 0.0f, -1.0f)
     );
- 
+
     // 미니맵용 직교 투영 행렬
     glm::mat4 proj = glm::ortho(-maxrange, maxrange, -maxrange, maxrange, 0.1f, maxrange * 4.0f);
 
@@ -607,7 +620,6 @@ void game_mode::drawMiniMap(int w, int h)
     glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uView"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uProj"), 1, GL_FALSE, glm::value_ptr(proj));
     glUniform3fv(glGetUniformLocation(shaderProgramStatic, "viewPos"), 1, glm::value_ptr(glm::vec3(0.0f, maxrange, 0.0f)));
-
 
     // 조명을 완전히 끄고 원래 색상만 표시
     glUniform3fv(glGetUniformLocation(shaderProgramStatic, "lightPos"), 1, glm::value_ptr(glm::vec3(0.0f, maxrange * 3.0f, 0.0f)));
@@ -973,7 +985,7 @@ void game_mode::loadModels() {
     maze.initmaze();
 
     //과녁
-    target_count = (maze_x+ maze_y) / 2; //과녁 개수 미로 크기에 비례
+    target_count = (maze_x + maze_y) / 2; //과녁 개수 미로 크기에 비례
     target.init(target_count);
     set_target_in_maze();    //미로에 과녁 배치
     kill_count = 0;
