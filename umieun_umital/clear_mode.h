@@ -54,7 +54,7 @@ private:
 
 	Skybox* skybox = nullptr;
 
-	void Fog_Update();
+	void Fog_And_Flashlight_Update();
 
 	// --- 내부 헬퍼 함수 (셰이더 로딩용) ---
 	char* filetobuf(const char* file);

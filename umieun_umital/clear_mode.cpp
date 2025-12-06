@@ -30,7 +30,7 @@ void clear_mode::loadTexts() {
 void clear_mode::Init() {
 }
 
-float title_deltatime;
+//float title_deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void clear_mode::Update(float deltaTime) {
 }
@@ -39,7 +39,7 @@ void clear_mode::Update(float deltaTime) {
 void clear_mode::Draw() {
 }
 
-void clear_mode::Fog_Update() {
+void clear_mode::Fog_And_Flashlight_Update() {
 }
 
 void clear_mode::Keyboard(unsigned char key, int x, int y) {

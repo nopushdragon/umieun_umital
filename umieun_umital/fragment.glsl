@@ -23,6 +23,14 @@ uniform float u_FogStart;
 uniform float u_FogEnd;
 
 uniform float fogEnabled;
+
+uniform bool flashlight_on;
+uniform vec3 flashPos;
+uniform vec3 flashDir;
+uniform float flashCutOff;
+uniform float flashOuterCutOff;
+
+
 void main()
 {
     vec3 materialDiffuse;
@@ -69,6 +77,31 @@ void main()
 
     // 최종 결과
     vec3 result = ambient + diffuse + specular;
+
+    if (flashlight_on) {
+        vec3 flashLightColor = vec3(1.0, 1.0, 1.0);
+		vec3 lightDirFlash = normalize(flashPos - FragPos);
+		float theta = dot(lightDirFlash, normalize(-flashDir));
+		float epsilon = flashCutOff - flashOuterCutOff;
+		float intensity = clamp((theta - flashOuterCutOff) / epsilon, 0.0, 1.0);
+		float distance = length(flashPos - FragPos);
+        float attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * (distance * distance));
+
+        float diffFlash = max(dot(norm, lightDirFlash), 0.0);
+        vec3 diffuseFlash = diffFlash * flashLightColor * materialDiffuse;
+
+
+        vec3 reflectDirFlash = reflect(-lightDirFlash, norm);
+        float specFlash = pow(max(dot(viewDir, reflectDirFlash), 0.0), float(shininess));
+        vec3 specularFlash = specFlash * flashLightColor * (materialSpecular * 0.5);
+
+ 
+        diffuseFlash *= attenuation * intensity;
+        specularFlash *= attenuation * intensity;
+
+
+        result += (diffuseFlash + specularFlash);
+    }
     
     // 최종 밝기도 제한 (추가 안전장치)
     result = min(result, vec3(1.0));

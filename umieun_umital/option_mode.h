@@ -2,6 +2,8 @@
 #include "scene_manager.h"
 #include "image.h"
 #include "text.h"
+#include "resource.h"
+#include "headers.h"
 
 class option_mode : public Scene
 {
@@ -13,7 +15,8 @@ private:
 	Image* option_background = nullptr;
 	Image* bgm_volume_image[10];
 	Image* effect_volume_image[10];
-	
+	int WINDOW_WIDTH = winWidth;
+	int WINDOW_HEIGHT = winHeight;
 public:
 	void Init() override;
 	void Update(float deltaTime) override;

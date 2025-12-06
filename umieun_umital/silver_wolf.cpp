@@ -35,10 +35,15 @@ void silver_wolf::Init() {
 	angle = 0.0f;
 	init_success = false;
 	set_obb();
+
+	flashlight.Init();
 }
 
-void silver_wolf::Update(float deltatime, const float& camera_x_angle, const float& camera_y_angle, const bool& right_mouth) {
+void silver_wolf::Update(float deltatime, const float& camera_x_angle, const float& camera_y_angle, const bool& right_mouth, const bool& change) {
 	
+	skybox_change = change;
+	//cout << change << endl;
+
 
 	old_pos = pos;
 	camera_angle = camera_x_angle;
@@ -69,6 +74,7 @@ void silver_wolf::Update(float deltatime, const float& camera_x_angle, const flo
 		}
 	}
 
+	flashlight.Update(deltatime,pos, camera_x_angle);
 
 	update_world_obb();
 }
@@ -144,6 +150,7 @@ void silver_wolf::Draw(GLuint shaderID, float currentTime, const glm::mat4& view
 		Rock_path_draw(shaderID, view,proj, color);
 	}
 
+
 }
 void silver_wolf::Ball_Draw(GLuint shaderProgramStatic, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color) {
 
@@ -154,7 +161,8 @@ void silver_wolf::Ball_Draw(GLuint shaderProgramStatic, float currentTime, const
 		}
 	}
 
-
+	if (this->skybox_change)
+		flashlight.Draw(shaderProgramStatic);
 
 }
 
@@ -307,6 +315,10 @@ void silver_wolf::Keyboard(unsigned char key, int x, int y) {
 		}
 
 		break;
+	case 'r':
+	case 'R':
+		flashlight_on = true;
+		break;
 	}
 
 }
@@ -336,8 +348,10 @@ void silver_wolf::Keyupboard(unsigned char key, int x, int y) {
 	case 'd':
 	case 'D':
 		d_press = false;
-
-
+		break;
+	case 'r':
+	case 'R':
+		flashlight_on = false;
 		break;
 	}
 

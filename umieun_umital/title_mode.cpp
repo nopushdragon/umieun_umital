@@ -165,7 +165,7 @@ float title_deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void title_mode::Update(float deltaTime) {
     soundManager.Update();
-    silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
+    silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth,skybox->change);
     if (gameCamera.moving) gameCamera.title_update(deltaTime, silverWolf.pos, start_pos_idx, end_pos_idx);
 
     title_deltatime = deltaTime;
@@ -173,7 +173,7 @@ void title_mode::Update(float deltaTime) {
 
 // 3. 그리기 (기존 drawScene 함수 내용)
 void title_mode::Draw() {
-    Fog_Update();
+    Fog_And_Flashlight_Update();
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -197,6 +197,8 @@ void title_mode::Draw() {
             }
         }
     }
+
+
 
     // --- 2. 애니메이션 캐릭터 ---
     glUseProgram(shaderProgramAnimated);
@@ -239,11 +241,13 @@ void title_mode::Draw() {
         }
     }
 
+	mouth_image->Draw(shaderProgramImage, uiProj);
+
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 }
 
-void title_mode::Fog_Update(){
+void title_mode::Fog_And_Flashlight_Update(){
     // 뷰, 프로젝션 행렬 계산
     glm::mat4 view = glm::lookAt(gameCamera.camPos, gameCamera.camTarget, gameCamera.camUp);
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
@@ -431,6 +435,7 @@ void title_mode::PassiveMotion(int x, int y) {
             }
         }
     }
+	mouth_image->position = glm::vec2((float)x+32, (float)(WINDOW_HEIGHT - (y + 32)));
 }
 
 void  title_mode::Motion(int x, int y) {

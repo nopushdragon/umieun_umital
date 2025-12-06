@@ -97,7 +97,7 @@ public:
     void Init() override;
     void Update(float deltaTime) override;
 
-	void Fog_Update();
+	void Fog_And_Flashlight_Update();
     void silverwolf_chunk_collision();
 
     void trainer_chunk_collision();

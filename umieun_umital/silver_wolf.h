@@ -2,6 +2,7 @@
 #include "animated_model.h"
 #include "ball.h"
 #include "collision.h"
+#include "flashlight.h"
 
 
 class WolfState;
@@ -23,8 +24,13 @@ private:
 	
 	array<glm::vec3, 500> rock_path;
 
+
+	bool skybox_change = false;
+
 	
 public:
+	Flashlight flashlight;
+	bool flashlight_on = false;
 
 	NewModel* silverWolfModel[9];
 	int silver_wolf_fbx_size = 9;
@@ -112,13 +118,15 @@ public:
 
 	void Init();
 
-	void Update(float deltatime,const float &camera_x_angle, const float& camera_y_angle, const bool& right_mouth);
+	void Update(float deltatime,const float &camera_x_angle, const float& camera_y_angle, const bool& right_mouth,const bool& change);
 
 	void ChangeState(WolfState* newState);
 
 	void Draw(GLuint shaderID, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
 
 	void Ball_Draw(GLuint shaderProgramStatic, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
+
+
 
 	void Keyboard(unsigned char key, int x, int y);
 

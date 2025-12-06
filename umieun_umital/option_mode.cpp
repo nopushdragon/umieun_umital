@@ -63,6 +63,8 @@ void option_mode::Draw() {
         effect_volume_image[i]->Draw(shaderProgramImage, uiProj);
 	}
 
+	mouth_image->Draw(shaderProgramImage, uiProj);
+   
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 }
@@ -106,6 +108,8 @@ void option_mode::Mouse(int button, int state, int x, int y) {
 		cout << "mouse x: " << x << ", y: " << y << endl;
 		cout << "BGM Volume: " << bgm_volume << ", Effect Volume: " << effect_volume << endl;
 	}
+    mouth_image->position = glm::vec2((float)x + 32, (float)(WINDOW_HEIGHT - (y + 32)));
+
 }
 
 void option_mode::MouseWheel(int wheel, int direction, int x, int y) {

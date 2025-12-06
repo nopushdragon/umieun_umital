@@ -56,12 +56,10 @@ public:
             std::cerr << "GLEW Init Failed!" << std::endl;
             exit(-1);
         }
-        GLfloat fogColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-        glEnable(GL_FOG); // <7>
-        glFogi(GL_FOG_MODE, GL_EXP); // <1>
-        glFogfv(GL_FOG_COLOR, fogColor); // <2>
-        glFogf(GL_FOG_DENSITY, 0.3f); // <3>
-        glHint(GL_FOG_HINT, GL_NICEST); // <4>
+   
+       
+
+		glutSetCursor(GLUT_CURSOR_NONE); //커서 없애기
 
         glutDisplayFunc(RenderWrapper);
         glutReshapeFunc(ReshapeWrapper);

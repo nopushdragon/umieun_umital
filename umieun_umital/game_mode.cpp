@@ -71,6 +71,7 @@ void game_mode::Init() {
 
     playerChannel = soundManager.Play("quest", silverWolf.pos, effect_volume);
 
+
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -113,7 +114,7 @@ void game_mode::Update(float deltaTime) {
         }
     }
     else {
-        silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth);
+        silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth,skybox->change);
         gameCamera.Update(deltaTime, silverWolf.pos);
         //카메라 고정
         if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
@@ -385,7 +386,7 @@ void game_mode::Update_Trainer_Spawn() {
 
 // 3. 그리기 (기존 drawScene 함수 내용)
 void game_mode::Draw() {
-    Fog_Update();
+    Fog_And_Flashlight_Update();
 
     lightPos = silverWolf.pos + glm::vec3(0.0f, 200.0f, 0.0f);
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
@@ -467,10 +468,13 @@ void game_mode::Draw() {
     setCommonUniforms(shaderProgramStatic, view, proj);
     GLint fogboolLocStatic = glGetUniformLocation(shaderProgramStatic, "fogEnabled");
     glUniform1f(fogboolLocStatic, false);
+    glUniform1i(glGetUniformLocation(shaderProgramStatic, "flashlight_on"), false);
+
     glUseProgram(shaderProgramAnimated);
     setCommonUniforms(shaderProgramAnimated, view, proj);
     GLint fogboolLocAnimated = glGetUniformLocation(shaderProgramAnimated, "fogEnabled");
     glUniform1f(fogboolLocAnimated, false);
+    glUniform1i(glGetUniformLocation(shaderProgramAnimated, "flashlight_on"), false);
 
     // --- 3. 스카이박스 ---
     glUseProgram(shaderProgramSkybox);
@@ -553,12 +557,17 @@ void game_mode::Draw() {
         }
     }
 
+    if(camera_fixed)
+	mouth_image->Draw(shaderProgramImage, uiProj);
 
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 }
 
-void game_mode::Fog_Update() {
+void game_mode::Fog_And_Flashlight_Update() {
+    
+    bool flashlight_on = silverWolf.flashlight_on;
+
     // 뷰, 프로젝션 행렬 계산
     glm::mat4 view = glm::lookAt(gameCamera.camPos, gameCamera.camTarget, gameCamera.camUp);
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
@@ -570,10 +579,19 @@ void game_mode::Fog_Update() {
     GLint fogStartLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogStart");
     GLint fogEndLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogEnd");
     GLint fogboolLocStatic = glGetUniformLocation(shaderProgramStatic, "fogEnabled");
+
     glUniform3f(fogColorLocStatic, 0.5f, 0.5f, 0.5f);
     glUniform1f(fogStartLocStatic, 20.0f);
     glUniform1f(fogEndLocStatic, 25.0f);
     glUniform1f(fogboolLocStatic, true);
+
+    glUniform1i(glGetUniformLocation(shaderProgramStatic, "flashlight_on"), flashlight_on);
+    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "flashPos"), 1, glm::value_ptr(silverWolf.flashlight.pos));
+    glm::vec3 flashDir = glm::normalize(gameCamera.camTarget - gameCamera.camPos);
+    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "flashDir"), 1, glm::value_ptr(flashDir));
+    glUniform1f(glGetUniformLocation(shaderProgramStatic, "flashCutOff"), glm::cos(glm::radians(12.5f)));
+    glUniform1f(glGetUniformLocation(shaderProgramStatic, "flashOuterCutOff"), glm::cos(glm::radians(17.5f)));
+
 
     glUseProgram(shaderProgramAnimated);
     setCommonUniforms(shaderProgramAnimated, view, proj);
@@ -585,6 +603,13 @@ void game_mode::Fog_Update() {
     glUniform1f(fogStartLocAnimated, 20.0f);
     glUniform1f(fogEndLocAnimated, 25.0f);
     glUniform1f(fogboolLocAnimated, true);
+
+    glUniform1i(glGetUniformLocation(shaderProgramAnimated, "flashlight_on"), flashlight_on);
+    glUniform3fv(glGetUniformLocation(shaderProgramAnimated, "flashPos"), 1, glm::value_ptr(silverWolf.flashlight.pos));
+    flashDir = glm::normalize(gameCamera.camTarget - gameCamera.camPos);
+    glUniform3fv(glGetUniformLocation(shaderProgramAnimated, "flashDir"), 1, glm::value_ptr(flashDir));
+    glUniform1f(glGetUniformLocation(shaderProgramAnimated, "flashCutOff"), glm::cos(glm::radians(12.5f)));
+    glUniform1f(glGetUniformLocation(shaderProgramAnimated, "flashOuterCutOff"), glm::cos(glm::radians(17.5f)));
 
 }
 
@@ -789,7 +814,7 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
     case'g':
     case'G':
         camera_fixed = true;
-        glutSetCursor(GLUT_CURSOR_INHERIT);
+        //glutSetCursor(GLUT_CURSOR_INHERIT);
         break;
     case 'e':
     case 'E':
@@ -868,6 +893,11 @@ void game_mode::SpecialKeyboard(int key, int x, int y) {
             silverWolf.runSpeed = 20.0f;
         else silverWolf.runSpeed = 3.0f;
         is_f1 = !is_f1;
+        break;
+
+    case GLUT_KEY_F2:
+        silverWolf.ball_cnt = 30;
+        break;
     }
 }
 
@@ -886,9 +916,11 @@ void game_mode::Mouse(int button, int state, int x, int y) {
 }
 
 void game_mode::PassiveMotion(int x, int y) {
+    mouth_image->position = glm::vec2((float)x + 32, (float)(WINDOW_HEIGHT - (y + 32)));
     if (ultimate)return;
     if (silverWolf.init_success)
         gameCamera.PassiveMotion(x, y, camera_fixed);
+
 }
 
 void  game_mode::Motion(int x, int y) {

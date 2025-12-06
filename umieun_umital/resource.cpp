@@ -5,11 +5,13 @@ std::vector<StaticModel*> roads;
 StaticModel* target_model;
 StaticModel* chest_model;
 StaticModel* ball_model;
+StaticModel* flashlight_model;
 NewModel* mei_model[3];
 NewModel* press_model[3];
 NewModel* archie_model[3];
 NewModel* serena_model[3];
 Image* silverWolfult[silverWolfult_count];
+Image* mouth_image;
 Sound_Manager soundManager;
 
 FMOD::Channel* bgmChannel = nullptr;
@@ -20,7 +22,8 @@ FMOD::Channel* SerenaChannel = nullptr;
 FMOD::Channel* pressChannel = nullptr;
 float bgm_volume = 0.4f;
 float effect_volume = 0.3f;
-
+float mouth_image_x = 0.0f;
+float mouth_image_y = 0.0f;
 
 void Resource_Init() {
     // 미로
@@ -55,6 +58,9 @@ void Resource_Init() {
 	//볼
 	ball_model = new StaticModel("ball/Pokeball.obj");
     ball_model->set_ball_obb();
+
+	//손전등
+	flashlight_model = new StaticModel("flashlight/Flashlight.obj");
 
 	//캐릭터 모델들
 	press_model[0] = new NewModel("press/Standing Walk Forward.fbx");
@@ -130,6 +136,13 @@ void Resource_Init() {
 		char* c = s.data();
 		silverWolfult[i - 4] = new Image(LoadTexture(c), pos1, size1);
     }
+
+
+	size1 = glm::vec2(64.0f, 64.0f);
+    pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
+	mouth_image = new Image(LoadTexture("Mouse/Mouse.png"), pos1, size1);
+
+
     stbi_set_flip_vertically_on_load(false);
 
        
