@@ -7,11 +7,14 @@
 #include "image.h"
 #include "text.h"
 #include "skybox.h"
+#include "trainer.h"
+#include "chest.h"
 
 class clear_mode : public Scene
 {
 public:
 	silver_wolf silverWolf;
+
 private:
 	GLuint shaderProgramStatic;
 	GLuint shaderProgramAnimated;
@@ -19,22 +22,32 @@ private:
 	GLuint shaderProgramSkybox;
 	GLuint shaderProgramText;
 
+	//scene 진행도
+	int scene_progress = 0;
+	int event_progress = 0;
+	bool pause = false;
+	bool qte_pause = false;
+	int qte_success_count = 0;
+	int qte_is_success = 0;	// 0: 아직 안함, 1: 성공, -1: 실패
+
 	// 모델 데이터
-	std::vector<StaticModel*> roads;
-	MAZE maze;
+	vector<MazeBlockInstance> mazeBlocks;
+	chestInstance chest;
+	Trainer* trainer = nullptr;
+	void objects_Update(float deltaTime);
 
 	//ui 및 이미지 관련
-	Image* white_background = nullptr;
-	Image* title = nullptr;
-	vector<Image*> main;
-	int main_idx = 0;
-	Text textUI;
-	Image* loading_image = nullptr;
-	bool loading_start = false;
+	Image* black_background = nullptr;
+	Image* black_bar = nullptr;
+	Image* qte_f = nullptr;
+	Image* qte_tip = nullptr;
+	vector<Image*> scene_1;
+	vector<Image*> scene_2;
 
-	Image* set_maze[4];
-	bool draw_set_maze = false;
-	int set_maze_idx = 0;
+	void drawCircle(float x, float y, float r, glm::vec4 color);
+	float circle_radius = 200.0f;
+
+
 
 	// 카메라 및 화면 설정
 	camera gameCamera;
@@ -54,7 +67,8 @@ private:
 
 	Skybox* skybox = nullptr;
 
-	void Fog_And_Flashlight_Update();
+	void Fog_Update();
+
 
 	// --- 내부 헬퍼 함수 (셰이더 로딩용) ---
 	char* filetobuf(const char* file);

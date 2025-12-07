@@ -55,48 +55,48 @@ void Resource_Init() {
     chest_model = new StaticModel("chest/chest.obj");
     chest_model->set_chest_obb();
 
-	//볼
-	ball_model = new StaticModel("ball/Pokeball.obj");
+    //볼
+    ball_model = new StaticModel("ball/Pokeball.obj");
     ball_model->set_ball_obb();
 
-	//손전등
-	flashlight_model = new StaticModel("flashlight/Flashlight.obj");
+    flashlight_model = new StaticModel("flashlight/Flashlight.obj");
 
-	//캐릭터 모델들
-	press_model[0] = new NewModel("press/Standing Walk Forward.fbx");
-	press_model[0]->state = "walk";
+    //캐릭터 모델들
+    press_model[0] = new NewModel("press/Standing Walk Forward.fbx");
+    press_model[0]->state = "walk";
     press_model[1] = new NewModel("press/Head Spinning.fbx");
     press_model[1]->state = "tracking";
     press_model[2] = new NewModel("press/Run To Dive.fbx");
-	press_model[2]->state = "die";
-	mei_model[0] = new NewModel("mei/Jogging.fbx");
-	mei_model[0]->state = "walk";
+    press_model[2]->state = "die";
+    mei_model[0] = new NewModel("mei/Jogging.fbx");
+    mei_model[0]->state = "walk";
     mei_model[1] = new NewModel("mei/Breakdance 1990.fbx");
-	mei_model[1]->state = "tracking";
+    mei_model[1]->state = "tracking";
     mei_model[2] = new NewModel("mei/Knocked Out.fbx");
     mei_model[2]->state = "die";
-	archie_model[0] = new NewModel("Archie/Walking.fbx");
-	archie_model[0]->state = "walk";
+    archie_model[0] = new NewModel("Archie/Walking.fbx");
+    archie_model[0]->state = "walk";
     archie_model[1] = new NewModel("Archie/Flair.fbx");
-	archie_model[1]->state = "tracking";
+    archie_model[1]->state = "tracking";
     archie_model[2] = new NewModel("Archie/Falling Down.fbx");
-	archie_model[2]->state = "die";
-	serena_model[0] = new NewModel("Serena/Walking.fbx");
-	serena_model[0]->state = "walk";
+    archie_model[2]->state = "die";
+    serena_model[0] = new NewModel("Serena/Walking.fbx");
+    serena_model[0]->state = "walk";
     serena_model[1] = new NewModel("Serena/Treadmill Running.fbx");
-	serena_model[1]->state = "tracking";
+    serena_model[1]->state = "tracking";
     serena_model[2] = new NewModel("Serena/Turn To Knocked Unconscious.fbx");
-	serena_model[2]->state = "die";
+    serena_model[2]->state = "die";
 
 
     //브금들 입니다
-	soundManager.LoadSound("logo", "sound/bgm/logo.mp3",false,false);
+    soundManager.LoadSound("logo", "sound/bgm/logo.mp3", false, false);
     soundManager.LoadSound("title", "sound/bgm/title.mp3", false, true);
     soundManager.LoadSound("main0", "sound/bgm/main0.mp3", false, false);
     soundManager.LoadSound("main1", "sound/bgm/main1.mp3", false, false);
     soundManager.LoadSound("main2", "sound/bgm/main2.mp3", false, false);
     soundManager.LoadSound("main3", "sound/bgm/main3.mp3", false, false);
     soundManager.LoadSound("main4", "sound/bgm/main4.mp3", false, false);
+    soundManager.LoadSound("qte", "sound/bgm/qte.mp3", false, false);
     soundManager.LoadSound("silverwolf0", "sound/silver wolf/silverwolf0.wav", false, false);
     soundManager.LoadSound("silverwolf1", "sound/silver wolf/silverwolf1.wav", false, false);
     soundManager.LoadSound("silverwolf2", "sound/silver wolf/silverwolf2.wav", false, false);
@@ -106,6 +106,10 @@ void Resource_Init() {
     soundManager.LoadSound("walk", "sound/silver wolf/walk.wav", false, false);
     soundManager.LoadSound("run", "sound/silver wolf/run.wav", false, false);
     soundManager.LoadSound("game_over", "sound/silver wolf/game_over.mp3", false, false);
+    soundManager.LoadSound("clear_1", "sound/silver wolf/1.wav", false, false);
+    soundManager.LoadSound("clear_2", "sound/silver wolf/2.wav", false, false);
+    soundManager.LoadSound("clear_3", "sound/silver wolf/3.wav", false, false);
+    soundManager.LoadSound("clear_4", "sound/silver wolf/4.wav", false, false);
     soundManager.LoadSound("00", "sound/mei/mei0.ogg", true, false);
     soundManager.LoadSound("01", "sound/mei/mei1.ogg", true, false);
     soundManager.LoadSound("02", "sound/mei/mei2.ogg", true, false);
@@ -126,24 +130,22 @@ void Resource_Init() {
     soundManager.LoadSound("quest", "sound/ui/quest.mp3", false, false);
     soundManager.LoadSound("get", "sound/ui/get.mp3", false, false);
     soundManager.LoadSound("open", "sound/ui/open.mp3", false, false);
- 
+
 
     glm::vec2 size1 = glm::vec2((float)winWidth, (float)winHeight);
     glm::vec2 pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
     stbi_set_flip_vertically_on_load(true);
     for (int i = 4;i < silverWolfult_count + 4;++i) {
         string s = "gif/Frame" + to_string(i) + ".png";
-		char* c = s.data();
-		silverWolfult[i - 4] = new Image(LoadTexture(c), pos1, size1);
+        char* c = s.data();
+        silverWolfult[i - 4] = new Image(LoadTexture(c), pos1, size1);
     }
 
-
-	size1 = glm::vec2(64.0f, 64.0f);
+    size1 = glm::vec2(64.0f, 64.0f);
     pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
-	mouth_image = new Image(LoadTexture("Mouse/Mouse.png"), pos1, size1);
-
+    mouth_image = new Image(LoadTexture("Mouse/Mouse.png"), pos1, size1);
 
     stbi_set_flip_vertically_on_load(false);
 
-       
+
 }

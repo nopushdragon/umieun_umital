@@ -4,34 +4,29 @@
 #include "collision.h"
 #include "flashlight.h"
 
-
 class WolfState;
 
 class silver_wolf
 {
 private:
-	WolfState* currentState;
 
 	float max_rock_distance = 10.0f;
 	float max_angle_difference = 30.0f;
 	float min_rock_distance = 1.0f;
 	float rock_distance = max_rock_distance - min_rock_distance;
-	
+
 
 	glm::vec3 rock_end_pos = glm::vec3(0.0f, 0.0f, 0.0f);
 
 
-	
+
 	array<glm::vec3, 500> rock_path;
-
-
 	bool skybox_change = false;
 
-	
 public:
 	Flashlight flashlight;
 	bool flashlight_on = false;
-
+	WolfState* currentState;
 	NewModel* silverWolfModel[9];
 	int silver_wolf_fbx_size = 9;
 	int current_animation_index = 0;
@@ -94,7 +89,7 @@ public:
 	float d_a_timer = 0.0f;
 	float d_s_timer = 0.0f;
 	float d_d_timer = 0.0f;
-	
+
 	//초기화 성공
 	bool init_success = false;
 
@@ -109,7 +104,7 @@ public:
 
 	Channel* thisChannel;
 
-	
+
 
 
 
@@ -118,15 +113,13 @@ public:
 
 	void Init();
 
-	void Update(float deltatime,const float &camera_x_angle, const float& camera_y_angle, const bool& right_mouth,const bool& change);
+	void Update(float deltatime, const float& camera_x_angle, const float& camera_y_angle, const bool& right_mouth, const bool& change);
 
 	void ChangeState(WolfState* newState);
 
 	void Draw(GLuint shaderID, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
 
 	void Ball_Draw(GLuint shaderProgramStatic, float currentTime, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& color);
-
-
 
 	void Keyboard(unsigned char key, int x, int y);
 

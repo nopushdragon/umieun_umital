@@ -1,4 +1,4 @@
-#include "clear_mode.h"
+ï»¿#include "clear_mode.h"
 #include "game_mode.h"
 #include "option_mode.h"
 #include "game_framwork.h"
@@ -7,42 +7,549 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 
-// »ı¼ºÀÚ: º¯¼ö ÃÊ±â°ª ¼³Á¤
+// ìƒì„±ì: ë³€ìˆ˜ ì´ˆê¸°ê°’ ì„¤ì •
 clear_mode::clear_mode() {
+    lightPos = glm::vec3(0.0f, 2000.0f, 0.0f);
+    lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    materialSpecular = glm::vec3(0.0f, 0.0f, 0.0f);
+    ambientStrength = 0.3f;
+    shininess = 32;
+    bgmChannel->stop();
+    bgmChannel = soundManager.Play("qte", glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
+
+    scene_progress = 0;
+    event_progress = 0;
 }
 
 clear_mode::~clear_mode() {
-    // Finish()°¡ È£ÃâµÇÁö ¾Ê°í ÆÄ±«µÉ °æ¿ì¸¦ ´ëºñ
-    // (ÀÏ¹İÀûÀ¸·Î´Â Finish¿¡¼­ Á¤¸®ÇÔ)
+    // Finish()ê°€ í˜¸ì¶œë˜ì§€ ì•Šê³  íŒŒê´´ë  ê²½ìš°ë¥¼ ëŒ€ë¹„
+    // (ì¼ë°˜ì ìœ¼ë¡œëŠ” Finishì—ì„œ ì •ë¦¬í•¨)
 }
 
 void clear_mode::Finish() {
+    if (trainer) {
+        delete trainer;
+        trainer = nullptr;
+    }
+
+    if (skybox) {
+        delete skybox;
+        skybox = nullptr;
+    }
+
+    if (black_bar) {
+        delete black_bar;
+        black_bar = nullptr;
+    }
+
+    if (black_background) {
+        delete black_background;
+        black_background = nullptr;
+    }
+
+    if (qte_f) {
+        delete qte_f;
+        qte_f = nullptr;
+    }
+
+    if (qte_tip) {
+        delete qte_tip;
+        qte_tip = nullptr;
+    }
+
+    for (auto img : scene_1) {
+        delete img;
+    }
+    scene_1.clear();
+
+    for (auto img : scene_2) {
+        delete img;
+    }
+    scene_2.clear();
+
+    // ì…°ì´ë” í”„ë¡œê·¸ë¨ ì‚­ì œ
+    glDeleteProgram(shaderProgramStatic);
+    glDeleteProgram(shaderProgramAnimated);
+    glDeleteProgram(shaderProgramSkybox);
+    glDeleteProgram(shaderProgramImage);
+    glDeleteProgram(shaderProgramText);
 }
 
 void clear_mode::loadModels() {
+    for (int i = 0;i <= 6;i++) {
+        MazeBlockInstance roadInstance;
+        if (i == 6) roadInstance.modelPtr = roads.at(2);
+        else roadInstance.modelPtr = roads.at(5);
+        roadInstance.modelMatrix = glm::mat4(1.0f);
+        roadInstance.reset = glm::vec3(0.0f, 0.0f, -(ROAD_SIZE * i) + (ROAD_SIZE * 2));
+        mazeBlocks.push_back(roadInstance);
+    }
+    start_x_pos = 0.0f;
+    start_z_pos = 0.0f;
+
+    chest.modelPtr = chest_model;
+    chest.reset = mazeBlocks[6].reset + glm::vec3(0.0f, 0.0f, -2.5f);
+    chest.modelMatrix = glm::mat4(1.0f);
+    chest.modelMatrix = glm::translate(chest.modelMatrix, chest.reset);
+    chest.modelMatrix = glm::scale(chest.modelMatrix, glm::vec3(0.2f)); //í¬ê¸° ì¡°ì ˆ
+
+    silverWolf.Init();
+    silverWolf.Keyboard('s', 0.0f, 0.0f);
+    silverWolf.SpecialKeyboard(GLUT_KEY_SHIFT_L, 0.0f, 0.0f);
+
+    trainer = new Trainer(0.0f, 5.0f);
+    //trainer->Init();
+    trainer->trainerModel[0] = press_model[0];
+    trainer->trainerModel[1] = press_model[1];
+    trainer->trainerModel[2] = press_model[2];
+    trainer->scale = glm::vec3(0.005f);
+    trainer->aggravation = true;
+
+    // ìŠ¤ì¹´ì´ë°•ìŠ¤
+    skybox = new Skybox("skybox/sun.png", "skybox/moon.png");
+
+    // ì¹´ë©”ë¼ ìœ„ì¹˜
+    glm::vec3 targetPos = silverWolf.pos + glm::vec3(0.0f, 1.0f, 0.0f);
+    gameCamera.Init(targetPos);
+    gameCamera.camTarget = silverWolf.pos + glm::vec3(0.0f, 0.0f, -40.0f);
+
+    glEnable(GL_DEPTH_TEST);
 }
 void clear_mode::loadImages() {
+    stbi_set_flip_vertically_on_load(true);
+
+    glm::vec2 size1 = glm::vec2((float)winWidth, (float)winHeight);
+    glm::vec2 pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
+
+    black_background = new Image(LoadTexture("scene_image/black_background.png"), pos1, size1);\
+        black_background->color.w = 0.0f;
+
+    black_bar = new Image(LoadTexture("scene_image/cut_scene_black_bar.png"), pos1, size1);
+    black_bar->color.w = 1.0f;
+
+    qte_f = new Image(LoadTexture("scene_image/qte_f.png"), glm::vec2(940.0f, 360.0f), glm::vec2(150.0f, 150.0f));
+    qte_f->color.w = 1.0f;
+
+    qte_tip = new Image(LoadTexture("scene_image/qte_tip.png"), pos1, size1);
+    qte_tip->color.w = 1.0f;
+
+    scene_1.push_back(new Image(LoadTexture("scene_image/1-1.png"), pos1, size1));
+    scene_1.push_back(new Image(LoadTexture("scene_image/1-2.png"), pos1, size1));
+    scene_1.push_back(new Image(LoadTexture("scene_image/1-3.png"), pos1, size1));
+    scene_1.push_back(new Image(LoadTexture("scene_image/1-4.png"), pos1, size1));
+    scene_1.push_back(new Image(LoadTexture("scene_image/1-5.png"), pos1, size1));
+    for (auto& m : scene_1)m->color.w = 1.0f;
+
+    scene_2.push_back(new Image(LoadTexture("scene_image/2-1.png"), pos1, size1));
+    scene_2.push_back(new Image(LoadTexture("scene_image/2-2.png"), pos1, size1));
+    for (auto& m : scene_2)m->color.w = 1.0f;
+
+    stbi_set_flip_vertically_on_load(false);
 }
 void clear_mode::loadTexts() {
 }
 
-// 1. ÃÊ±âÈ­ (±âÁ¸ init ÇÔ¼ö ³»¿ë)
+// 1. ì´ˆê¸°í™” (ê¸°ì¡´ init í•¨ìˆ˜ ë‚´ìš©)
 void clear_mode::Init() {
+    cout << "[clearMode] Initializing..." << endl;
+
+    if (bgmChannel) {
+        bgmChannel->stop();
+    }
+    if (playerChannel) {
+        playerChannel->stop();
+    }
+    soundManager.Update();
+
+    loadShader(STATIC_VERT, FRAGMENT_LIGHT, shaderProgramStatic);
+    loadShader(ANIMATED_VERT, FRAGMENT_LIGHT, shaderProgramAnimated);
+    shaderProgramImage = LoadShader(IMAGE_VERT, IMAGE_FRAG);
+    loadShader("vertex_sky.glsl", "fragment_sky.glsl", shaderProgramSkybox);
+    shaderProgramText = LoadShader(TEXT_VERT, TEXT_FRAG);
+
+    loadModels();
+    loadImages();
+    loadTexts();
 }
 
-//float title_deltatime;
-// 2. ¾÷µ¥ÀÌÆ® (±âÁ¸ timer ÇÔ¼ö ³»¿ë Áß ·ÎÁ÷ ºÎºĞ)
+// 2. ì—…ë°ì´íŠ¸ (ê¸°ì¡´ timer í•¨ìˆ˜ ë‚´ìš© ì¤‘ ë¡œì§ ë¶€ë¶„)
 void clear_mode::Update(float deltaTime) {
+    bool isPlaying = false;
+    bgmChannel->isPlaying(&isPlaying);
+
+    if (!isPlaying) {
+        bgmChannel = soundManager.Play("qte", glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
+    }
+
+    if (pause) return;
+
+    if (scene_progress == 0) {
+        objects_Update(deltaTime);
+        trainer->pos = glm::vec3(0.0f, 0.0f, 5.0f);
+
+        if (event_progress == 0) {
+            static float event_timer = 0.0f;
+            event_timer += deltaTime;
+            if (event_timer >= 10.0f) {
+                event_progress++;
+                playerChannel = soundManager.Play("clear_1", silverWolf.pos, effect_volume);
+            }
+        }
+
+        if (event_progress == 6) {
+
+            static glm::vec3 start_pos = gameCamera.camTarget;
+            static glm::vec3 middle_pos = glm::vec3(
+                -ROAD_SIZE * 2,
+                (gameCamera.camTarget.y + trainer->pos.y) / 2,
+                (gameCamera.camTarget.z + trainer->pos.z) / 2);
+            static glm::vec3 end_pos = trainer->pos;
+            static glm::vec3 cam_start_pos = gameCamera.camPos;
+            static glm::vec3 cam_end_pos = glm::vec3(0.0f, 1.0f, -1.0f);
+
+
+            static bool flip = false;
+            static float timer = 0.0f;
+            timer += deltaTime;
+            if (timer >= 5.0f) {
+                timer = 0.0f;
+                flip = true;
+            }
+            float t = timer;
+            if (t >= 1.0f) t = 1.0f;
+            float one_minus_t = 1.0f - t;
+            if (!flip) {
+                gameCamera.camTarget = pow(one_minus_t, 2) * start_pos + (2.0f * one_minus_t * t) * middle_pos + pow(t, 2) * end_pos;
+                gameCamera.camPos = one_minus_t * cam_start_pos + t * cam_end_pos;
+            }
+            else {
+                gameCamera.camTarget = pow(one_minus_t, 2) * end_pos + (2.0f * one_minus_t * t) * middle_pos + pow(t, 2) * start_pos;
+                gameCamera.camPos = one_minus_t * cam_end_pos + t * cam_start_pos;
+            }
+            if (flip && timer >= 1.5f) {
+                pause = true;
+                black_background->color.w = 0.5f;
+                scene_progress = 1;
+                event_progress = 0;
+                gameCamera.camPos = glm::vec3(0.0f, 0.47f, 0.025f);
+                gameCamera.camTarget = silverWolf.pos + glm::vec3(0.0f, 0.0f, -40.0f);
+
+                trainer->pos = glm::vec3(0.0f, 0.0f, -(ROAD_SIZE * 5 / 2));
+            }
+        }
+        else {
+            static float timer = 0.0f;
+            timer += deltaTime * 1.5f;
+            if (timer >= 0.5f) timer = 0.0f;
+            float t = -1.6f * pow(timer - 0.25f, 2) + 0.1f;
+            gameCamera.camPos = glm::vec3(0.0f, 0.47f + t, 0.025f);
+            gameCamera.camTarget = silverWolf.pos + glm::vec3(0.0f, 0.0f, -40.0f);
+
+
+        }
+    }
+    else if (scene_progress == 1) {
+        silverWolf.Keyboard('s', 0.0f, 0.0f);
+        silverWolf.SpecialKeyboard(GLUT_KEY_SHIFT_L, 0.0f, 0.0f);
+
+        static float trainer_timer = 0.0f;
+
+        if (qte_is_success == 0) {
+
+            if (!qte_pause) {
+                objects_Update(deltaTime);
+
+                static float timer = 0.0f;
+                timer += deltaTime * 1.5f;
+                if (timer >= 0.5f) timer = 0.0f;
+                float t = -1.6f * pow(timer - 0.25f, 2) + 0.1f;
+                gameCamera.camPos = glm::vec3(0.0f, 0.47f + t, 0.025f);
+                gameCamera.camTarget = silverWolf.pos + glm::vec3(0.0f, 0.0f, -40.0f);
+            }
+
+
+            if (!qte_pause) {
+                trainer_timer += deltaTime;
+                trainer->pos = glm::vec3(0.0f, 0.0f, -(ROAD_SIZE * 5 / 2) + ROAD_SIZE * trainer_timer);
+            }
+
+            if (!qte_pause && circle_radius != 0.0f && trainer_timer >= 2.4f) {
+                qte_pause = true;
+                circle_radius = 200.0f;
+            }
+
+            if (qte_pause) {
+                playerChannel->stop();
+                circle_radius -= 50.0f * deltaTime;
+                if (circle_radius <= 0.0f) {
+                    circle_radius = 0.0f;
+                    qte_pause = false;
+                    qte_is_success = -1;
+                }
+            }
+
+        }
+        else {
+            gameCamera.camPos = glm::vec3(-2.0f, 0.8f, 0.0f);
+            gameCamera.camTarget = glm::vec3(0.0f, 0.4f, 0.0f);
+
+            objects_Update(deltaTime);
+
+
+            trainer_timer += deltaTime;
+            trainer->pos = glm::vec3(0.0f, 0.0f, -(ROAD_SIZE * 5 / 2) + ROAD_SIZE * trainer_timer);
+
+            if (trainer_timer >= 7.0f) {
+                trainer_timer = 0.0f;
+                qte_is_success = 0;
+                circle_radius = 200.0f;
+                if (qte_success_count >= 3) {
+                    pause = false;
+                    qte_pause = false;
+                    scene_progress = 2;
+                }
+            }
+        }
+
+    }
+    else if (scene_progress == 2) {
+        static bool arrive = false;
+        //ë§µ ì´ë™
+        static float move_road = 0.0f;
+        move_road += deltaTime;
+        if (move_road >= 4.0f) {
+            move_road = 4.0f;
+            arrive = true;
+        }
+        for (auto& block : mazeBlocks) {
+            block.modelMatrix = glm::mat4(1.0f);
+            block.modelMatrix = glm::translate(block.modelMatrix, glm::vec3(0.0f, 0.0f, ROAD_SIZE * move_road));
+            block.modelMatrix = glm::translate(block.modelMatrix, block.reset);
+        }
+        chest.modelMatrix = glm::mat4(1.0f);
+        chest.modelMatrix = glm::translate(chest.modelMatrix, glm::vec3(0.0f, 0.0f, ROAD_SIZE * move_road));
+        chest.modelMatrix = glm::translate(chest.modelMatrix, chest.reset);
+        chest.modelMatrix = glm::scale(chest.modelMatrix, glm::vec3(0.2f));
+
+        // ì€ë‘ ì—…ë°ì´íŠ¸
+        silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth, false);
+        silverWolf.pos = glm::vec3(0.0f, 0.0f, 0.0f);
+
+        trainer->Update(deltaTime, gameCamera.right_mouth, silverWolf.pos);
+        trainer->pos = glm::vec3(0.0f, 0.0f, 5.0f);
+
+        static float timer = 0.0f;
+        timer += deltaTime * 1.5f;
+        if (timer >= 0.5f) timer = 0.0f;
+        float t = -1.6f * pow(timer - 0.25f, 2) + 0.1f;
+        gameCamera.camPos = glm::vec3(0.0f, 0.47f + t, 0.025f);
+        gameCamera.camTarget = silverWolf.pos + glm::vec3(0.0f, 0.0f, -40.0f);
+
+        if (arrive) {
+            black_background->color.w += deltaTime * 0.5f;
+            if (black_background->color.w >= 1.0f) {
+                g_Framework->sceneManager->Change_Mode(new title_mode());
+            }
+        }
+
+    }
+
 }
 
-// 3. ±×¸®±â (±âÁ¸ drawScene ÇÔ¼ö ³»¿ë)
+void clear_mode::objects_Update(float deltaTime) {
+    //ë§µ ì´ë™
+    static float move_road = 0.0f;
+    move_road += deltaTime;
+    if (move_road >= 1.0f) move_road = 0.0f;
+    for (auto& block : mazeBlocks) {
+        block.modelMatrix = glm::mat4(1.0f);
+        block.modelMatrix = glm::translate(block.modelMatrix, glm::vec3(0.0f, 0.0f, ROAD_SIZE * move_road));
+        block.modelMatrix = glm::translate(block.modelMatrix, block.reset);
+    }
+
+    // ì€ë‘ ì—…ë°ì´íŠ¸
+    silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth, false);
+    silverWolf.pos = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    // íŠ¸ë ˆì´ë„ˆ ì—…ë°ì´íŠ¸
+    trainer->Update(deltaTime, gameCamera.right_mouth, silverWolf.pos);
+}
+
+// 3. ê·¸ë¦¬ê¸° (ê¸°ì¡´ drawScene í•¨ìˆ˜ ë‚´ìš©)
 void clear_mode::Draw() {
+    Fog_Update();
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // ë·°, í”„ë¡œì ì…˜ í–‰ë ¬ ê³„ì‚°
+    glm::mat4 view = glm::lookAt(gameCamera.camPos, gameCamera.camTarget, gameCamera.camUp);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
+
+    // static ëª¨ë¸ ê·¸ë¦¬ê¸°
+    glUseProgram(shaderProgramStatic);
+    setCommonUniforms(shaderProgramStatic, view, proj);
+
+    //for (auto& block : mazeBlocks) {   //ë¯¸ë¡œ
+    //    glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(block.modelMatrix));
+    //    if (block.modelPtr)
+    //    {
+    //        for (auto& mesh : block.modelPtr->meshes)
+    //        {
+    //            mesh.Draw(shaderProgramStatic);
+    //        }
+    //    }
+    //}
+
+    for (int i = 0; i < mazeBlocks.size();i++) {
+        if (scene_progress != 2 && i == 6) continue;
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(mazeBlocks[i].modelMatrix));
+        if (mazeBlocks[i].modelPtr)
+        {
+            for (auto& mesh : mazeBlocks[i].modelPtr->meshes)
+            {
+                mesh.Draw(shaderProgramStatic);
+            }
+        }
+    }
+
+    if (scene_progress == 2 && chest.modelPtr) {
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE, glm::value_ptr(chest.modelMatrix));
+        for (auto& mesh : chest.modelPtr->meshes) {
+            mesh.Draw(shaderProgramStatic);
+        }
+    }
+
+    // --- 2. ì• ë‹ˆë©”ì´ì…˜ ìºë¦­í„° ---
+    glUseProgram(shaderProgramAnimated);
+    setCommonUniforms(shaderProgramAnimated, view, proj);
+
+    // ì‹œê°„ê°’ ì „ë‹¬ (glutGetì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•˜ê±°ë‚˜, ëˆ„ì  ì‹œê°„ì„ ì‚¬ìš©í•  ìˆ˜ ìˆìŒ)
+    silverWolf.Draw(shaderProgramAnimated, 0.0f, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
+    if (!silverWolf.init_success) silverWolf.init_success = true;
+    if (pause || qte_pause) {
+        if (silverWolf.thisChannel) {
+            bool isPlaying = false;
+            silverWolf.thisChannel->isPlaying(&isPlaying);
+            if (isPlaying) {
+                silverWolf.thisChannel->stop();
+            }
+        }
+    }
+    trainer->Draw(shaderProgramAnimated, 0.0f, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
+
+    // ìŠ¤ì¹´ì´ë°•ìŠ¤ ê·¸ë¦¬ê¸°
+    glUseProgram(shaderProgramSkybox);
+    //setCommonUniforms(shaderProgramSkybox, view, proj);
+    skybox->Draw(view, proj, shaderProgramSkybox);
+
+    // --- 3. UI ê·¸ë¦¬ê¸° ---
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glm::mat4 uiProj = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT);
+
+    if (scene_progress == 0) {
+        black_bar->Draw(shaderProgramImage, uiProj);
+        if (event_progress > 0 && event_progress < 6) {
+            scene_1[event_progress - 1]->Draw(shaderProgramImage, uiProj);
+        }
+    }
+    else if (scene_progress == 1) {
+        black_bar->Draw(shaderProgramImage, uiProj);
+
+        if (pause) {
+            black_background->Draw(shaderProgramImage, uiProj);
+            qte_tip->Draw(shaderProgramImage, uiProj);
+        }
+
+        if (qte_pause) {
+            qte_f->Draw(shaderProgramImage, uiProj);
+            drawCircle(940.0f, 360.0f, circle_radius, glm::vec4(1.0f, 1.0f, 0.5f, 1.0f));
+        }
+
+        if (qte_is_success == 1) {
+            scene_2[0]->Draw(shaderProgramImage, uiProj);
+        }
+        else if (qte_is_success == -1) {
+            scene_2[1]->Draw(shaderProgramImage, uiProj);
+        }
+    }
+    else if (scene_progress == 2) {
+        black_bar->Draw(shaderProgramImage, uiProj);
+        black_background->Draw(shaderProgramImage, uiProj);
+    }
+
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 }
 
-void clear_mode::Fog_And_Flashlight_Update() {
+void clear_mode::Fog_Update() {
+    // ë·°, í”„ë¡œì ì…˜ í–‰ë ¬ ê³„ì‚°
+    glm::mat4 view = glm::lookAt(gameCamera.camPos, gameCamera.camTarget, gameCamera.camUp);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
+
+    // static ëª¨ë¸ ê·¸ë¦¬ê¸°
+    glUseProgram(shaderProgramStatic);
+    setCommonUniforms(shaderProgramStatic, view, proj);
+    GLint fogColorLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogColor");
+    GLint fogStartLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogStart");
+    GLint fogEndLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogEnd");
+    glUniform3f(fogColorLocStatic, 0.5f, 0.5f, 0.5f);
+    glUniform1f(fogStartLocStatic, 20.0f);
+    glUniform1f(fogEndLocStatic, 25.0f);
+
+    glUseProgram(shaderProgramAnimated);
+    setCommonUniforms(shaderProgramAnimated, view, proj);
+    GLint fogColorLocAnimated = glGetUniformLocation(shaderProgramAnimated, "u_FogColor");
+    GLint fogStartLocAnimated = glGetUniformLocation(shaderProgramAnimated, "u_FogStart");
+    GLint fogEndLocAnimated = glGetUniformLocation(shaderProgramAnimated, "u_FogEnd");
+    glUniform3f(fogColorLocAnimated, 0.5f, 0.5f, 0.5f);
+    glUniform1f(fogStartLocAnimated, 20.0f);
+    glUniform1f(fogEndLocAnimated, 25.0f);
 }
 
 void clear_mode::Keyboard(unsigned char key, int x, int y) {
+    switch (key)
+    {
+    case 13:
+        if (scene_progress == 0) {
+            if (event_progress > 0 && event_progress < 6) {
+                event_progress++;
+                pause = false;
+
+                if (event_progress == 2) playerChannel = soundManager.Play("clear_2", silverWolf.pos, effect_volume);
+                else if (event_progress == 4) playerChannel = soundManager.Play("clear_3", silverWolf.pos, effect_volume);
+                else if (event_progress == 5) playerChannel = soundManager.Play("clear_4", silverWolf.pos, effect_volume);
+            }
+        }
+        else if (scene_progress == 1) {
+            pause = false;
+            black_background->color.w = 0.0f;
+        }
+        break;
+    case 'f':
+    case 'F':
+        if (scene_progress == 1) {
+            if (circle_radius != 0.0f) {
+                if (qte_pause && circle_radius > 65.0f && circle_radius < 85.0f) {
+                    playerChannel->stop();
+                    playerChannel = soundManager.Play("quest", silverWolf.pos, effect_volume);
+                    qte_is_success = 1;
+                    qte_success_count++;
+                    qte_pause = false;
+                    circle_radius = 0.0f;
+                    silverWolf.Keyboard('f', 0.0f, 0.0f);
+                }
+                else {
+                    qte_is_success = -1;
+                    qte_pause = false;
+                    circle_radius = 0.0f;
+                }
+            }
+        }
+        break;
+    }
 }
 
 void clear_mode::Keyupboard(unsigned char key, int x, int y) {
@@ -64,13 +571,13 @@ void  clear_mode::Motion(int x, int y) {
 }
 
 void clear_mode::OnPause() {
-    // ¿É¼Ç Ã¢ µîÀ» ¿­¾úÀ» ¶§ ¸ØÃç¾ß ÇÒ ·ÎÁ÷ÀÌ ÀÖ´Ù¸é ¿©±â¿¡ ÀÛ¼º
+    // ì˜µì…˜ ì°½ ë“±ì„ ì—´ì—ˆì„ ë•Œ ë©ˆì¶°ì•¼ í•  ë¡œì§ì´ ìˆë‹¤ë©´ ì—¬ê¸°ì— ì‘ì„±
 }
 
 void clear_mode::OnResume() {
-    // ¿É¼Ç Ã¢ ´İ°í µ¹¾Æ¿ÔÀ» ¶§ º¹±¸ÇÒ ·ÎÁ÷
+    // ì˜µì…˜ ì°½ ë‹«ê³  ëŒì•„ì™”ì„ ë•Œ ë³µêµ¬í•  ë¡œì§
 
-    glEnable(GL_DEPTH_TEST); // È¤½Ã ´Ù¸¥ ¾À¿¡¼­ ²°À»±îºÁ ´Ù½Ã ÄÔ
+    glEnable(GL_DEPTH_TEST); // í˜¹ì‹œ ë‹¤ë¥¸ ì”¬ì—ì„œ ê»ì„ê¹Œë´ ë‹¤ì‹œ ì¼¬
 }
 
 void clear_mode::Reshape(int w, int h) {
@@ -152,4 +659,67 @@ void clear_mode::loadShader(const char* vertPath, const char* fragPath, GLuint& 
 
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
+}
+
+void clear_mode::drawCircle(float x, float y, float r, glm::vec4 color) {
+    const int segments = 360;
+    std::vector<float> vertices;
+
+    for (int i = 0; i <= segments; i++) {
+        float angle = glm::radians(static_cast<float>(i));
+        vertices.push_back(x + r * cos(angle));
+        vertices.push_back(y + r * sin(angle));
+    }
+
+    glUseProgram(shaderProgramImage);
+
+    // âœ… ë”ë¯¸ í°ìƒ‰ í…ìŠ¤ì²˜ ë°”ì¸ë”© (ì…°ì´ë”ê°€ í…ìŠ¤ì²˜ë¥¼ ìƒ˜í”Œë§í•  ë•Œ í°ìƒ‰ ë°˜í™˜)
+    GLuint whiteTexture;
+    glGenTextures(1, &whiteTexture);
+    glBindTexture(GL_TEXTURE_2D, whiteTexture);
+    unsigned char white[4] = { 255, 255, 255, 255 };
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // model í–‰ë ¬
+    GLint modelLoc = glGetUniformLocation(shaderProgramImage, "model");
+    if (modelLoc != -1) {
+        glm::mat4 model = glm::mat4(1.0f);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    }
+
+    // projection í–‰ë ¬
+    glm::mat4 uiProj = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgramImage, "projection"), 1, GL_FALSE, glm::value_ptr(uiProj));
+
+    // âœ… spriteColor ì„¤ì •
+    glUniform4fv(glGetUniformLocation(shaderProgramImage, "spriteColor"), 1, glm::value_ptr(color));
+
+    GLuint tempVAO, tempVBO;
+    glGenVertexArrays(1, &tempVAO);
+    glGenBuffers(1, &tempVBO);
+
+    glBindVertexArray(tempVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, tempVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+    // âœ… ì„  ë‘ê»˜
+    glLineWidth(5.0f);
+
+    // âœ… í…Œë‘ë¦¬ë§Œ ê·¸ë¦¬ê¸°
+    glDrawArrays(GL_LINE_LOOP, 0, segments + 1);
+
+    glDisableVertexAttribArray(0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glDeleteBuffers(1, &tempVBO);
+    glDeleteVertexArrays(1, &tempVAO);
+
+    // âœ… í…ìŠ¤ì²˜ ì •ë¦¬
+    glDeleteTextures(1, &whiteTexture);
 }

@@ -8,7 +8,6 @@
 #include "text.h"
 #include "skybox.h"
 #include "resource.h"
-
 class title_mode : public Scene
 {
 public:
@@ -21,7 +20,6 @@ private:
 	GLuint shaderProgramText;
 
 	// 모델 데이터
-	std::vector<StaticModel*> roads;
 	MAZE maze;
 
 	//ui 및 이미지 관련

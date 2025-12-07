@@ -109,9 +109,9 @@ void MAZE::setMaze() {
     printMaze();
 }
 
-void MAZE::title_maze(std::vector<StaticModel*>* roads) {
+void MAZE::title_maze() {
     MazeBlockInstance roadInstance;
-    roadInstance.modelPtr = roads->at(0);
+    roadInstance.modelPtr = roads.at(2);
     roadInstance.modelMatrix = glm::mat4(1.0f);
     roadInstance.reset = glm::vec3(0.0f);
     mazeBlocks.push_back(roadInstance);

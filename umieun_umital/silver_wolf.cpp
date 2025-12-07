@@ -317,7 +317,7 @@ void silver_wolf::Keyboard(unsigned char key, int x, int y) {
 		break;
 	case 'r':
 	case 'R':
-		flashlight_on = true;
+		if(skybox_change) flashlight_on = true;
 		break;
 	}
 

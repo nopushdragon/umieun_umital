@@ -25,11 +25,6 @@ title_mode::~title_mode() {
 }
 
 void title_mode::Finish() {
-    // 로드된 도로 모델들 삭제
-    for (auto p : roads) {
-        delete p;
-    }
-    roads.clear();
 
     // 늑대 모델 삭제 (silver_wolf 클래스 내부 구조에 따라 다를 수 있음)
     // NewModel* 포인터들을 가지고 있다면 여기서 delete 해주는 것이 좋음
@@ -45,9 +40,9 @@ void title_mode::Finish() {
     if (title) {
         delete title;
     }
-    if(loading_image) {
+    if (loading_image) {
         delete loading_image;
-	}
+    }
 
     // main 이미지들 삭제
     for (auto& m : main) {
@@ -80,8 +75,7 @@ void title_mode::Finish() {
 
 void title_mode::loadModels() {
     // 미로
-    roads.push_back(new StaticModel("road/road2.obj"));   // 2남 
-    maze.title_maze(&roads);
+    maze.title_maze();
 
     //은랑
     silverWolf.Init();
@@ -99,8 +93,8 @@ void title_mode::loadImages() {
     title = new Image(LoadTexture("title/title.png"), pos1, size1);
     title->color.w = 1.0f;
 
-	loading_image = new Image(LoadTexture("title/loading.png"), pos1, size1);
-	loading_image->color.w = 1.0f;
+    loading_image = new Image(LoadTexture("title/loading.png"), pos1, size1);
+    loading_image->color.w = 1.0f;
 
     main.push_back(new Image(LoadTexture("title/main.png"), pos1, size1));
     main.push_back(new Image(LoadTexture("title/main_start.png"), pos1, size1));
@@ -113,7 +107,7 @@ void title_mode::loadImages() {
     set_maze[1] = new Image(LoadTexture("title/set_maze_5x5.png"), pos1, size1);
     set_maze[2] = new Image(LoadTexture("title/set_maze_15x15.png"), pos1, size1);
     set_maze[3] = new Image(LoadTexture("title/set_maze_25x25.png"), pos1, size1);
-   
+
     draw_set_maze = false;
 
     stbi_set_flip_vertically_on_load(false);
@@ -161,14 +155,12 @@ void title_mode::Init() {
     glEnable(GL_DEPTH_TEST);
 }
 
-float title_deltatime;
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void title_mode::Update(float deltaTime) {
     soundManager.Update();
-    silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth,skybox->change);
+    silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth, skybox->change);
+    silverWolf.pos = glm::vec3(0.0f, 0.0f, 0.0f);
     if (gameCamera.moving) gameCamera.title_update(deltaTime, silverWolf.pos, start_pos_idx, end_pos_idx);
-
-    title_deltatime = deltaTime;
 }
 
 // 3. 그리기 (기존 drawScene 함수 내용)
@@ -198,14 +190,12 @@ void title_mode::Draw() {
         }
     }
 
-
-
     // --- 2. 애니메이션 캐릭터 ---
     glUseProgram(shaderProgramAnimated);
     setCommonUniforms(shaderProgramAnimated, view, proj);
 
     // 시간값 전달 (glutGet을 그대로 사용하거나, 누적 시간을 사용할 수 있음)
-    silverWolf.Draw(shaderProgramAnimated, title_deltatime, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
+    silverWolf.Draw(shaderProgramAnimated, 0.0f, view, proj, glm::vec3(1.0f, 0.0f, 1.0f));
     if (!silverWolf.init_success) silverWolf.init_success = true;
 
     // 스카이박스 그리기
@@ -237,17 +227,15 @@ void title_mode::Draw() {
             score = account.best_score(2);
             textUI.Draw(score, 985.0f, 200.0f, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
 
-			if (loading_start) loading_image->Draw(shaderProgramImage, uiProj);
+            if (loading_start) loading_image->Draw(shaderProgramImage, uiProj);
         }
     }
-
-	mouth_image->Draw(shaderProgramImage, uiProj);
-
+    mouth_image->Draw(shaderProgramImage, uiProj);
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 }
 
-void title_mode::Fog_And_Flashlight_Update(){
+void title_mode::Fog_And_Flashlight_Update() {
     // 뷰, 프로젝션 행렬 계산
     glm::mat4 view = glm::lookAt(gameCamera.camPos, gameCamera.camTarget, gameCamera.camUp);
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
@@ -275,7 +263,7 @@ void title_mode::Fog_And_Flashlight_Update(){
 void title_mode::Keyboard(unsigned char key, int x, int y) {
     switch (key)
     {
-	case 13:    // enter
+    case 13:    // enter
         if (!gameCamera.moving && gameCamera.now_pos_idx == 0) {
             playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
             start_pos_idx = 0;
@@ -283,7 +271,7 @@ void title_mode::Keyboard(unsigned char key, int x, int y) {
             gameCamera.moving = true;
         }
         break;
-	case 27:    // esc
+    case 27:    // esc
         if (!gameCamera.moving && gameCamera.now_pos_idx == 0) {
 
             exit(0);
@@ -339,10 +327,12 @@ void title_mode::Mouse(int button, int state, int x, int y) {
             else {
                 if (x >= 600 && x <= 1200 && y >= 0 && y <= 800) {
                     uniform_int_distribution<int> random_player(0, 2);
-					bool isplaying;
-					playerChannel->isPlaying(&isplaying);
+                    uniform_int_distribution<int> random_event(0, 1);
+                    bool isplaying;
+                    playerChannel->isPlaying(&isplaying);
                     if (!isplaying) {
-                        silverWolf.Keyboard(' ', x, y);
+                        if (random_event(mt) == 0) silverWolf.Keyboard(' ', x, y);
+                        else silverWolf.Keyboard('f', x, y);
                         playerChannel = soundManager.Play("silverwolf" + to_string(random_player(mt)), glm::vec3(0.0f, 0.0f, 0.0f), effect_volume);
                     }
                 }
@@ -421,7 +411,7 @@ void title_mode::PassiveMotion(int x, int y) {
             }
         }
         else {
-            if (x >= 110 && x <= 360 && y >= 175 && y <= 625) { 
+            if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
                 set_maze_idx = 1;
             }
             else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
@@ -435,7 +425,7 @@ void title_mode::PassiveMotion(int x, int y) {
             }
         }
     }
-	mouth_image->position = glm::vec2((float)x+32, (float)(WINDOW_HEIGHT - (y + 32)));
+    mouth_image->position = glm::vec2((float)x + 32, (float)(WINDOW_HEIGHT - (y + 32)));
 }
 
 void  title_mode::Motion(int x, int y) {

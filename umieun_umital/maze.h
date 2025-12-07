@@ -37,5 +37,5 @@ public:
     void generatetype();
     void initmaze();
     void setMaze();
-    void title_maze(std::vector<StaticModel*>* roads);
+    void title_maze();
 };

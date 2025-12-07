@@ -13,6 +13,7 @@
 #include "image.h"
 #include "text.h"
 #include "resource.h"
+
 class game_mode : public Scene
 {
 public:
@@ -70,6 +71,8 @@ private:
     Image* game_ui = nullptr;
     Image* e_key_image = nullptr;
     bool show_e_key = false;
+    Image* game_tip = nullptr;
+    bool tip = false;
 
     // ±â·Ï
     float record_time;
@@ -97,7 +100,7 @@ public:
     void Init() override;
     void Update(float deltaTime) override;
 
-	void Fog_And_Flashlight_Update();
+    void Fog_And_Flashlight_Update();
     void silverwolf_chunk_collision();
 
     void trainer_chunk_collision();

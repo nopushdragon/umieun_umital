@@ -65,7 +65,7 @@ void SceneManager::Push_Mode(Scene* newScene) {
 void SceneManager::Pop_Mode() {
 	if (sceneStack.empty()) return;
 	Scene* cur = sceneStack.back();
-	cur->Init();
+	cur->Finish();
 	delete cur;
 	sceneStack.pop_back();
 	if (!sceneStack.empty()) {

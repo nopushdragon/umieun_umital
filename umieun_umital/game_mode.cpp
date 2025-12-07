@@ -3,6 +3,10 @@
 #include "account.h"
 #include "game_framwork.h"
 #include "title_mode.h"
+#include "clear_mode.h"
+#include "option_mode.h"
+#include "silver_wolf.h"
+#include "state_machine.h"
 
 // 셰이더 파일 경로 상수
 const char* STATIC_VERT = "static_vertex.glsl";
@@ -71,7 +75,6 @@ void game_mode::Init() {
 
     playerChannel = soundManager.Play("quest", silverWolf.pos, effect_volume);
 
-
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -92,7 +95,7 @@ void game_mode::Update(float deltaTime) {
 
     //  궁극기
     if (ultimate) {
-        ultimate_frame += 0.3f;
+        ultimate_frame += 20.0f * deltaTime;
         //ultimate_frame += 0.2f;
         //cout<< ultimate_frame << endl;
         if (ultimate_frame >= 103.0f) {
@@ -110,11 +113,11 @@ void game_mode::Update(float deltaTime) {
     if (fade) {
         black_background->color.w += 1.0f * (deltaTime / 2.0f);
         if (black_background->color.w >= 1.0f) {
-            g_Framework->sceneManager->Change_Mode(new title_mode());
+            g_Framework->sceneManager->Change_Mode(new clear_mode());
         }
     }
     else {
-        silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth,skybox->change);
+        silverWolf.Update(deltaTime, gameCamera.camera_x_angle, gameCamera.camera_y_angle, gameCamera.right_mouth, skybox->change);
         gameCamera.Update(deltaTime, silverWolf.pos);
         //카메라 고정
         if (camera_fixed == false) glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
@@ -469,7 +472,6 @@ void game_mode::Draw() {
     GLint fogboolLocStatic = glGetUniformLocation(shaderProgramStatic, "fogEnabled");
     glUniform1f(fogboolLocStatic, false);
     glUniform1i(glGetUniformLocation(shaderProgramStatic, "flashlight_on"), false);
-
     glUseProgram(shaderProgramAnimated);
     setCommonUniforms(shaderProgramAnimated, view, proj);
     GLint fogboolLocAnimated = glGetUniformLocation(shaderProgramAnimated, "fogEnabled");
@@ -534,7 +536,10 @@ void game_mode::Draw() {
     glm::mat4 uiProj = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT);
 
     if (game_start || fade) black_background->Draw(shaderProgramImage, uiProj);
-    if (game_start) mission->Draw(shaderProgramImage, uiProj);
+    if (game_start) {
+        if (tip) game_tip->Draw(shaderProgramImage, uiProj);
+        else mission->Draw(shaderProgramImage, uiProj);
+    }
     if (!game_start && !fade) {
         game_ui->Draw(shaderProgramImage, uiProj);
         if (show_e_key) e_key_image->Draw(shaderProgramImage, uiProj);
@@ -556,16 +561,15 @@ void game_mode::Draw() {
             return;
         }
     }
-
-    if(camera_fixed)
-	mouth_image->Draw(shaderProgramImage, uiProj);
+    if (camera_fixed)
+        mouth_image->Draw(shaderProgramImage, uiProj);
 
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 }
 
 void game_mode::Fog_And_Flashlight_Update() {
-    
+
     bool flashlight_on = silverWolf.flashlight_on;
 
     // 뷰, 프로젝션 행렬 계산
@@ -579,7 +583,6 @@ void game_mode::Fog_And_Flashlight_Update() {
     GLint fogStartLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogStart");
     GLint fogEndLocStatic = glGetUniformLocation(shaderProgramStatic, "u_FogEnd");
     GLint fogboolLocStatic = glGetUniformLocation(shaderProgramStatic, "fogEnabled");
-
     glUniform3f(fogColorLocStatic, 0.5f, 0.5f, 0.5f);
     glUniform1f(fogStartLocStatic, 20.0f);
     glUniform1f(fogEndLocStatic, 25.0f);
@@ -591,7 +594,6 @@ void game_mode::Fog_And_Flashlight_Update() {
     glUniform3fv(glGetUniformLocation(shaderProgramStatic, "flashDir"), 1, glm::value_ptr(flashDir));
     glUniform1f(glGetUniformLocation(shaderProgramStatic, "flashCutOff"), glm::cos(glm::radians(12.5f)));
     glUniform1f(glGetUniformLocation(shaderProgramStatic, "flashOuterCutOff"), glm::cos(glm::radians(17.5f)));
-
 
     glUseProgram(shaderProgramAnimated);
     setCommonUniforms(shaderProgramAnimated, view, proj);
@@ -660,27 +662,41 @@ void game_mode::drawMiniMap(int w, int h)
 
             if (maze.mazeBlocks[index].was_colliding) {
                 // 방문한 블록
+                //if (maze.maze[i][j].path_wall == WALL) {
+                //    // 벽은 검은색 큐브로 표시
+                //    glm::vec3 blockColor = glm::vec3(0.2f, 0.2f, 0.2f);
+                //    glUniform1i(glGetUniformLocation(shaderProgramStatic, "bUseTexture"), 0);
+                //    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "materialColorDefault"), 1, glm::value_ptr(blockColor));
+                //    glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE,
+                //        glm::value_ptr(maze.mazeBlocks[index].modelMatrix));
+                //
+                //    drawMiniMapCube(shaderProgramStatic, maze.mazeBlocks[index].modelMatrix);
+                //}
+                //else {
+                //    // 길은 실제 모델을 그림 (텍스처 포함)
+                //    glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE,
+                //        glm::value_ptr(maze.mazeBlocks[index].modelMatrix));
+                //
+                //    if (maze.mazeBlocks[index].modelPtr) {
+                //        for (auto& mesh : maze.mazeBlocks[index].modelPtr->meshes) {
+                //            mesh.Draw(shaderProgramStatic);
+                //        }
+                //    }
+                //}
+                glm::vec3 blockColor;
                 if (maze.maze[i][j].path_wall == WALL) {
                     // 벽은 검은색 큐브로 표시
-                    glm::vec3 blockColor = glm::vec3(0.2f, 0.2f, 0.2f);
-                    glUniform1i(glGetUniformLocation(shaderProgramStatic, "bUseTexture"), 0);
-                    glUniform3fv(glGetUniformLocation(shaderProgramStatic, "materialColorDefault"), 1, glm::value_ptr(blockColor));
-                    glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE,
-                        glm::value_ptr(maze.mazeBlocks[index].modelMatrix));
-
-                    drawMiniMapCube(shaderProgramStatic, maze.mazeBlocks[index].modelMatrix);
+                    blockColor = glm::vec3(0.2f, 0.2f, 0.2f);
                 }
                 else {
-                    // 길은 실제 모델을 그림 (텍스처 포함)
-                    glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE,
-                        glm::value_ptr(maze.mazeBlocks[index].modelMatrix));
-
-                    if (maze.mazeBlocks[index].modelPtr) {
-                        for (auto& mesh : maze.mazeBlocks[index].modelPtr->meshes) {
-                            mesh.Draw(shaderProgramStatic);
-                        }
-                    }
+                    blockColor = glm::vec3(0.3f, 0.5f, 0.7f);
                 }
+                glUniform1i(glGetUniformLocation(shaderProgramStatic, "bUseTexture"), 0);
+                glUniform3fv(glGetUniformLocation(shaderProgramStatic, "materialColorDefault"), 1, glm::value_ptr(blockColor));
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgramStatic, "uModel"), 1, GL_FALSE,
+                glm::value_ptr(maze.mazeBlocks[index].modelMatrix));
+
+                drawMiniMapCube(shaderProgramStatic, maze.mazeBlocks[index].modelMatrix);
             }
             else {
                 // 방문하지 않은 블록 - 어두운 큐브로 표시
@@ -797,9 +813,12 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
     if (key == 13) { // Enter key
         if (game_start) {
             playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
-
-            game_start = false;
-            camera_fixed = false;
+            if (!tip) tip = true;
+            else {
+                tip = false;
+                game_start = false;
+                camera_fixed = false;
+            }
         }
     }
     if (game_start || fade) return;
@@ -808,6 +827,9 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
 
     switch (key)
     {
+    case 27:
+        g_Framework->sceneManager->Change_Mode(new title_mode());
+        break;
     case 9:
         collision_on = !collision_on;
         break;
@@ -828,6 +850,7 @@ void game_mode::Keyboard(unsigned char key, int x, int y) {
         silverWolf.s_press = false;
         silverWolf.d_press = false;
         silverWolf.thisChannel->stop();
+		silverWolf.ChangeState(new State_Idle());
         playerChannel = soundManager.Play("silverwolfult", silverWolf.pos, effect_volume);
         break;
     }
@@ -841,9 +864,6 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
 
     switch (key)
     {
-    case 27:
-        exit(0);
-        break;
     case'g':
     case'G':
         camera_fixed = false;
@@ -864,7 +884,7 @@ void game_mode::Keyupboard(unsigned char key, int x, int y) {
             }
         }
 
-        if (chest.open_chest(kill_count, 0)) {
+        if (chest.open_chest(kill_count, target_count)) {
             if (account.scores[level] <= 1.0f) {
                 account.update_score(level, record_time);
             }
@@ -893,11 +913,8 @@ void game_mode::SpecialKeyboard(int key, int x, int y) {
             silverWolf.runSpeed = 20.0f;
         else silverWolf.runSpeed = 3.0f;
         is_f1 = !is_f1;
-        break;
-
-    case GLUT_KEY_F2:
         silverWolf.ball_cnt = 30;
-        break;
+		kill_count = target_count;
     }
 }
 
@@ -913,6 +930,21 @@ void game_mode::Mouse(int button, int state, int x, int y) {
     }
     else gameCamera.right_mouth = false;
     silverWolf.Mouse(button, state, x, y);
+
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        if (x >= 1150 && x <= 1250 && y >= 0 && y <= 60) {
+            playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
+            silverWolf.ChangeState(new State_Idle());
+            silverWolf.w_press = false;
+            silverWolf.a_press = false;
+            silverWolf.s_press = false;
+            silverWolf.d_press = false;
+            silverWolf.thisChannel->stop();
+
+
+            g_Framework->sceneManager->Push_Mode(new option_mode());
+        }
+    }
 }
 
 void game_mode::PassiveMotion(int x, int y) {
@@ -920,7 +952,6 @@ void game_mode::PassiveMotion(int x, int y) {
     if (ultimate)return;
     if (silverWolf.init_success)
         gameCamera.PassiveMotion(x, y, camera_fixed);
-
 }
 
 void  game_mode::Motion(int x, int y) {
@@ -930,38 +961,46 @@ void  game_mode::Motion(int x, int y) {
 
 // 4. 정리 (종료 시 메모리 해제)
 void game_mode::Finish() {
-    // 1. trainers 벡터 정리 (동적 할당된 포인터만)
+    std::cout << "[GameMode] Finish: 시작" << std::endl;
+
+    // 모든 사운드 채널 정지
+    if (bgmChannel) {
+        bgmChannel->stop();
+        bgmChannel = nullptr;
+    }
+
+    if (playerChannel) {
+        playerChannel->stop();
+        playerChannel = nullptr;
+    }
+
+    if (silverWolf.thisChannel) {
+        silverWolf.thisChannel->stop();
+        silverWolf.thisChannel = nullptr;
+    }
+
+    for (auto& b : balls) {
+        if (b.thisChannel) {
+            b.thisChannel->stop();
+            b.thisChannel = nullptr;
+        }
+    }
+
     for (auto trainer : trainers) {
+        if (trainer && trainer->thisChannel) {
+            trainer->thisChannel->stop();
+            trainer->thisChannel = nullptr;
+        }
         delete trainer;
     }
     trainers.clear();
 
-    // 2. balls 벡터 정리 (값 타입이므로 clear만)
+    // 2. balls 벡터 정리
     balls.clear();
 
-    // 로드된 도로 모델들 삭제
-    //for (auto p : roads) {
-    //    delete p;
-    //}
-    //roads.clear();
-
-    // target_model과 chest_model 삭제
-    //if (target_model) {
-    //    delete target_model;
-    //    target_model = nullptr;
-    //}
-    //
-    //if (chest_model) {
-    //    delete chest_model;
-    //    chest_model = nullptr;
-    //}
-
-    // 늑대 모델 삭제
+    // silverWolf 모델 포인터 정리
     for (int i = 0; i < 7; ++i) {
-        if (silverWolf.silverWolfModel[i]) {
-            delete silverWolf.silverWolfModel[i];
-            silverWolf.silverWolfModel[i] = nullptr;
-        }
+        silverWolf.silverWolfModel[i] = nullptr;
     }
 
     // ui 텍스트 리소스 정리
@@ -977,6 +1016,14 @@ void game_mode::Finish() {
         delete game_ui;
         game_ui = nullptr;
     }
+    if (e_key_image) {
+        delete e_key_image;
+        e_key_image = nullptr;
+    }
+    if (game_tip) {
+        delete game_tip;
+        game_tip = nullptr;
+    }
 
     // skybox 정리
     if (skybox) {
@@ -990,6 +1037,7 @@ void game_mode::Finish() {
     glDeleteProgram(shaderProgramSkybox);
     glDeleteProgram(shaderProgramImage);
     glDeleteProgram(shaderProgramText);
+
 }
 
 void game_mode::Reshape(int w, int h) {
@@ -999,10 +1047,18 @@ void game_mode::Reshape(int w, int h) {
 }
 
 void game_mode::OnPause() {
-    // 옵션 창 등을 열었을 때 멈춰야 할 로직이 있다면 여기에 작성
+    glEnable(GL_DEPTH_TEST); // 혹시 다른 씬에서 껐을까봐 다시 켬
+
+    if (!camera_fixed) {
+        glutSetCursor(GLUT_CURSOR_NONE);
+        glutWarpPointer(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+    }
+
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 void game_mode::OnResume() {
+    camera_fixed = false;
     // 옵션 창 닫고 돌아왔을 때 복구할 로직
     glEnable(GL_DEPTH_TEST); // 혹시 다른 씬에서 껐을까봐 다시 켬
 }
@@ -1062,6 +1118,9 @@ void game_mode::loadImages() {
 
     e_key_image = new Image(LoadTexture("scene_image/e_key.png"), pos1, size1);
     e_key_image->color.w = 0.8f;
+
+    game_tip = new Image(LoadTexture("scene_image/game_tip.png"), pos1, size1);
+    game_tip->color.w = 1.0f;
 
     stbi_set_flip_vertically_on_load(false);
 }
