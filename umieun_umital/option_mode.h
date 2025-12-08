@@ -18,6 +18,9 @@ private:
 	int WINDOW_WIDTH = winWidth;
 	int WINDOW_HEIGHT = winHeight;
 public:
+	void reshape_ui(float w, float h);
+	glm::vec2 ui_dis = glm::vec2(0.0f, 0.0f);
+
 	void Init() override;
 	void Update(float deltaTime) override;
 	void OnPause() override;

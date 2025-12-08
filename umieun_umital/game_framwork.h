@@ -19,6 +19,11 @@ public:
     SceneManager* sceneManager;
     GameTimer* gameTimer;
 
+    bool isFullscreen;
+    int windowedWidth;
+    int windowedHeight;
+    int windowedPosX;
+    int windowedPosY;
 
     GameFramework() {
         sceneManager = new SceneManager();
@@ -37,12 +42,11 @@ public:
         glutInitWindowSize(winWidth, winHeight);
         glutCreateWindow("ㅇㅅㅇ");
 
-        // 윈도우 크기 조절 비활성화 (Windows 전용)
 #ifdef _WIN32
         HWND hwnd = FindWindow(NULL, L"ㅇㅅㅇ");
         if (hwnd) {
             LONG style = GetWindowLong(hwnd, GWL_STYLE);
-            style &= ~(WS_SIZEBOX | WS_MAXIMIZEBOX); // 크기 조절 및 최대화 버튼 비활성화
+            style &= ~WS_SIZEBOX;
             SetWindowLong(hwnd, GWL_STYLE, style);
             SetWindowPos(hwnd, NULL, 0, 0, 0, 0,
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);

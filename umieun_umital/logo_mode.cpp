@@ -26,6 +26,17 @@ void logo_mode::Init() {
 
 }
 
+void logo_mode::reshape_ui(float w, float h) {
+	background_Image->size = glm::vec2(w, h);
+	background_Image->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+	tuk_image->size = glm::vec2(w, h);
+	tuk_image->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+	logo_Image->size = glm::vec2(w, h);
+	logo_Image->position = glm::vec2(w / 2.0f, h / 2.0f);
+}
+
 void logo_mode::Update(float deltaTime) {
 	// 로고 모드 업데이트 코드 작성
 	if (!turn_image) {
@@ -69,6 +80,7 @@ void logo_mode::Finish() {
 void logo_mode::Reshape(int w, int h) {
 	WINDOW_WIDTH = w;
 	WINDOW_HEIGHT = h;
+	reshape_ui(w,h);
 	glViewport(0, 0, w, h);
 }
 

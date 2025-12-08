@@ -90,7 +90,11 @@ void SceneManager::Draw() {
 }
 
 void SceneManager::Reshape(int w, int h) {
-	if (!sceneStack.empty()) sceneStack.back()->Reshape(w, h);
+	if (!sceneStack.empty()) {
+		for (Scene* s : sceneStack) {
+			s->Reshape(w, h);
+		}
+	}
 }
 
 void SceneManager::Mouse(int button, int state, int x, int y) {

@@ -25,7 +25,7 @@ public:
 	GLuint uiShaderProgram;
 
 
-
+	void reshape_ui(float w, float h);
 
 
 	void Init() override;

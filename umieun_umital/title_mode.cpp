@@ -84,8 +84,8 @@ void title_mode::loadModels() {
 void title_mode::loadImages() {
     stbi_set_flip_vertically_on_load(true);
 
-    glm::vec2 size1 = glm::vec2((float)winWidth, (float)winHeight);
-    glm::vec2 pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
+    glm::vec2 size1 = glm::vec2((float)1200, (float)800);
+    glm::vec2 pos1 = glm::vec2((float)1200 / 2.0f, (float)800 / 2.0f);
 
     white_background = new Image(LoadTexture("title/white_background.png"), pos1, size1);
     white_background->color.w = 0.4f;
@@ -111,6 +111,29 @@ void title_mode::loadImages() {
     draw_set_maze = false;
 
     stbi_set_flip_vertically_on_load(false);
+
+    ui_dis = glm::vec2((winWidth - 1200) / 2, (winHeight - 800) / 2);
+    reshape_ui(winWidth, winHeight);
+}
+void title_mode::reshape_ui(float w, float h) {
+	white_background->size = glm::vec2(w, h);
+	white_background->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+    title->size = glm::vec2(1200, 800);
+	title->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+	loading_image->size = glm::vec2(w, h);
+	loading_image->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+    for (auto& m : main) {
+        m->size = glm::vec2(1200, 800);
+        m->position = glm::vec2(m->size.x/2, h / 2.0f);
+	}
+
+    for (int i = 0; i < 4; ++i) {
+		set_maze[i]->size = glm::vec2(1200, 800);
+        set_maze[i]->position = glm::vec2(w / 2.0f, h / 2.0f);
+	}
 }
 void title_mode::loadTexts() {
     glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f);
@@ -305,19 +328,19 @@ void title_mode::Mouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         if (gameCamera.now_pos_idx == 1) {
             if (draw_set_maze) {
-                if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
+                if (x >= 110 + ui_dis.x && x <= 360 + ui_dis.x && y >= 175 + ui_dis.y && y <= 625 + ui_dis.y) {
                     playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
                     maze_x = 5;
                     maze_y = 5;
                     loading_start = true;
                 }
-                else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
+                else if (x >= 470 + ui_dis.x && x <= 720 + ui_dis.x && y >= 175 + ui_dis.y && y <= 625 + ui_dis.y) {
                     playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
                     maze_x = 15;
                     maze_y = 15;
                     loading_start = true;
                 }
-                else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
+                else if (x >= 830 + ui_dis.x && x <= 1080 + ui_dis.x && y >= 175 + ui_dis.y && y <= 625 + ui_dis.y) {
                     playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
                     maze_x = 25;
                     maze_y = 25;
@@ -325,7 +348,7 @@ void title_mode::Mouse(int button, int state, int x, int y) {
                 }
             }
             else {
-                if (x >= 600 && x <= 1200 && y >= 0 && y <= 800) {
+                if (x >= 600 + ui_dis.x && x <= WINDOW_WIDTH && y >= 0 && y <= WINDOW_HEIGHT) {
                     uniform_int_distribution<int> random_player(0, 2);
                     uniform_int_distribution<int> random_event(0, 1);
                     bool isplaying;
@@ -342,7 +365,7 @@ void title_mode::Mouse(int button, int state, int x, int y) {
     else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
         if (gameCamera.now_pos_idx == 1) {
             if (draw_set_maze) {
-                if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
+                if (x >= 110 + ui_dis.x && x <= 360 + ui_dis.x && y >= 175 + ui_dis.y && y <= 625 + ui_dis.y) {
                     playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
 
 
@@ -351,7 +374,7 @@ void title_mode::Mouse(int button, int state, int x, int y) {
                         g_Framework->sceneManager->Change_Mode(new game_mode());
                     }
                 }
-                else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
+                else if (x >= 470 + ui_dis.x && x <= 720 + ui_dis.x && y >= 175 + ui_dis.y && y <= 625 + ui_dis.y) {
                     playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
 
 
@@ -360,7 +383,7 @@ void title_mode::Mouse(int button, int state, int x, int y) {
                         g_Framework->sceneManager->Change_Mode(new game_mode());
                     }
                 }
-                else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
+                else if (x >= 830 + ui_dis.x && x <= 1080 + ui_dis.x && y >= 175 + ui_dis.y && y <= 625 + ui_dis.y) {
                     playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
 
 
@@ -371,7 +394,7 @@ void title_mode::Mouse(int button, int state, int x, int y) {
                 }
             }
             else {
-                if (x >= 30 && x <= 450 && y >= 160 && y <= 240) { //start
+                if (x >= 0 && x <= 450 && y >= 160 + ui_dis.y && y <= 240 + ui_dis.y) { //start
                     playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
 
 
@@ -379,14 +402,14 @@ void title_mode::Mouse(int button, int state, int x, int y) {
                     draw_set_maze = true;
                     main_idx = 0;
                 }
-                else if (x >= 30 && x <= 450 && y >= 360 && y <= 440) { //option
+                else if (x >= 0 && x <= 450 && y >= 360 + ui_dis.y && y <= 440 + ui_dis.y) { //option
                     playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
 
 
 
                     g_Framework->sceneManager->Push_Mode(new option_mode());
                 }
-                else if (x >= 30 && x <= 450 && y >= 560 && y <= 640) {  //exit
+                else if (x >= 0 && x <= 450 && y >= 560 + ui_dis.y && y <= 640 + ui_dis.y) {  //exit
                     exit(0);
                 }
             }
@@ -397,13 +420,13 @@ void title_mode::Mouse(int button, int state, int x, int y) {
 void title_mode::PassiveMotion(int x, int y) {
     if (gameCamera.now_pos_idx == 1) {
         if (!draw_set_maze) {
-            if (x >= 30 && x <= 450 && y >= 160 && y <= 240) { //start
+            if (x >= 0 && x <= 450 && y >= 160 + ui_dis.y && y <= 240 + ui_dis.y) { //start
                 main_idx = 1;
             }
-            else if (x >= 30 && x <= 450 && y >= 360 && y <= 440) { //option
+            else if (x >= 0 && x <= 450 && y >= 360 + ui_dis.y && y <= 440 + ui_dis.y) { //option
                 main_idx = 2;
             }
-            else if (x >= 30 && x <= 450 && y >= 560 && y <= 640) {  //exit
+            else if (x >= 0 && x <= 450 && y >= 560 + ui_dis.y && y <= 640 + ui_dis.y) {  //exit
                 main_idx = 3;
             }
             else {
@@ -411,13 +434,13 @@ void title_mode::PassiveMotion(int x, int y) {
             }
         }
         else {
-            if (x >= 110 && x <= 360 && y >= 175 && y <= 625) {
+            if (x >= 110 + ui_dis.x && x <= 360 + ui_dis.x && y >= 175 + ui_dis.y && y <= 625 + ui_dis.y) {
                 set_maze_idx = 1;
             }
-            else if (x >= 470 && x <= 720 && y >= 175 && y <= 625) {
+            else if (x >= 470 + ui_dis.x && x <= 720 + ui_dis.x && y >= 175 + ui_dis.y && y <= 625 + ui_dis.y) {
                 set_maze_idx = 2;
             }
-            else if (x >= 830 && x <= 1080 && y >= 175 && y <= 625) {
+            else if (x >= 830 + ui_dis.x && x <= 1080 + ui_dis.x && y >= 175 + ui_dis.y && y <= 625 + ui_dis.y) {
                 set_maze_idx = 3;
             }
             else {
@@ -437,13 +460,16 @@ void title_mode::OnPause() {
 
 void title_mode::OnResume() {
     // 옵션 창 닫고 돌아왔을 때 복구할 로직
-
+    ui_dis = glm::vec2((winWidth - 1200) / 2, (winHeight - 800) / 2);
+    reshape_ui(winWidth, winHeight);
     glEnable(GL_DEPTH_TEST); // 혹시 다른 씬에서 껐을까봐 다시 켬
 }
 
 void title_mode::Reshape(int w, int h) {
     WINDOW_WIDTH = w;
     WINDOW_HEIGHT = h;
+	ui_dis = glm::vec2((w - 1200)/2, (h - 800)/2);
+	reshape_ui((float)w, (float)h);
     glViewport(0, 0, w, h);
 }
 

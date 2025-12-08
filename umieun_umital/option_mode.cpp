@@ -9,8 +9,8 @@ void option_mode::Init() {
     shaderProgramText = LoadShader("vertex_text.glsl", "fragment_text.glsl");
     stbi_set_flip_vertically_on_load(true);
 
-    glm::vec2 size1 = glm::vec2((float)winWidth, (float)winHeight);
-    glm::vec2 pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
+    glm::vec2 size1 = glm::vec2((float)1200, (float)800);
+    glm::vec2 pos1 = glm::vec2((float)1200 / 2.0f, (float)800 / 2.0f);
 
     black_background = new Image(LoadTexture("scene_image/black_background.png"), pos1, size1);
     black_background->color.w = 0.5f;
@@ -23,6 +23,19 @@ void option_mode::Init() {
         effect_volume_image[i] = new Image(LoadTexture("scene_image/volum_bar.png"), glm::vec2(480.0f + 24.0f + 48.0f * i, 245.0f), glm::vec2(48.0f, 110.0f));;
     }
 
+    ui_dis = glm::vec2((winWidth - 1200) / 2, (winHeight - 800) / 2);
+    reshape_ui(winWidth, winHeight);
+}
+void option_mode::reshape_ui(float w, float h) {
+	black_background->size = glm::vec2(w, h);
+	black_background->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+	option_background->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+    for (int i = 0; i < 10;i++) {
+		bgm_volume_image[i]->position = glm::vec2(ui_dis.x + 480.0f + 24.0f + 48.0f * i, ui_dis.y + 475.0f);
+		effect_volume_image[i]->position = glm::vec2(ui_dis.x + 480.0f + 24.0f + 48.0f * i, ui_dis.y + 245.0f);
+    }
 }
 
 void option_mode::Finish() {
@@ -100,28 +113,33 @@ void option_mode::OnResume() {
 
 void option_mode::Reshape(int w, int h) {
     // 옵션 모드 창 크기 변경 시 처리할 코드 작성
+    WINDOW_WIDTH = w;
+    WINDOW_HEIGHT = h;
+    ui_dis = glm::vec2((w - 1200) / 2, (h - 800) / 2);
+    reshape_ui((float)w, (float)h);
+    glViewport(0, 0, w, h);
 }
 
 void option_mode::Mouse(int button, int state, int x, int y) {
     // 옵션 모드 마우스 클릭 시 처리할 코드 작성
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         // BGM 볼륨 조절 영역
-        if (x >= 330 && x <= 445 && y >= 265 && y <= 385) {
+        if (x >= 330 + ui_dis.x && x <= 445 + ui_dis.x && y >= 265 + ui_dis.y && y <= 385 + ui_dis.y) {
             bgm_volume -= 0.1f;
             if (bgm_volume <= 0.0f) bgm_volume = 0.0f;
             bgmChannel->setVolume(bgm_volume);
         }
-        else if (x >= 990 && x <= 1105 && y >= 265 && y <= 385) {
+        else if (x >= 990 + ui_dis.x && x <= 1105 + ui_dis.x && y >= 265 + ui_dis.y && y <= 385 + ui_dis.y) {
             bgm_volume += 0.1f;
             if (bgm_volume >= 1.0f) bgm_volume = 1.0f;
             bgmChannel->setVolume(bgm_volume);
         }
         // 효과음 볼륨 조절 영역
-        else if (x >= 330 && x <= 445 && y >= 495 && y <= 615) {
+        else if (x >= 330 + ui_dis.x && x <= 445 + ui_dis.x && y >= 495 + ui_dis.y && y <= 615 + ui_dis.y) {
             effect_volume -= 0.1f;
             if (effect_volume <= 0.0f) effect_volume = 0.0f;
         }
-        else if (x >= 990 && x <= 1105 && y >= 495 && y <= 615) {
+        else if (x >= 990 + ui_dis.x && x <= 1105 + ui_dis.x && y >= 495 + ui_dis.y && y <= 615 + ui_dis.y) {
             effect_volume += 0.1f;
             if (effect_volume >= 1.0f) effect_volume = 1.0f;
         }
