@@ -68,11 +68,16 @@ private:
     bool game_start = false;
     Image* black_background = nullptr;
     bool fade = false;
-    Image* game_ui = nullptr;
+    Image* game_ui_ball = nullptr;
+    Image* game_ui_enemy = nullptr;
+    Image* game_ui_option = nullptr;
     Image* e_key_image = nullptr;
     bool show_e_key = false;
     Image* game_tip = nullptr;
     bool tip = false;
+    void reshape_ui(float w, float h);
+    glm::vec2 ui_dis = glm::vec2(0.0f, 0.0f);
+
 
     // ±â·Ï
     float record_time;

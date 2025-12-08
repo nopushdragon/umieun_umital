@@ -24,6 +24,7 @@ private:
 
 	//ui 및 이미지 관련
 	Image* white_background = nullptr;
+	Image* black_background = nullptr;
 	Image* title = nullptr;
 	vector<Image*> main;
 	int main_idx = 0;

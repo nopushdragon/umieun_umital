@@ -37,6 +37,9 @@ void title_mode::Finish() {
     if (white_background) {
         delete white_background;
     }
+    if (black_background) {
+        delete black_background;
+	}
     if (title) {
         delete title;
     }
@@ -90,6 +93,9 @@ void title_mode::loadImages() {
     white_background = new Image(LoadTexture("title/white_background.png"), pos1, size1);
     white_background->color.w = 0.4f;
 
+    black_background = new Image(LoadTexture("logo/black_background.png"), pos1, size1);
+    black_background->color.w = 1.0f;
+
     title = new Image(LoadTexture("title/title.png"), pos1, size1);
     title->color.w = 1.0f;
 
@@ -111,18 +117,18 @@ void title_mode::loadImages() {
     draw_set_maze = false;
 
     stbi_set_flip_vertically_on_load(false);
-
-    ui_dis = glm::vec2((winWidth - 1200) / 2, (winHeight - 800) / 2);
-    reshape_ui(winWidth, winHeight);
 }
 void title_mode::reshape_ui(float w, float h) {
 	white_background->size = glm::vec2(w, h);
 	white_background->position = glm::vec2(w / 2.0f, h / 2.0f);
 
+	black_background->size = glm::vec2(w, h);
+	black_background->position = glm::vec2(w / 2.0f, h / 2.0f);
+
     title->size = glm::vec2(1200, 800);
 	title->position = glm::vec2(w / 2.0f, h / 2.0f);
 
-	loading_image->size = glm::vec2(w, h);
+	loading_image->size = glm::vec2(1200, 800);
 	loading_image->position = glm::vec2(w / 2.0f, h / 2.0f);
 
     for (auto& m : main) {
@@ -134,9 +140,12 @@ void title_mode::reshape_ui(float w, float h) {
 		set_maze[i]->size = glm::vec2(1200, 800);
         set_maze[i]->position = glm::vec2(w / 2.0f, h / 2.0f);
 	}
+
+    glm::mat4 proj = glm::ortho(0.0f, (float)w, 0.0f, (float)h);
+    textUI.projection = proj;
 }
 void title_mode::loadTexts() {
-    glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f);
+    glm::mat4 proj = glm::ortho(0.0f, 1200.0f, 0.0f, 800.0f);
 
     textUI.Init("font/neodgm.ttf", shaderProgramText, proj);
 }
@@ -156,6 +165,8 @@ void title_mode::Init() {
     loadModels();
     loadImages();
     loadTexts();
+    ui_dis = glm::vec2((winWidth - 1200) / 2, (winHeight - 800) / 2);
+    reshape_ui(winWidth, winHeight);
 
     // 스카이박스
     skybox = new Skybox("skybox/sun.png", "skybox/moon.png");
@@ -244,13 +255,16 @@ void title_mode::Draw() {
 
             string score;
             score = account.best_score(0);
-            textUI.Draw(score, 205.0f, 200.0f, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
+            textUI.Draw(score, 220.0f + ui_dis.x, 220.0f + ui_dis.y, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
             score = account.best_score(1);
-            textUI.Draw(score, 600.0f, 200.0f, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
+            textUI.Draw(score, 580.0f + ui_dis.x, 220.0f + ui_dis.y, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
             score = account.best_score(2);
-            textUI.Draw(score, 985.0f, 200.0f, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
+            textUI.Draw(score, 950.0f + ui_dis.x, 220.0f + ui_dis.y, 0.6f, glm::vec3(0.0f, 0.0f, 0.0f));
 
-            if (loading_start) loading_image->Draw(shaderProgramImage, uiProj);
+            if (loading_start) {
+				black_background->Draw(shaderProgramImage, uiProj);
+                loading_image->Draw(shaderProgramImage, uiProj);
+            }
         }
     }
     mouth_image->Draw(shaderProgramImage, uiProj);
@@ -470,6 +484,8 @@ void title_mode::Reshape(int w, int h) {
     WINDOW_HEIGHT = h;
 	ui_dis = glm::vec2((w - 1200)/2, (h - 800)/2);
 	reshape_ui((float)w, (float)h);
+    glm::mat4 proj = glm::ortho(0.0f, (float)w, 0.0f, (float)h);
+	textUI.projection = proj;
     glViewport(0, 0, w, h);
 }
 

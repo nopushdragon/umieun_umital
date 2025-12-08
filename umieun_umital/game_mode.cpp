@@ -63,6 +63,8 @@ void game_mode::Init() {
     // ui 및 텍스트 로드
     loadImages();
     loadTexts();
+    ui_dis = glm::vec2((winWidth - 1200) / 2, (winHeight - 800) / 2);
+    reshape_ui(winWidth, winHeight);
 
     // 스카이박스
     skybox = new Skybox("skybox/sun.png", "skybox/moon.png");
@@ -541,20 +543,22 @@ void game_mode::Draw() {
         else mission->Draw(shaderProgramImage, uiProj);
     }
     if (!game_start && !fade) {
-        game_ui->Draw(shaderProgramImage, uiProj);
+        game_ui_enemy->Draw(shaderProgramImage, uiProj);
+		game_ui_ball->Draw(shaderProgramImage, uiProj);
+		game_ui_option->Draw(shaderProgramImage, uiProj);
         if (show_e_key) e_key_image->Draw(shaderProgramImage, uiProj);
 
         std::stringstream ss;
         ss << std::fixed << std::setprecision(2) << record_time;
         string now_time = "Time: " + ss.str();
-        textUI.Draw(now_time, 0, (WINDOW_HEIGHT * 5 / 6) - 100.0f, 0.4f, glm::vec3(0.9f, 0.9f, 0.9f));
+        textUI.Draw(now_time, 0, WINDOW_HEIGHT - 230.0f, 0.4f, glm::vec3(0.9f, 0.9f, 0.9f));
 
         string ball_count = to_string(silverWolf.ball_cnt);
-        textUI.Draw(ball_count, 1175.0f, 25.0f, 0.35f, glm::vec3(0.9f, 0.9f, 0.9f));
+        textUI.Draw(ball_count, WINDOW_WIDTH - 110.0f, 25.0f, 0.35f, glm::vec3(0.9f, 0.9f, 0.9f));
 
         string kill_count_str = to_string(kill_count);
         string enemy_count_str = to_string(target_count);
-        textUI.Draw(kill_count_str + " / " + enemy_count_str, 50, (WINDOW_HEIGHT * 5 / 6) - 200.0f, 0.4f, glm::vec3(0.9f, 0.9f, 0.9f));
+        textUI.Draw(kill_count_str + " / " + enemy_count_str, 50, WINDOW_HEIGHT - 330.0f, 0.4f, glm::vec3(0.9f, 0.9f, 0.9f));
 
         if (ultimate) {
             silverWolfult[static_cast<int>(ultimate_frame)]->Draw(shaderProgramImage, uiProj);
@@ -932,7 +936,7 @@ void game_mode::Mouse(int button, int state, int x, int y) {
     silverWolf.Mouse(button, state, x, y);
 
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-        if (x >= 1150 && x <= 1250 && y >= 0 && y <= 60) {
+        if (x >= WINDOW_WIDTH - 50.0f && x <= WINDOW_WIDTH && y >= 0 && y <= 60) {
             playerChannel = soundManager.Play("click", silverWolf.pos, effect_volume);
             silverWolf.ChangeState(new State_Idle());
             silverWolf.w_press = false;
@@ -1012,10 +1016,18 @@ void game_mode::Finish() {
         delete black_background;
         black_background = nullptr;
     }
-    if (game_ui) {
-        delete game_ui;
-        game_ui = nullptr;
+    if (game_ui_ball) {
+        delete game_ui_ball;
+        game_ui_ball = nullptr;
     }
+    if (game_ui_enemy) {
+        delete game_ui_enemy;
+        game_ui_enemy = nullptr;
+	}
+    if (game_ui_option) {
+        delete game_ui_option;
+        game_ui_option = nullptr;
+	}
     if (e_key_image) {
         delete e_key_image;
         e_key_image = nullptr;
@@ -1043,6 +1055,10 @@ void game_mode::Finish() {
 void game_mode::Reshape(int w, int h) {
     WINDOW_WIDTH = w;
     WINDOW_HEIGHT = h;
+    ui_dis = glm::vec2((w - 1200) / 2, (h - 800) / 2);
+    reshape_ui((float)w, (float)h);
+    glm::mat4 proj = glm::ortho(0.0f, (float)w, 0.0f, (float)h);
+    textUI.projection = proj;
     glViewport(0, 0, w, h);
 }
 
@@ -1059,7 +1075,8 @@ void game_mode::OnPause() {
 
 void game_mode::OnResume() {
     camera_fixed = false;
-    // 옵션 창 닫고 돌아왔을 때 복구할 로직
+    ui_dis = glm::vec2((winWidth - 1200) / 2, (winHeight - 800) / 2);
+    reshape_ui(winWidth, winHeight);
     glEnable(GL_DEPTH_TEST); // 혹시 다른 씬에서 껐을까봐 다시 켬
 }
 
@@ -1104,8 +1121,8 @@ void game_mode::loadModels() {
 void game_mode::loadImages() {
     stbi_set_flip_vertically_on_load(true);
 
-    glm::vec2 size1 = glm::vec2((float)winWidth, (float)winHeight);
-    glm::vec2 pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
+    glm::vec2 size1 = glm::vec2((float)1200, (float)800);
+    glm::vec2 pos1 = glm::vec2((float)1200 / 2.0f, (float)800 / 2.0f);
 
     mission = new Image(LoadTexture("scene_image/mission.png"), pos1, size1);
     mission->color.w = 1.0f;
@@ -1113,8 +1130,14 @@ void game_mode::loadImages() {
     black_background = new Image(LoadTexture("scene_image/black_background.png"), pos1, size1);
     black_background->color.w = 0.5f;
 
-    game_ui = new Image(LoadTexture("scene_image/game_ui.png"), pos1, size1);
-    game_ui->color.w = 1.0f;
+    game_ui_ball = new Image(LoadTexture("scene_image/game_ui_ball.png"), pos1, size1);
+    game_ui_ball->color.w = 1.0f;
+
+    game_ui_enemy = new Image(LoadTexture("scene_image/game_ui_enemy.png"), pos1, size1);
+    game_ui_enemy->color.w = 1.0f;
+
+    game_ui_option = new Image(LoadTexture("scene_image/game_ui_option.png"), pos1, size1);
+    game_ui_option->color.w = 1.0f;
 
     e_key_image = new Image(LoadTexture("scene_image/e_key.png"), pos1, size1);
     e_key_image->color.w = 0.8f;
@@ -1124,9 +1147,38 @@ void game_mode::loadImages() {
 
     stbi_set_flip_vertically_on_load(false);
 }
+void game_mode::reshape_ui(float w, float h) {
+	mission->size = glm::vec2(1200.0f, 800.0f);
+	mission->position = glm::vec2(w / 2.0f, h / 2.0f);
 
+	black_background->size = glm::vec2(w, h);
+	black_background->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+    game_ui_ball->size = glm::vec2(1200.0f, 800.0f);
+	game_ui_ball->position = glm::vec2(w - game_ui_ball->size.x / 2, game_ui_ball->size.y / 2);
+
+    game_ui_enemy->size = glm::vec2(1200.0f, 800.0f);
+    game_ui_enemy->position = glm::vec2(game_ui_enemy->size.x / 2, h - game_ui_enemy->size.y / 2);
+
+    game_ui_option->size = glm::vec2(1200.0f, 800.0f);
+    game_ui_option->position = glm::vec2(w-game_ui_ball->size.x / 2, h-game_ui_ball->size.y / 2);
+
+	e_key_image->size = glm::vec2(1200.0f, 800.0f);
+	e_key_image->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+	game_tip->size = glm::vec2(1200.0f, 800.0f);
+	game_tip->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+    for (int i = 4;i < silverWolfult_count + 4;++i) {
+        silverWolfult[i - 4]->size = glm::vec2(w, h);
+		silverWolfult[i - 4]->position = glm::vec2(w / 2.0f, h / 2.0f);
+    }
+
+    glm::mat4 proj = glm::ortho(0.0f, (float)w, 0.0f, (float)h);
+    textUI.projection = proj;
+}
 void game_mode::loadTexts() {
-    glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f);
+    glm::mat4 proj = glm::ortho(0.0f, 1200.0f, 0.0f, 800.0f);
 
     textUI.Init("font/경기천년제목_Medium.ttf", shaderProgramText, proj);
 

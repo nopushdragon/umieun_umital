@@ -47,6 +47,8 @@ private:
 	void drawCircle(float x, float y, float r, glm::vec4 color);
 	float circle_radius = 200.0f;
 
+	void reshape_ui(float w, float h);
+	glm::vec2 ui_dis = glm::vec2(0.0f, 0.0f);
 
 
 	// 카메라 및 화면 설정

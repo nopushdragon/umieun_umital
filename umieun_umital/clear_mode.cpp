@@ -118,11 +118,11 @@ void clear_mode::loadModels() {
 void clear_mode::loadImages() {
     stbi_set_flip_vertically_on_load(true);
 
-    glm::vec2 size1 = glm::vec2((float)winWidth, (float)winHeight);
-    glm::vec2 pos1 = glm::vec2((float)winWidth / 2.0f, (float)winHeight / 2.0f);
+    glm::vec2 size1 = glm::vec2((float)1200, (float)800);
+    glm::vec2 pos1 = glm::vec2((float)1200 / 2.0f, (float)800 / 2.0f);
 
     black_background = new Image(LoadTexture("scene_image/black_background.png"), pos1, size1);\
-        black_background->color.w = 0.0f;
+    black_background->color.w = 0.0f;
 
     black_bar = new Image(LoadTexture("scene_image/cut_scene_black_bar.png"), pos1, size1);
     black_bar->color.w = 1.0f;
@@ -146,12 +146,34 @@ void clear_mode::loadImages() {
 
     stbi_set_flip_vertically_on_load(false);
 }
+void clear_mode::reshape_ui(float w, float h) {
+	black_background->size = glm::vec2(w, h);
+	black_background->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+	black_bar->size = glm::vec2(w, h);
+	black_bar->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+	qte_f->position = glm::vec2(940.0f + ui_dis.x, 360.0f + ui_dis.y);
+
+	qte_tip->position = glm::vec2(w / 2.0f, h / 2.0f);
+
+    for (auto& m : scene_1) {
+        m->position = glm::vec2(w / 2.0f, m->size.y /2 + ui_dis.y/4);
+	}
+
+    for (auto& m : scene_2) {
+		m->size = glm::vec2(w, h);
+        m->position = glm::vec2(w / 2.0f, m->size.y / 2 + ui_dis.y / 4);
+	}
+}
 void clear_mode::loadTexts() {
 }
 
 // 1. 초기화 (기존 init 함수 내용)
 void clear_mode::Init() {
     cout << "[clearMode] Initializing..." << endl;
+
+    stbi_set_flip_vertically_on_load(false);
 
     if (bgmChannel) {
         bgmChannel->stop();
@@ -170,12 +192,17 @@ void clear_mode::Init() {
     loadModels();
     loadImages();
     loadTexts();
+
+	ui_dis = glm::vec2((winWidth - 1200) / 2, (winHeight - 800) / 2);
+	reshape_ui((float)winWidth, (float)winHeight);
 }
 
 // 2. 업데이트 (기존 timer 함수 내용 중 로직 부분)
 void clear_mode::Update(float deltaTime) {
     bool isPlaying = false;
-    bgmChannel->isPlaying(&isPlaying);
+    if (bgmChannel) {
+        bgmChannel->isPlaying(&isPlaying);
+    }
 
     if (!isPlaying) {
         bgmChannel = soundManager.Play("qte", glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
@@ -464,7 +491,7 @@ void clear_mode::Draw() {
 
         if (qte_pause) {
             qte_f->Draw(shaderProgramImage, uiProj);
-            drawCircle(940.0f, 360.0f, circle_radius, glm::vec4(1.0f, 1.0f, 0.5f, 1.0f));
+            drawCircle(940.0f + ui_dis.x, 360.0f + ui_dis.y, circle_radius, glm::vec4(1.0f, 1.0f, 0.5f, 1.0f));
         }
 
         if (qte_is_success == 1) {
@@ -530,16 +557,23 @@ void clear_mode::Keyboard(unsigned char key, int x, int y) {
         break;
     case 'f':
     case 'F':
-        if (scene_progress == 1) {
+        if (scene_progress == 1 && !pause) {
             if (circle_radius != 0.0f) {
                 if (qte_pause && circle_radius > 65.0f && circle_radius < 85.0f) {
-                    playerChannel->stop();
-                    playerChannel = soundManager.Play("quest", silverWolf.pos, effect_volume);
+                    if (playerChannel) {
+                        bool isPlaying = false;
+                        playerChannel->isPlaying(&isPlaying);
+                        if (isPlaying) {
+                            playerChannel->stop();
+                        }
+                    }
+
                     qte_is_success = 1;
                     qte_success_count++;
                     qte_pause = false;
                     circle_radius = 0.0f;
                     silverWolf.Keyboard('f', 0.0f, 0.0f);
+                    playerChannel = soundManager.Play("quest", silverWolf.pos, effect_volume);
                 }
                 else {
                     qte_is_success = -1;
@@ -583,6 +617,8 @@ void clear_mode::OnResume() {
 void clear_mode::Reshape(int w, int h) {
     WINDOW_WIDTH = w;
     WINDOW_HEIGHT = h;
+    ui_dis = glm::vec2((w - 1200) / 2, (h - 800) / 2);
+    reshape_ui((float)w, (float)h);
     glViewport(0, 0, w, h);
 }
 
