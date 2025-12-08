@@ -49,7 +49,6 @@ void main()
     } else {
         norm = vec3(0.0, 1.0, 0.0);
     }
-    
     vec3 lightDir = normalize(lightPos - FragPos);
     
     // Ambient
@@ -58,8 +57,6 @@ void main()
     // Diffuse
     float NdotL = dot(norm, lightDir);
     float diffuseFactor = max(NdotL, 0.0);
-    
-    // 너무 밝아지는 것 방지
     diffuseFactor = min(diffuseFactor, 0.8);  // 최대 0.8
     
     vec3 diffuse = diffuseFactor * lightColor * materialDiffuse;
@@ -68,10 +65,7 @@ void main()
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), float(shininess));
-    
-    if (isnan(spec) || isinf(spec)) {
-        spec = 0.0;
-    }
+    spec = clamp(spec, 0.0, 1.0);
     
     vec3 specular = spec * lightColor * (materialSpecular * 0.05);
 
@@ -90,20 +84,15 @@ void main()
         float diffFlash = max(dot(norm, lightDirFlash), 0.0);
         vec3 diffuseFlash = diffFlash * flashLightColor * materialDiffuse;
 
-
         vec3 reflectDirFlash = reflect(-lightDirFlash, norm);
         float specFlash = pow(max(dot(viewDir, reflectDirFlash), 0.0), float(shininess));
         vec3 specularFlash = specFlash * flashLightColor * (materialSpecular * 0.5);
 
- 
         diffuseFlash *= attenuation * intensity;
         specularFlash *= attenuation * intensity;
-
-
         result += (diffuseFlash + specularFlash);
     }
-    
-    // 최종 밝기도 제한 (추가 안전장치)
+    // 최종 밝기 제한
     result = min(result, vec3(1.0));
 
     if (fogEnabled > 0.5) {
