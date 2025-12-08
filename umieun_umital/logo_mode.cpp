@@ -22,8 +22,6 @@ void logo_mode::Init() {
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-
 }
 
 void logo_mode::reshape_ui(float w, float h) {
@@ -43,7 +41,7 @@ void logo_mode::Update(float deltaTime) {
 		tuk_image->color.w += deltaTime / 8.0f;
 		if (tuk_image->color.w >= 1.0f) {
 			turn_image = true;
-			bgmChannel = soundManager.Play("logo", glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
+			
 		}
 	}
 	else if (turn_image&& logo_timer < logo_time) {
@@ -75,6 +73,9 @@ void logo_mode::OnResume() {
 
 void logo_mode::Finish() {
 	// 로고 모드 종료 시 처리할 코드 작성
+	soundManager.LoadSound("logo", "sound/bgm/logo.mp3", false, false);
+	bgmChannel = soundManager.Play("logo", glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
+	Resource_Init();
 }
 
 void logo_mode::Reshape(int w, int h) {
@@ -88,7 +89,6 @@ void logo_mode::Mouse(int button, int state, int x, int y) {
 	// 로고 모드 마우스 이벤트 처리 코드 작성
 	if (!turn_image) {
 		turn_image = true;
-		bgmChannel = soundManager.Play("logo", glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
 	}
 }
 
@@ -96,6 +96,5 @@ void logo_mode::Keyboard(unsigned char key, int x, int y) {
 	// 로고 모드 키보드 이벤트 처리 코드 작성
 	if (!turn_image) {
 		turn_image = true;
-		bgmChannel = soundManager.Play("logo", glm::vec3(0.0f, 0.0f, 0.0f), bgm_volume);
 	}
 }

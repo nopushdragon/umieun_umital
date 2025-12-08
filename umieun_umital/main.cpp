@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
     game.Init(argc, argv);
 
     //2.5 리소스 로드
-	Resource_Init();
+	
 
     // 3. 시작 씬 생성 (미로 씬)
    //game_mode* startScene = new game_mode();

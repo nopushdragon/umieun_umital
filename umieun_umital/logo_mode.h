@@ -17,6 +17,7 @@ private:
 	int WINDOW_HEIGHT = winHeight;
 
 	bool turn_image = false;
+	
 
 	float logo_time = 0.1f;
 	float logo_timer = 0.0f;

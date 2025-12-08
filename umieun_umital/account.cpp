@@ -64,7 +64,7 @@ string Account::best_score(int level) {
 	}
 	
 	if (time == 0.0f) {
-		return "No Record";
+		return "NONE";
 	}
 	
 	char buffer[32];

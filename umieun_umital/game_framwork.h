@@ -19,12 +19,6 @@ public:
     SceneManager* sceneManager;
     GameTimer* gameTimer;
 
-    bool isFullscreen;
-    int windowedWidth;
-    int windowedHeight;
-    int windowedPosX;
-    int windowedPosY;
-
     GameFramework() {
         sceneManager = new SceneManager();
         gameTimer = new GameTimer();
